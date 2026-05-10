@@ -1,4 +1,4 @@
-# Proklepni — Netlify edition
+# Lustrare — Netlify edition
 
 Czech business verification tool that aggregates data from public registries, deployed as a fully serverless stack on Netlify. No database, no server to maintain.
 
@@ -45,7 +45,7 @@ Build settings (already in `netlify.toml`):
 | Setting | Value |
 |---|---|
 | Build command | `cd frontend && npm ci && npm run build` |
-| Publish directory | `frontend/dist/proklepni-ui/browser` |
+| Publish directory | `frontend/dist/lustrare-ui/browser` |
 | Functions directory | `netlify/functions` |
 
 ## Features

@@ -1,6 +1,6 @@
 [build]
   command = "npm ci && npm run build"
-  publish = "dist/proklepni-ui/browser"
+  publish = "dist/lustrare-ui/browser"
 
 [functions]
   directory = "netlify/functions"

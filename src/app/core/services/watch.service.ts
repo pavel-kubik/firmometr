@@ -4,7 +4,7 @@ import { WatchedEntity, WatchRequest } from '../models/watch.model';
 
 @Injectable({ providedIn: 'root' })
 export class WatchService {
-  private readonly KEY = 'proklepni_watched';
+  private readonly KEY = 'lustrare_watched';
 
   listAll(): Observable<WatchedEntity[]> {
     return of(this.load());
