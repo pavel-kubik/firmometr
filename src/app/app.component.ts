@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
   template: `
     <mat-toolbar color="primary">
       <mat-icon style="margin-right: 8px">policy</mat-icon>
-      <span style="font-weight: 700; margin-right: 32px">Proklepni</span>
+      <span style="font-weight: 700; margin-right: 32px">Lustrare</span>
       <button mat-button routerLink="/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon> Sledované
       </button>
