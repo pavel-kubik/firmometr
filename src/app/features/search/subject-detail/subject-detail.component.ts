@@ -281,7 +281,7 @@ export class SubjectDetailComponent implements OnInit {
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
-    this.pageUrl = `https://lustrare-beta.netlify.dev/search/${ico}`;
+    this.pageUrl = `https://lustrare-beta.netlify.app/search/${ico}`;
     this.load(ico);
   }
 
