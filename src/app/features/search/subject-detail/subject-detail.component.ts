@@ -8,6 +8,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { QRCodeModule } from 'angularx-qrcode';
 import { SearchService } from '../../../core/services/search.service';
 import { WatchService } from '../../../core/services/watch.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
@@ -18,7 +20,8 @@ import { SubjectDetail } from '../../../core/models/subject.model';
   imports: [
     CommonModule, RouterLink,
     MatCardModule, MatButtonModule, MatChipsModule, MatProgressBarModule,
-    MatIconModule, MatDividerModule, MatSnackBarModule
+    MatIconModule, MatDividerModule, MatSnackBarModule, MatTooltipModule,
+    QRCodeModule
   ],
   template: `
     <div class="detail-page">
@@ -34,12 +37,22 @@ import { SubjectDetail } from '../../../core/models/subject.model';
       <ng-container *ngIf="subject">
         <div class="header-row">
           <h1>{{ subject.obchodniFirma || 'IČO ' + subject.ico }}</h1>
-          <button mat-raised-button
-            [color]="subject.isWatched ? 'warn' : 'accent'"
-            (click)="toggleWatch()">
-            <mat-icon>{{ subject.isWatched ? 'visibility_off' : 'visibility' }}</mat-icon>
-            {{ subject.isWatched ? 'Přestat sledovat' : 'Sledovat' }}
-          </button>
+          <div class="header-actions">
+            <button mat-icon-button (click)="showQr = !showQr" matTooltip="QR kód stránky" [color]="showQr ? 'primary' : ''">
+              <mat-icon>qr_code</mat-icon>
+            </button>
+            <button mat-raised-button
+              [color]="subject.isWatched ? 'warn' : 'accent'"
+              (click)="toggleWatch()">
+              <mat-icon>{{ subject.isWatched ? 'visibility_off' : 'visibility' }}</mat-icon>
+              {{ subject.isWatched ? 'Přestat sledovat' : 'Sledovat' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="showQr" class="qr-panel">
+          <qrcode [qrdata]="pageUrl" [width]="160" [margin]="1" errorCorrectionLevel="M"></qrcode>
+          <p class="qr-url">{{ pageUrl }}</p>
         </div>
 
         <div class="cards-grid">
@@ -193,7 +206,10 @@ import { SubjectDetail } from '../../../core/models/subject.model';
   styles: [`
     .detail-page { padding: 24px; max-width: 1100px; margin: 0 auto; }
     .back-nav { margin-bottom: 16px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .qr-panel { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 16px; }
+    .qr-url { font-size: 11px; color: #757575; margin: 4px 0 0; word-break: break-all; max-width: 200px; }
     h1 { margin: 0; }
     .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
     @media (max-width: 768px) { .cards-grid { grid-template-columns: 1fr; } }
@@ -260,9 +276,12 @@ export class SubjectDetailComponent implements OnInit {
   subject: SubjectDetail | null = null;
   loading = false;
   error = '';
+  showQr = false;
+  pageUrl = '';
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
+    this.pageUrl = `https://lustrare-beta.netlify.dev/search/${ico}`;
     this.load(ico);
   }
 

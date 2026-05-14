@@ -21,6 +21,7 @@
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@sentry/angular": "^10.52.0",
+    "angularx-qrcode": "^18.0.2",
     "fast-xml-parser": "^4.4.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -29,7 +30,6 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
-    "vitest": "^3",
     "@angular/compiler-cli": "^18.2.0",
     "@netlify/functions": "^2.8.1",
     "@types/jasmine": "~5.1.0",
@@ -39,6 +39,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^3"
   }
 }
