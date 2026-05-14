@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SearchService } from '../../core/services/search.service';
 import { SubjectSummary } from '../../core/models/subject.model';
 
@@ -18,7 +19,8 @@ import { SubjectSummary } from '../../core/models/subject.model';
   imports: [
     CommonModule, FormsModule,
     MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule
+    MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule,
+    MatPaginatorModule
   ],
   template: `
     <div class="search-page">
@@ -73,6 +75,13 @@ import { SubjectSummary } from '../../core/models/subject.model';
           <tr mat-header-row *matHeaderRowDef="columns"></tr>
           <tr mat-row *matRowDef="let row; columns: columns;" class="clickable-row" (click)="goToDetail(row.ico)"></tr>
         </table>
+        <mat-paginator
+          [length]="total"
+          [pageSize]="pageSize"
+          [pageIndex]="pageIndex"
+          [hidePageSize]="true"
+          (page)="onPage($event)">
+        </mat-paginator>
       </div>
 
       <div *ngIf="!loading && searched && results.length === 0 && !error" class="empty-state">
@@ -108,21 +117,33 @@ export class SearchComponent {
   searched = false;
   error = '';
   columns = ['ico', 'name', 'address', 'status', 'actions'];
+  readonly pageSize = 20;
+  pageIndex = 0;
 
   search() {
     if (!this.query.trim()) return;
-    this.loading = true;
-    this.error = '';
-    this.results = [];
-    this.searched = false;
+    this.pageIndex = 0;
+    this.fetchPage(0);
+  }
 
+  onPage(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.fetchPage(event.pageIndex * this.pageSize);
+  }
+
+  private fetchPage(start: number) {
     const isIco = /^\d{8}$/.test(this.query.trim());
     if (isIco) {
       this.router.navigate(['/search', this.query.trim()]);
       return;
     }
 
-    this.searchService.searchByName(this.query).subscribe({
+    this.loading = true;
+    this.error = '';
+    this.results = [];
+    this.searched = false;
+
+    this.searchService.searchByName(this.query, start).subscribe({
       next: (res) => {
         this.results = res.items;
         this.total = res.total;
