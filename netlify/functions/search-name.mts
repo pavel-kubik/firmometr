@@ -1,4 +1,21 @@
 import type { Config } from "@netlify/functions";
+const FREE_CAP = 5;
+function checkCap(req: Request): { blocked: boolean; cookieValue: string } {
+  if (req.headers.get('authorization')) return { blocked: false, cookieValue: '' };
+  const raw = (req.headers.get('cookie') ?? '').match(/(?:^|;)\s*srch_cnt=([^;]*)/)?.[1] ?? '';
+  const [countStr, expiresStr] = raw.split('|');
+  const now = Date.now();
+  const expires = parseInt(expiresStr ?? '0', 10) || 0;
+  const count = now > expires ? 0 : (parseInt(countStr ?? '0', 10) || 0);
+  const newExpires = expires > now ? expires : now + 86_400_000;
+  if (count >= FREE_CAP) return { blocked: true, cookieValue: `${count}|${newExpires}` };
+  return { blocked: false, cookieValue: `${count + 1}|${newExpires}` };
+}
+function withCap(body: unknown, cap: { cookieValue: string }, status = 200): Response {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (cap.cookieValue) headers['Set-Cookie'] = `srch_cnt=${cap.cookieValue}; Path=/; Max-Age=86400; SameSite=Lax`;
+  return new Response(JSON.stringify(body), { status, headers });
+}
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 
@@ -25,6 +42,9 @@ export default async (req: Request) => {
     return Response.json({ total: 0, items: [] });
   }
 
+  const cap = checkCap(req);
+  if (cap.blocked) return withCap({ error: 'limit_reached' }, cap, 429);
+
   try {
     const res = await fetch(`${ARES_BASE}/ekonomicke-subjekty/vyhledat`, {
       method: "POST",
@@ -34,7 +54,7 @@ export default async (req: Request) => {
     });
 
     if (!res.ok) {
-      return Response.json({ total: 0, items: [] });
+      return withCap({ total: 0, items: [] }, cap);
     }
 
     const data = await res.json();
@@ -48,9 +68,9 @@ export default async (req: Request) => {
       };
     });
 
-    return Response.json({ total: data.pocetCelkem ?? 0, items });
+    return withCap({ total: data.pocetCelkem ?? 0, items }, cap);
   } catch {
-    return Response.json({ total: 0, items: [] });
+    return withCap({ total: 0, items: [] }, cap);
   }
 };
 

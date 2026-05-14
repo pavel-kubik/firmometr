@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +18,7 @@ import { SubjectSummary } from '../../core/models/subject.model';
   selector: 'app-search',
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
+    CommonModule, FormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatButtonModule,
     MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule,
     MatPaginatorModule
@@ -40,6 +41,10 @@ import { SubjectSummary } from '../../core/models/subject.model';
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
       <div *ngIf="error" class="error-msg">{{ error }}</div>
+      <div *ngIf="limitReached" class="error-msg limit-msg">
+        Dosáhli jste limitu 5 bezplatných vyhledávání za 24 hodin.
+        <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
+      </div>
 
       <div *ngIf="results.length > 0" class="results">
         <p class="result-count">Nalezeno: {{ total }} subjektů</p>
@@ -100,6 +105,8 @@ import { SubjectSummary } from '../../core/models/subject.model';
     .clickable-row:hover { background: #f5f5f5; }
     .result-count { color: #666; margin-bottom: 8px; }
     .error-msg { color: #f44336; margin: 16px 0; }
+    .limit-msg { color: #555; }
+    .login-link { color: #1565c0; margin-left: 8px; }
     .empty-state { text-align: center; padding: 48px; color: #999; }
     .empty-state mat-icon { font-size: 48px; width: 48px; height: 48px; }
     .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
@@ -116,6 +123,7 @@ export class SearchComponent {
   loading = false;
   searched = false;
   error = '';
+  limitReached = false;
   columns = ['ico', 'name', 'address', 'status', 'actions'];
   readonly pageSize = 20;
   pageIndex = 0;
@@ -140,6 +148,7 @@ export class SearchComponent {
 
     this.loading = true;
     this.error = '';
+    this.limitReached = false;
     this.results = [];
     this.searched = false;
 
@@ -150,8 +159,12 @@ export class SearchComponent {
         this.loading = false;
         this.searched = true;
       },
-      error: () => {
-        this.error = 'Chyba při vyhledávání. Zkuste to prosím znovu.';
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 429) {
+          this.limitReached = true;
+        } else {
+          this.error = 'Chyba při vyhledávání. Zkuste to prosím znovu.';
+        }
         this.loading = false;
         this.searched = true;
       }

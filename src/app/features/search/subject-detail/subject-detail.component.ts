@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { QRCodeModule } from 'angularx-qrcode';
 import { switchMap } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
 import { SearchService } from '../../../core/services/search.service';
 import { WatchService } from '../../../core/services/watch.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
@@ -34,6 +35,10 @@ import { SubjectDetail } from '../../../core/models/subject.model';
 
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
       <div *ngIf="error" class="error-msg">{{ error }}</div>
+      <div *ngIf="limitReached" class="error-msg limit-msg">
+        Dosáhli jste limitu 5 bezplatných vyhledávání za 24 hodin.
+        <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
+      </div>
 
       <ng-container *ngIf="subject">
         <div class="header-row">
@@ -237,6 +242,8 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .isir-past-debtor { color: #f57f17; font-weight: 500; margin-bottom: 16px; }
     mat-card-title { display: flex; align-items: center; gap: 8px; }
     .error-msg { color: #f44336; margin: 16px 0; }
+    .limit-msg { color: #555; }
+    .login-link { color: #1565c0; margin-left: 8px; }
     .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     mat-card { margin-bottom: 0; }
@@ -277,6 +284,7 @@ export class SubjectDetailComponent implements OnInit {
   subject: SubjectDetail | null = null;
   loading = false;
   error = '';
+  limitReached = false;
   showQr = false;
   pageUrl = '';
 
@@ -289,6 +297,7 @@ export class SubjectDetailComponent implements OnInit {
   load(ico: string) {
     this.loading = true;
     this.error = '';
+    this.limitReached = false;
     this.searchService.searchByIco(ico).pipe(
       switchMap(data => {
         this.subject = data;
@@ -299,8 +308,12 @@ export class SubjectDetailComponent implements OnInit {
         this.subject!.isWatched = isWatched;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Nepodařilo se načíst data subjektu.';
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 429) {
+          this.limitReached = true;
+        } else {
+          this.error = 'Nepodařilo se načíst data subjektu.';
+        }
         this.loading = false;
       }
     });

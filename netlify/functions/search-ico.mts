@@ -1,5 +1,22 @@
 import type { Config, Context } from "@netlify/functions";
 import { XMLParser } from "fast-xml-parser";
+const FREE_CAP = 5;
+function checkCap(req: Request): { blocked: boolean; cookieValue: string } {
+  if (req.headers.get('authorization')) return { blocked: false, cookieValue: '' };
+  const raw = (req.headers.get('cookie') ?? '').match(/(?:^|;)\s*srch_cnt=([^;]*)/)?.[1] ?? '';
+  const [countStr, expiresStr] = raw.split('|');
+  const now = Date.now();
+  const expires = parseInt(expiresStr ?? '0', 10) || 0;
+  const count = now > expires ? 0 : (parseInt(countStr ?? '0', 10) || 0);
+  const newExpires = expires > now ? expires : now + 86_400_000;
+  if (count >= FREE_CAP) return { blocked: true, cookieValue: `${count}|${newExpires}` };
+  return { blocked: false, cookieValue: `${count + 1}|${newExpires}` };
+}
+function withCap(body: unknown, cap: { cookieValue: string }, status = 200): Response {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (cap.cookieValue) headers['Set-Cookie'] = `srch_cnt=${cap.cookieValue}; Path=/; Max-Age=86400; SameSite=Lax`;
+  return new Response(JSON.stringify(body), { status, headers });
+}
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
@@ -367,6 +384,9 @@ export default async (req: Request, context: Context) => {
     return Response.json({ error: "Invalid IČO" }, { status: 400 });
   }
 
+  const cap = checkCap(req);
+  if (cap.blocked) return withCap({ error: 'limit_reached' }, cap, 429);
+
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
     fetchAres(ico), fetchIsir(ico), fetchOrVr(ico), fetchOrSubjektId(ico),
   ]);
@@ -398,7 +418,7 @@ export default async (req: Request, context: Context) => {
 
   const hasOrData = orVr.statutari.length > 0 || orVr.spisovatel || sbirkaListinResult.celkem > 0;
 
-  return Response.json({
+  return withCap({
     ico,
     obchodniFirma: aresData?.obchodniJmeno ?? null,
     pravniForma: aresData?.pravniForma ?? null,
@@ -419,7 +439,7 @@ export default async (req: Request, context: Context) => {
         : null,
     } : null,
     isWatched: false,
-  });
+  }, cap);
 };
 
 export const config: Config = {
