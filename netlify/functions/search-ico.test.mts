@@ -24,6 +24,9 @@ const DPH_ANO = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:s
 // 45795908 — České aerolinie a.s. — reliable payer (NE), mixed standard + IBAN accounts
 const DPH_NE = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header/><soapenv:Body><StatusNespolehlivyPlatceResponse xmlns="http://adis.mfcr.cz/rozhraniCRPDPH/"><status odpovedGenerovana="2026-05-14" statusCode="0" statusText="OK"/><statusPlatceDPH dic="CZ45795908" nespolehlivyPlatce="NE" cisloFu="13"><zverejneneUcty><ucet datumZverejneni="2013-04-01"><standardniUcet cislo="2003630103" kodBanky="2600"/></ucet><ucet datumZverejneni="2015-08-27"><nestandardniUcet cislo="CZ7126000000002003630218"/></ucet><ucet datumZverejneni="2018-05-31"><nestandardniUcet cislo="CZ2326000000002003630306"/></ucet><ucet datumZverejneni="2018-05-31"><nestandardniUcet cislo="CZ5026000000002003630402"/></ucet></zverejneneUcty></statusPlatceDPH></StatusNespolehlivyPlatceResponse></soapenv:Body></soapenv:Envelope>`;
 
+// 71379487 — Pavel Kubík (OSVČ) — DIČ is rodné číslo CZ8101120016, not CZ71379487; reliable payer
+const DPH_NE_OSOBNI = `<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header/><soapenv:Body><StatusNespolehlivyPlatceResponse xmlns="http://adis.mfcr.cz/rozhraniCRPDPH/"><status odpovedGenerovana="2026-05-14" statusCode="0" statusText="OK"/><statusPlatceDPH dic="CZ8101120016" nespolehlivyPlatce="NE" cisloFu="452"><zverejneneUcty><ucet datumZverejneni="2024-09-20"><standardniUcet predcisli="115" cislo="8359310247" kodBanky="0100"/></ucet></zverejneneUcty></statusPlatceDPH></StatusNespolehlivyPlatceResponse></soapenv:Body></soapenv:Envelope>`;
+
 const ARES_07102127 = JSON.stringify({
   ico: '07102127',
   obchodniJmeno: 'Butterfly Flowers s.r.o.',
@@ -49,6 +52,17 @@ const ARES_45795908 = JSON.stringify({
   sidlo: { textovaAdresa: 'Jana Kašpara 1069/1, 16008 Praha 6' },
   datumVzniku: '1992-01-01',
   seznamRegistraci: { stavZdrojeVr: 'AKTIVNI' },
+});
+
+// 71379487 — Pavel Kubík (OSVČ) — dic field differs from "CZ"+IČO
+const ARES_71379487 = JSON.stringify({
+  ico: '71379487',
+  dic: 'CZ8101120016',
+  obchodniJmeno: 'Pavel Kubík',
+  pravniForma: '101',
+  sidlo: { textovaAdresa: 'K Parku 239, 25101 Nupaky' },
+  datumVzniku: '2004-04-14',
+  seznamRegistraci: { stavZdrojeVr: 'NEEXISTUJICI' },
 });
 
 // ARES VR — contains one jednatel for OR tests
@@ -200,6 +214,15 @@ describe('DPH integration', () => {
     expect(body.dph.ucty).toContain('CZ7126000000002003630218');
     expect(body.dph.ucty).toContain('CZ2326000000002003630306');
     expect(body.dph.ucty).toContain('CZ5026000000002003630402');
+  });
+
+  it('71379487 Pavel Kubík (OSVČ) — dic from ARES used instead of CZ+IČO', async () => {
+    vi.stubGlobal('fetch', makeFetch('71379487', { ares: ARES_71379487, dph: DPH_NE_OSOBNI }));
+    const body = await handler(new Request('http://x'), ctx('71379487')).then(r => r.json());
+
+    expect(body.dph.isPlatce).toBe(true);
+    expect(body.dph.nespolehlivy).toBe(false);
+    expect(body.dph.ucty).toEqual(['115-8359310247/0100']);
   });
 });
 

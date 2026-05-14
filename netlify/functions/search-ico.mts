@@ -367,13 +367,15 @@ export default async (req: Request, context: Context) => {
     return Response.json({ error: "Invalid IČO" }, { status: 400 });
   }
 
-  const dic = "CZ" + ico.padStart(8, "0");
-  const [aresData, isirRecords, dphResult, orVr, orSubjektId] = await Promise.all([
-    fetchAres(ico), fetchIsir(ico), fetchDph(dic), fetchOrVr(ico), fetchOrSubjektId(ico),
+  const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
+    fetchAres(ico), fetchIsir(ico), fetchOrVr(ico), fetchOrSubjektId(ico),
   ]);
 
+  // Use the DIČ from ARES — for sole traders it differs from "CZ"+IČO (it's the rodné číslo).
+  const dic = aresData?.dic ?? ("CZ" + ico.padStart(8, "0"));
   const sidloText: string | null = aresData?.sidlo?.textovaAdresa ?? null;
-  const [cuzkAddress, sbirkaListinResult] = await Promise.all([
+  const [dphResult, cuzkAddress, sbirkaListinResult] = await Promise.all([
+    fetchDph(dic),
     sidloText ? fetchCuzk(sidloText) : Promise.resolve(null),
     orSubjektId ? fetchSbirkaListin(orSubjektId) : Promise.resolve({ listiny: [], celkem: 0 }),
   ]);
