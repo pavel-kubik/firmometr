@@ -18,7 +18,7 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 
 ### User engagement
 - ⬜ cap free search without login (2 per IP / ??? / global cap per app)
-- ⬜ user registration
+- ✅ user registration
   - magic link login?
   - user / password
 - ⬜ cap free search with login
