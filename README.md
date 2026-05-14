@@ -87,3 +87,13 @@ Watch list → localStorage (no backend)
 | ISIR WS2 | https://isir.justice.cz/isir/help/Popis_WS_2_v1_13.pdf |
 | ČÚZK RUIAN | https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN |
 | VAT | https://adisspr.mfcr.cz/pmd/dokumentace/webove-sluzby-spolehlivost-platcu |
+
+## External tools
+
+### Netlify
+
+https://netlify.net github account
+
+### Supabase
+
+https://supabase.com/ github account
