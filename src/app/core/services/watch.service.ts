@@ -23,6 +23,7 @@ export class WatchService {
       notifyEmail: null,
       isirClarity: (req.isirClarity as WatchedEntity['isirClarity']) ?? null,
       aresStavKod: req.aresStavKod ?? null,
+      dphNespolehlivy: req.dphNespolehlivy ?? null,
     };
     this.save([...all, entity]);
     return of(entity);

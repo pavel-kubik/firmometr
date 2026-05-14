@@ -7,6 +7,7 @@ export interface WatchedEntity {
   notifyEmail: string | null;
   isirClarity: 'CLEAR' | 'PAST_DEBTOR' | 'ACTIVE_DEBTOR' | 'ACTIVE_CO_DEBTOR' | null;
   aresStavKod: string | null;
+  dphNespolehlivy: boolean | null;
 }
 
 export interface WatchRequest {
@@ -14,4 +15,5 @@ export interface WatchRequest {
   displayName: string;
   isirClarity?: string;
   aresStavKod?: string;
+  dphNespolehlivy?: boolean;
 }

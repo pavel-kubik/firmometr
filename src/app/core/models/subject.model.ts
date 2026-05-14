@@ -1,3 +1,10 @@
+export interface DphStatus {
+  isPlatce: boolean;
+  nespolehlivy: boolean | null;
+  datumNespolehlivosti: string | null;
+  ucty: string[];
+}
+
 export interface SubjectDetail {
   ico: string;
   obchodniFirma: string | null;
@@ -8,6 +15,7 @@ export interface SubjectDetail {
   stavKod: string | null;
   stavNazev: string | null;
   isir: IsirStatus;
+  dph: DphStatus;
   isWatched: boolean;
 }
 

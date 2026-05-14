@@ -5,6 +5,8 @@ const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ISIR_CUZK = "https://isir.justice.cz:8443/isir_cuzk_ws/IsirWsCuzkService";
 const CUZK_BASE = "https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN/Vyhledavac_adres_sluzby/MapServer/exts/VyhledavacAdresRestSoe/FindAddress";
 const CUZK_NS = "http://isirws.cca.cz/types/";
+const DPH_SOAP = "https://adisrws.mfcr.cz/dpr/axis2/services/rozhraniCRPDPH.rozhraniCRPDPHSOAP";
+const DPH_NS = "http://adis.mfcr.cz/rozhraniCRPDPH/";
 
 const ACTIVE_STATI = new Set([
   "NEVYRIZENA", "OBZIVLA", "VYRIZENA", "KONKURS", "ZRUŠENO VS",
@@ -125,6 +127,69 @@ function parseIsirResponse(xml: string): IsirRecord[] {
   }));
 }
 
+interface DphResult {
+  isPlatce: boolean;
+  nespolehlivy: boolean | null;
+  datumNespolehlivosti: string | null;
+  ucty: string[];
+}
+
+const DPH_NOT_PLATCE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [] };
+
+async function fetchDph(dic: string): Promise<DphResult> {
+  const body = `<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:ns1="${DPH_NS}">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ns1:StatusNespolehlivyPlatceRequest>
+      <ns1:dic>${dic}</ns1:dic>
+    </ns1:StatusNespolehlivyPlatceRequest>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+
+  try {
+    const res = await fetch(DPH_SOAP, {
+      method: "POST",
+      headers: { "Content-Type": "text/xml; charset=UTF-8", SOAPAction: '"getStatusNespolehlivyPlatce"' },
+      body,
+      signal: AbortSignal.timeout(15_000),
+    });
+    const xml = await res.text();
+    return parseDphResponse(xml);
+  } catch {
+    return DPH_NOT_PLATCE;
+  }
+}
+
+function parseDphResponse(xml: string): DphResult {
+  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", textNodeName: "_text" });
+  const doc = parser.parse(xml);
+
+  const platceEl = findNode(doc, "statusPlatceDPH");
+  if (!platceEl) return DPH_NOT_PLATCE;
+
+  const nespolehlivy = platceEl["@_nespolehlivyPlatce"] === "ANO";
+  const datumNespolehlivosti = str(platceEl["@_datumZverejneniNespolehlivosti"]) ?? null;
+
+  const uctyEl = findNode(platceEl, "zverejneneUcty");
+  const ucetNodes = uctyEl ? collectNodes(uctyEl, "ucet") : [];
+  const ucty = ucetNodes.flatMap((ucet: any) => {
+    const std = findNode(ucet, "standardniUcet");
+    if (std) {
+      const predcisli = str(std["@_predcisli"]);
+      const cislo = str(std["@_cislo"]) ?? "";
+      const banka = str(std["@_kodBanky"]) ?? "";
+      return [`${predcisli ? predcisli + "-" : ""}${cislo}/${banka}`];
+    }
+    const nonStd = findNode(ucet, "nestandardniUcet");
+    if (nonStd) return [str(nonStd["@_cislo"]) ?? ""];
+    return [];
+  }).filter(Boolean);
+
+  return { isPlatce: true, nespolehlivy, datumNespolehlivosti, ucty };
+}
+
 async function fetchCuzk(addressText: string): Promise<string | null> {
   try {
     const url = `${CUZK_BASE}?SearchText=${encodeURIComponent(addressText)}&f=json`;
@@ -170,12 +235,13 @@ function str(v: any): string | undefined {
 }
 
 export default async (req: Request, context: Context) => {
-  const ico = context.params.ico;
+  const ico = context.params['ico'];
   if (!ico || !/^\d{1,8}$/.test(ico)) {
     return Response.json({ error: "Invalid IČO" }, { status: 400 });
   }
 
-  const [aresData, isirRecords] = await Promise.all([fetchAres(ico), fetchIsir(ico)]);
+  const dic = "CZ" + ico.padStart(8, "0");
+  const [aresData, isirRecords, dphResult] = await Promise.all([fetchAres(ico), fetchIsir(ico), fetchDph(dic)]);
 
   const sidloText: string | null = aresData?.sidlo?.textovaAdresa ?? null;
   const cuzkAddress = sidloText ? await fetchCuzk(sidloText) : null;
@@ -206,6 +272,7 @@ export default async (req: Request, context: Context) => {
     stavKod,
     stavNazev: stavNazevFrom(stavKod),
     isir: { clarity, proceedings },
+    dph: dphResult,
     isWatched: false,
   });
 };

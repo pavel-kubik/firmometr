@@ -8,8 +8,8 @@
 
 [dev]
   command = "npm start"
-  targetPort = 4200
-  port = 8888
+  targetPort = 4201
+  port = 8889
   autoLaunch = false
 
 [[redirects]]

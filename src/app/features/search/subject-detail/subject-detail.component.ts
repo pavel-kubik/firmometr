@@ -110,6 +110,36 @@ import { SubjectDetail } from '../../../core/models/subject.model';
               </div>
             </mat-card-content>
           </mat-card>
+
+          <!-- DPH card -->
+          <mat-card [class]="dphCardClass()">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon [color]="subject.dph.nespolehlivy ? 'warn' : ''">
+                  {{ subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
+                </mat-icon>
+                DPH — Registr plátců
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div *ngIf="!subject.dph.isPlatce" class="dph-neutral">
+                <p>Subjekt není evidován jako plátce DPH.</p>
+              </div>
+              <div *ngIf="subject.dph.isPlatce && !subject.dph.nespolehlivy" class="dph-ok">
+                <p>Spolehlivý plátce DPH</p>
+              </div>
+              <div *ngIf="subject.dph.nespolehlivy">
+                <p class="dph-warning">Nespolehlivý plátce DPH!</p>
+                <p *ngIf="subject.dph.datumNespolehlivosti" class="dph-date">
+                  Zveřejněno: {{ subject.dph.datumNespolehlivosti }}
+                </p>
+              </div>
+              <div *ngIf="subject.dph.ucty?.length" class="dph-accounts">
+                <p class="dph-accounts-label">Zveřejněné účty:</p>
+                <div *ngFor="let u of subject.dph.ucty" class="dph-account">{{ u }}</div>
+              </div>
+            </mat-card-content>
+          </mat-card>
         </div>
       </ng-container>
     </div>
@@ -148,6 +178,13 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     mat-card { margin-bottom: 0; }
     mat-card-content { padding-top: 16px; }
+    .dph-ok { color: #2e7d32; }
+    .dph-neutral { color: #757575; }
+    .dph-warning { color: #c62828; font-weight: 500; margin-bottom: 8px; }
+    .dph-date { color: #757575; font-size: 13px; margin: 0; }
+    .dph-accounts { margin-top: 16px; }
+    .dph-accounts-label { font-size: 13px; color: #666; margin: 0 0 6px; }
+    .dph-account { font-family: monospace; font-size: 13px; padding: 4px 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; }
   `]
 })
 export class SubjectDetailComponent implements OnInit {
@@ -181,6 +218,12 @@ export class SubjectDetailComponent implements OnInit {
     });
   }
 
+  dphCardClass(): string {
+    if (!this.subject) return '';
+    if (this.subject.dph.nespolehlivy) return 'card-warning';
+    return '';
+  }
+
   toggleWatch() {
     if (!this.subject) return;
     if (this.subject.isWatched) {
@@ -197,6 +240,7 @@ export class SubjectDetailComponent implements OnInit {
         displayName: this.subject.obchodniFirma || `IČO ${this.subject.ico}`,
         isirClarity: this.subject.isir.clarity,
         aresStavKod: this.subject.stavKod ?? undefined,
+        dphNespolehlivy: this.subject.dph.nespolehlivy ?? false,
       }).subscribe({
         next: () => {
           this.subject!.isWatched = true;

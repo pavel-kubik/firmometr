@@ -110,6 +110,7 @@ export class DashboardComponent implements OnInit {
 
   getStatusClass(entity: WatchedEntity): string {
     if (entity.isirClarity === 'ACTIVE_DEBTOR' || entity.isirClarity === 'ACTIVE_CO_DEBTOR') return 'status-red';
+    if (entity.dphNespolehlivy === true) return 'status-red';
     if (entity.isirClarity === 'PAST_DEBTOR') return 'status-orange';
     if (entity.isirClarity === 'CLEAR' && entity.aresStavKod === 'AKTIVNI') return 'status-green';
     return 'status-orange';
