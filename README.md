@@ -97,3 +97,9 @@ https://netlify.net github account
 ### Supabase
 
 https://supabase.com/ github account
+
+#### Before testing, you need to:
+
+- Go to your Supabase dashboard → Project Settings → API → copy Project URL and anon public key
+- Paste them into both environment files
+- In Supabase → Authentication → URL Configuration, set Redirect URLs to http://localhost:4201 (dev) and your production URL
