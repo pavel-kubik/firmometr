@@ -70,6 +70,15 @@ Browser
 Watch list → localStorage (no backend)
 ```
 
+## Test cases
+
+| Feature | Firma | IČO | Expected |
+|---|---|---|---|
+| ISIR active debtor | — | — | — |
+| DPH — nespolehlivý plátce | — | — | — |
+| DPH — není plátce DPH | Butterfly Flowers s.r.o. | 07102127 | Není plátce DPH |
+| OR — statutáři | — | — | — |
+
 ## External API references
 
 | API | Docs |

@@ -13,8 +13,16 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 ### Core data integrations
 - ✅ ISIR (isir.justice.cz) — SOAP integration, parses insolvency status (CLEAR / PAST_DEBTOR / ACTIVE_DEBTOR)
 - ✅ ARES (Ministerstvo financí) — REST, vrací IČO, název, právní forma, adresa, datum vzniku
-- ⬜ Nespolehliví plátci DPH (gov.cz)
-- ⬜ Obchodní rejstřík (or.justice.cz) — statutáři, základní sbírka listin
+- ✅ Nespolehliví plátci DPH (gov.cz)
+- ✅ Obchodní rejstřík (or.justice.cz) — statutáři, základní sbírka listin
+
+### User engagement
+- ⬜ cap free search without login (2 per IP / ??? / global cap per app)
+- ⬜ user registration
+  - magic link login?
+  - user / password
+- ⬜ cap free search with login
+- ⬜ paid version 99,- / month
 
 ### Search & company profile
 - 🔶 Vyhledávání podle IČO a názvu firmy ✅ — podle osoby ⬜

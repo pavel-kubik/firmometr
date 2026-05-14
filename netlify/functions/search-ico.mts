@@ -2,6 +2,8 @@ import type { Config, Context } from "@netlify/functions";
 import { XMLParser } from "fast-xml-parser";
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
+const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
+const OR_PORTAL = "https://or.justice.cz/ias/ui";
 const ISIR_CUZK = "https://isir.justice.cz:8443/isir_cuzk_ws/IsirWsCuzkService";
 const CUZK_BASE = "https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN/Vyhledavac_adres_sluzby/MapServer/exts/VyhledavacAdresRestSoe/FindAddress";
 const CUZK_NS = "http://isirws.cca.cz/types/";
@@ -169,7 +171,10 @@ function parseDphResponse(xml: string): DphResult {
   const platceEl = findNode(doc, "statusPlatceDPH");
   if (!platceEl) return DPH_NOT_PLATCE;
 
-  const nespolehlivy = platceEl["@_nespolehlivyPlatce"] === "ANO";
+  const nespolehlivyAttr = platceEl["@_nespolehlivyPlatce"];
+  if (nespolehlivyAttr === "NENALEZEN") return DPH_NOT_PLATCE;
+
+  const nespolehlivy = nespolehlivyAttr === "ANO";
   const datumNespolehlivosti = str(platceEl["@_datumZverejneniNespolehlivosti"]) ?? null;
 
   const uctyEl = findNode(platceEl, "zverejneneUcty");
@@ -188,6 +193,128 @@ function parseDphResponse(xml: string): DphResult {
   }).filter(Boolean);
 
   return { isPlatce: true, nespolehlivy, datumNespolehlivosti, ucty };
+}
+
+interface OrStatutar {
+  jmeno: string | null;
+  funkce: string | null;
+  datumNarozeni: string | null;
+  adresaText: string | null;
+  datumVzniku: string | null;
+}
+
+interface OrListina {
+  typListiny: string;
+  datumVzniku: string | null;
+  datumZalozeni: string | null;
+}
+
+async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; statutari: OrStatutar[] }> {
+  try {
+    const res = await fetch(`${ARES_VR_BASE}/ekonomicke-subjekty-vr/${ico}`, {
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return { spisovatel: null, statutari: [] };
+    const data = await res.json();
+
+    const zaznamy: any[] = data?.zaznamy ?? [];
+    const primary = zaznamy.find((z: any) => z.primarniZaznam) ?? zaznamy[0];
+    if (!primary) return { spisovatel: null, statutari: [] };
+
+    // spisovatel is an array [{soud, oddil, vlozka}], not a plain string
+    const szArr: any[] = Array.isArray(primary.spisovaZnacka) ? primary.spisovaZnacka : [];
+    const sz = szArr[0];
+    const spisovatel = sz ? `${sz.oddil} ${sz.vlozka}` : null;
+
+    // statutarniOrgany is an array of organs; members live in organ.clenoveOrganu[]
+    const organy: any[] = primary.statutarniOrgany ?? [];
+    const allMembers: any[] = organy.flatMap((o: any) => o.clenoveOrganu ?? []);
+
+    function memberToStatutar(m: any): OrStatutar {
+      const fo = m.fyzickaOsoba;
+      const po = m.pravnickaOsoba;
+      // funkce is nested at clenstvi.funkce.nazev in the actual ARES VR schema
+      const funkce = str(m.clenstvi?.funkce?.nazev ?? m.nazevAngazma) ?? null;
+      const datumVzniku = str(m.clenstvi?.funkce?.vznikFunkce ?? m.datumZapisu) ?? null;
+      if (fo) {
+        const parts = [fo.titulPredJmenem, fo.jmeno, fo.prijmeni, fo.titulZaJmenem]
+          .filter((v) => v != null && String(v).trim() !== "")
+          .map((v) => String(v).trim());
+        return {
+          jmeno: parts.length ? parts.join(" ") : null,
+          funkce,
+          datumNarozeni: str(fo.datumNarozeni) ?? null,
+          adresaText: str(fo.adresa?.textovaAdresa) ?? null,
+          datumVzniku,
+        };
+      }
+      if (po) {
+        return { jmeno: str(po.obchodniJmeno) ?? null, funkce, datumNarozeni: null, adresaText: null, datumVzniku };
+      }
+      return { jmeno: null, funkce, datumNarozeni: null, adresaText: null, datumVzniku };
+    }
+
+    const statutari: OrStatutar[] = allMembers.map(memberToStatutar);
+
+    return { spisovatel, statutari };
+  } catch {
+    return { spisovatel: null, statutari: [] };
+  }
+}
+
+async function fetchOrSubjektId(ico: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${OR_PORTAL}/rejstrik-$firma?ico=${ico}`, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const m = html.match(/subjektId=(\d+)/);
+    return m?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchSbirkaListin(subjektId: string): Promise<{ listiny: OrListina[]; celkem: number }> {
+  try {
+    const res = await fetch(`${OR_PORTAL}/vypis-sl-firma?subjektId=${subjektId}`, {
+      signal: AbortSignal.timeout(10_000),
+      headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
+    });
+    if (!res.ok) return { listiny: [], celkem: 0 };
+    const html = await res.text();
+
+    const countMatch = html.match(/z\s+(\d+)\s+(?:záznam[ůu]|listiny)/i)
+      ?? html.match(/[Cc]elkem[:\s]+(\d+)/);
+    let celkem = countMatch ? parseInt(countMatch[1], 10) : 0;
+
+    const listiny: OrListina[] = [];
+    const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
+    let rowMatch: RegExpExecArray | null;
+    while ((rowMatch = rowRegex.exec(html)) !== null) {
+      const rowHtml = rowMatch[1];
+      const tdContents: string[] = [];
+      const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
+      let tdMatch: RegExpExecArray | null;
+      while ((tdMatch = tdRegex.exec(rowHtml)) !== null) {
+        tdContents.push(tdMatch[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+      }
+      if (tdContents.length >= 3 && tdContents[1]) {
+        listiny.push({
+          typListiny: tdContents[1],
+          datumVzniku: tdContents[2] || null,
+          datumZalozeni: tdContents[4] || null,
+        });
+      }
+    }
+
+    if (!celkem) celkem = listiny.length;
+    return { listiny: listiny.slice(0, 10), celkem };
+  } catch {
+    return { listiny: [], celkem: 0 };
+  }
 }
 
 async function fetchCuzk(addressText: string): Promise<string | null> {
@@ -241,10 +368,15 @@ export default async (req: Request, context: Context) => {
   }
 
   const dic = "CZ" + ico.padStart(8, "0");
-  const [aresData, isirRecords, dphResult] = await Promise.all([fetchAres(ico), fetchIsir(ico), fetchDph(dic)]);
+  const [aresData, isirRecords, dphResult, orVr, orSubjektId] = await Promise.all([
+    fetchAres(ico), fetchIsir(ico), fetchDph(dic), fetchOrVr(ico), fetchOrSubjektId(ico),
+  ]);
 
   const sidloText: string | null = aresData?.sidlo?.textovaAdresa ?? null;
-  const cuzkAddress = sidloText ? await fetchCuzk(sidloText) : null;
+  const [cuzkAddress, sbirkaListinResult] = await Promise.all([
+    sidloText ? fetchCuzk(sidloText) : Promise.resolve(null),
+    orSubjektId ? fetchSbirkaListin(orSubjektId) : Promise.resolve({ listiny: [], celkem: 0 }),
+  ]);
 
   const { clarity, activeSet } = assessClearance(isirRecords);
   const stavKod = stavKodFrom(aresData);
@@ -262,6 +394,8 @@ export default async (req: Request, context: Context) => {
     };
   });
 
+  const hasOrData = orVr.statutari.length > 0 || orVr.spisovatel || sbirkaListinResult.celkem > 0;
+
   return Response.json({
     ico,
     obchodniFirma: aresData?.obchodniJmeno ?? null,
@@ -273,6 +407,15 @@ export default async (req: Request, context: Context) => {
     stavNazev: stavNazevFrom(stavKod),
     isir: { clarity, proceedings },
     dph: dphResult,
+    or: hasOrData ? {
+      spisovatel: orVr.spisovatel,
+      statutari: orVr.statutari,
+      sbirkaListin: sbirkaListinResult.listiny,
+      sbirkaListinCelkem: sbirkaListinResult.celkem,
+      orUrl: orSubjektId
+        ? `https://or.justice.cz/ias/ui/rejstrik-firma.vysledky?subjektId=${orSubjektId}&typ=PLATNY`
+        : null,
+    } : null,
     isWatched: false,
   });
 };

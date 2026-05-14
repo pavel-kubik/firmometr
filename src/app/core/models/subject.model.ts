@@ -1,3 +1,25 @@
+export interface OrStatutar {
+  jmeno: string | null;
+  funkce: string | null;
+  datumNarozeni: string | null;
+  adresaText: string | null;
+  datumVzniku: string | null;
+}
+
+export interface OrListina {
+  typListiny: string;
+  datumVzniku: string | null;
+  datumZalozeni: string | null;
+}
+
+export interface OrStatus {
+  spisovatel: string | null;
+  statutari: OrStatutar[];
+  sbirkaListin: OrListina[];
+  sbirkaListinCelkem: number;
+  orUrl: string | null;
+}
+
 export interface DphStatus {
   isPlatce: boolean;
   nespolehlivy: boolean | null;
@@ -16,6 +38,7 @@ export interface SubjectDetail {
   stavNazev: string | null;
   isir: IsirStatus;
   dph: DphStatus;
+  or: OrStatus | null;
   isWatched: boolean;
 }
 

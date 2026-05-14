@@ -140,6 +140,52 @@ import { SubjectDetail } from '../../../core/models/subject.model';
               </div>
             </mat-card-content>
           </mat-card>
+
+          <!-- OR card -->
+          <mat-card *ngIf="subject.or">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>domain</mat-icon> OR — Obchodní rejstřík
+              </mat-card-title>
+              <mat-card-subtitle *ngIf="subject.or.spisovatel">
+                Sp. zn. {{ subject.or.spisovatel }}
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <div *ngIf="subject.or.statutari.length > 0" class="or-section">
+                <p class="or-section-label">Statutáři</p>
+                <div *ngFor="let s of subject.or.statutari" class="statutar">
+                  <div class="statutar-name">{{ s.jmeno || '—' }}</div>
+                  <div class="statutar-meta">
+                    <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
+                    <span *ngIf="s.datumVzniku" class="statutar-date">od {{ s.datumVzniku }}</span>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="subject.or.statutari.length === 0" class="or-neutral">
+                <p>Žádní aktivní statutáři nenalezeni.</p>
+              </div>
+
+              <mat-divider *ngIf="subject.or.sbirkaListin.length > 0" class="or-divider"></mat-divider>
+
+              <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
+                <p class="or-section-label">
+                  Sbírka listin
+                  <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">(celkem {{ subject.or.sbirkaListinCelkem }})</span>
+                </p>
+                <div *ngFor="let l of subject.or.sbirkaListin" class="listina">
+                  <span class="listina-typ">{{ l.typListiny }}</span>
+                  <span *ngIf="l.datumVzniku" class="listina-date">{{ l.datumVzniku }}</span>
+                </div>
+              </div>
+
+              <div *ngIf="subject.or.orUrl" class="or-link-row">
+                <a [href]="subject.or.orUrl" target="_blank" rel="noopener" class="or-link">
+                  <mat-icon>open_in_new</mat-icon> Zobrazit v OR
+                </a>
+              </div>
+            </mat-card-content>
+          </mat-card>
         </div>
       </ng-container>
     </div>
@@ -185,6 +231,24 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .dph-accounts { margin-top: 16px; }
     .dph-accounts-label { font-size: 13px; color: #666; margin: 0 0 6px; }
     .dph-account { font-family: monospace; font-size: 13px; padding: 4px 8px; background: #f5f5f5; border-radius: 4px; margin-bottom: 4px; }
+    .or-section { margin-bottom: 12px; }
+    .or-section-label { font-size: 13px; color: #666; margin: 0 0 8px; font-weight: 500; }
+    .or-count { font-weight: normal; }
+    .or-neutral { color: #757575; font-size: 14px; }
+    .statutar { padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+    .statutar:last-child { border-bottom: none; }
+    .statutar-name { font-weight: 500; font-size: 14px; }
+    .statutar-meta { display: flex; gap: 12px; margin-top: 2px; }
+    .statutar-funkce { font-size: 12px; color: #1565c0; background: #e3f2fd; padding: 1px 6px; border-radius: 10px; }
+    .statutar-date { font-size: 12px; color: #757575; }
+    .or-divider { margin: 12px 0; }
+    .listina { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
+    .listina:last-child { border-bottom: none; }
+    .listina-typ { color: #333; flex: 1; }
+    .listina-date { color: #9e9e9e; font-size: 12px; white-space: nowrap; margin-left: 8px; }
+    .or-link-row { margin-top: 12px; }
+    .or-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1565c0; text-decoration: none; }
+    .or-link mat-icon { font-size: 14px; height: 14px; width: 14px; }
   `]
 })
 export class SubjectDetailComponent implements OnInit {

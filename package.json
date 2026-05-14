@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:functions": "vitest run netlify/functions"
   },
   "dependencies": {
     "@angular/animations": "^18.2.0",
@@ -28,6 +29,7 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.21",
     "@angular/cli": "^18.2.21",
+    "vitest": "^3",
     "@angular/compiler-cli": "^18.2.0",
     "@netlify/functions": "^2.8.1",
     "@types/jasmine": "~5.1.0",
