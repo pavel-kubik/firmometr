@@ -41,4 +41,12 @@ export class AuthService {
   signOut() {
     return this.supabase.auth.signOut();
   }
+
+  get client(): SupabaseClient {
+    return this.supabase;
+  }
+
+  get currentUserId(): string | null {
+    return this.userSubject.value?.id ?? null;
+  }
 }

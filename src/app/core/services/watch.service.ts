@@ -1,56 +1,75 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable, from, throwError } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { WatchedEntity, WatchRequest } from '../models/watch.model';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class WatchService {
-  private readonly KEY = 'lustrare_watched';
+  private auth = inject(AuthService);
+
+  private get db() {
+    return this.auth.client.from('watchlist');
+  }
 
   listAll(): Observable<WatchedEntity[]> {
-    return of(this.load());
+    return from(this.db.select('*').order('added_at', { ascending: false })).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return (data ?? []).map(row => this.toEntity(row));
+      })
+    );
   }
 
   watch(req: WatchRequest): Observable<WatchedEntity> {
-    const all = this.load();
-    const existing = all.find(e => e.ico === req.ico);
-    if (existing) return of(existing);
-    const entity: WatchedEntity = {
-      id: Date.now(),
-      ico: req.ico,
-      displayName: req.displayName,
-      addedAt: new Date().toISOString(),
-      lastCheckedAt: null,
-      notifyEmail: null,
-      isirClarity: (req.isirClarity as WatchedEntity['isirClarity']) ?? null,
-      aresStavKod: req.aresStavKod ?? null,
-      dphNespolehlivy: req.dphNespolehlivy ?? null,
+    const userId = this.auth.currentUserId;
+    if (!userId) return throwError(() => new Error('Not authenticated'));
+    return from(
+      this.db.upsert({
+        user_id: userId,
+        ico: req.ico,
+        display_name: req.displayName,
+        isir_clarity: req.isirClarity ?? null,
+        ares_stav_kod: req.aresStavKod ?? null,
+        dph_nespolehlivy: req.dphNespolehlivy ?? null,
+      }, { onConflict: 'user_id,ico' }).select().single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error) throw error;
+        return this.toEntity(data!);
+      })
+    );
+  }
+
+  unwatch(id: string): Observable<void> {
+    return from(this.db.delete().eq('id', id)).pipe(
+      map(({ error }) => { if (error) throw error; })
+    );
+  }
+
+  unwatchByIco(ico: string): Observable<void> {
+    return from(this.db.delete().eq('ico', ico)).pipe(
+      map(({ error }) => { if (error) throw error; })
+    );
+  }
+
+  isWatchedByIco(ico: string): Observable<boolean> {
+    return from(this.db.select('id').eq('ico', ico).maybeSingle()).pipe(
+      map(({ data }) => data !== null)
+    );
+  }
+
+  private toEntity(row: Record<string, unknown>): WatchedEntity {
+    return {
+      id: row['id'] as string,
+      ico: row['ico'] as string,
+      displayName: row['display_name'] as string,
+      addedAt: row['added_at'] as string,
+      lastCheckedAt: row['last_checked_at'] as string | null,
+      notifyEmail: row['notify_email'] as string | null,
+      isirClarity: row['isir_clarity'] as WatchedEntity['isirClarity'],
+      aresStavKod: row['ares_stav_kod'] as string | null,
+      dphNespolehlivy: row['dph_nespolehlivy'] as boolean | null,
     };
-    this.save([...all, entity]);
-    return of(entity);
-  }
-
-  unwatch(id: number): Observable<void> {
-    this.save(this.load().filter(e => e.id !== id));
-    return of(undefined as void);
-  }
-
-  isWatchedByIco(ico: string): boolean {
-    return this.load().some(e => e.ico === ico);
-  }
-
-  getByIco(ico: string): WatchedEntity | undefined {
-    return this.load().find(e => e.ico === ico);
-  }
-
-  private load(): WatchedEntity[] {
-    try {
-      return JSON.parse(localStorage.getItem(this.KEY) ?? '[]');
-    } catch {
-      return [];
-    }
-  }
-
-  private save(entities: WatchedEntity[]): void {
-    localStorage.setItem(this.KEY, JSON.stringify(entities));
   }
 }

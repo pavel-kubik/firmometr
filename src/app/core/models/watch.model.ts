@@ -1,5 +1,5 @@
 export interface WatchedEntity {
-  id: number;
+  id: string;
   ico: string;
   displayName: string;
   addedAt: string;

@@ -145,3 +145,9 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 - ⬜ Smlouva s CEE komorou (exekuce per-query)
 - ⬜ GDPR DPA šablona + privacy policy
 - ⬜ Zpracování osobních údajů FO podnikatelů (RČ v ISIR) — retention + mazání
+
+---
+
+Interesting ideas
+
+- [ ] Parse "ucetni uzaverka" and make graph with company financial perfirmance during years.

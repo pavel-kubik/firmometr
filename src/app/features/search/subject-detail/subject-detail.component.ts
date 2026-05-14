@@ -10,6 +10,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { QRCodeModule } from 'angularx-qrcode';
+import { switchMap } from 'rxjs/operators';
 import { SearchService } from '../../../core/services/search.service';
 import { WatchService } from '../../../core/services/watch.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
@@ -288,10 +289,14 @@ export class SubjectDetailComponent implements OnInit {
   load(ico: string) {
     this.loading = true;
     this.error = '';
-    this.searchService.searchByIco(ico).subscribe({
-      next: (data) => {
+    this.searchService.searchByIco(ico).pipe(
+      switchMap(data => {
         this.subject = data;
-        this.subject.isWatched = this.watchService.isWatchedByIco(ico);
+        return this.watchService.isWatchedByIco(ico);
+      })
+    ).subscribe({
+      next: (isWatched) => {
+        this.subject!.isWatched = isWatched;
         this.loading = false;
       },
       error: () => {
@@ -310,13 +315,10 @@ export class SubjectDetailComponent implements OnInit {
   toggleWatch() {
     if (!this.subject) return;
     if (this.subject.isWatched) {
-      const entity = this.watchService.getByIco(this.subject.ico);
-      if (entity) {
-        this.watchService.unwatch(entity.id).subscribe(() => {
-          this.subject!.isWatched = false;
-          this.snackBar.open('Sledování odebráno', 'OK', { duration: 3000 });
-        });
-      }
+      this.watchService.unwatchByIco(this.subject.ico).subscribe(() => {
+        this.subject!.isWatched = false;
+        this.snackBar.open('Sledování odebráno', 'OK', { duration: 3000 });
+      });
     } else {
       this.watchService.watch({
         ico: this.subject.ico,
