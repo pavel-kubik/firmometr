@@ -27,6 +27,7 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
   template: `
     <div class="search-page">
       <h1>Vyhledat subjekt</h1>
+      <p class="search-subtitle">Ověřte solventnost a registrační stav českých firem z veřejných rejstříků (ARES, ISIR, DPH).</p>
 
       <div class="search-bar">
         <mat-form-field appearance="outline" class="search-field">
@@ -42,10 +43,15 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
       <div *ngIf="error" class="error-msg">{{ error }}</div>
-      <div *ngIf="limitReached" class="error-msg limit-msg">
-        Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.
-        <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
-        <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
+      <div *ngIf="limitReached" class="limit-banner">
+        <mat-icon class="limit-icon">hourglass_top</mat-icon>
+        <div class="limit-text">
+          <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
+          <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+        </div>
+        <button mat-stroked-button routerLink="/login" class="limit-login-btn">
+          <mat-icon>lock_open</mat-icon> Přihlásit se
+        </button>
       </div>
 
       <div *ngIf="results.length > 0" class="results">
@@ -73,10 +79,10 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
               </mat-chip-listbox>
             </td>
           </ng-container>
-          <ng-container matColumnDef="actions">
+          <ng-container matColumnDef="chevron">
             <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let r">
-              <button mat-button color="primary" (click)="goToDetail(r.ico)">Detail</button>
+            <td mat-cell *matCellDef="let r" class="chevron-cell">
+              <mat-icon class="row-chevron">chevron_right</mat-icon>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="columns"></tr>
@@ -91,9 +97,14 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
         </mat-paginator>
       </div>
 
+      <div *ngIf="!loading && !searched" class="zero-state">
+        <mat-icon>manage_search</mat-icon>
+        <p>Zadejte IČO nebo název firmy a stiskněte Enter.</p>
+      </div>
+
       <div *ngIf="!loading && searched && results.length === 0 && !error" class="empty-state">
         <mat-icon>search_off</mat-icon>
-        <p>Žádné výsledky pro "{{ query }}"</p>
+        <p>Žádné výsledky pro „{{ query }}"</p>
       </div>
     </div>
   `,
@@ -107,12 +118,17 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
     .clickable-row:hover { background: #f5f5f5; }
     .result-count { color: #666; margin-bottom: 8px; }
     .error-msg { color: #f44336; margin: 16px 0; }
-    .limit-msg { color: #555; }
-    .login-link { color: #1565c0; margin-left: 8px; }
-    .empty-state { text-align: center; padding: 48px; color: #999; }
-    .empty-state mat-icon { font-size: 48px; width: 48px; height: 48px; }
+    .limit-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .limit-icon { color: #f9a825; flex-shrink: 0; }
+    .limit-text { flex: 1; color: #555; font-size: 14px; }
+    .limit-login-btn { white-space: nowrap; color: #1565c0; border-color: #1565c0; }
+    .search-subtitle { color: #666; margin: -12px 0 24px; font-size: 15px; }
+    .empty-state, .zero-state { text-align: center; padding: 48px; color: #999; }
+    .empty-state mat-icon, .zero-state mat-icon { font-size: 48px; width: 48px; height: 48px; display: block; margin: 0 auto 12px; }
     .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
+    .chevron-cell { width: 32px; padding-right: 8px; }
+    .row-chevron { color: #bdbdbd; vertical-align: middle; }
   `]
 })
 export class SearchComponent implements OnDestroy {
@@ -130,7 +146,7 @@ export class SearchComponent implements OnDestroy {
   searched = false;
   error = '';
   limitReached = false;
-  columns = ['ico', 'name', 'address', 'status', 'actions'];
+  columns = ['ico', 'name', 'address', 'status', 'chevron'];
   readonly pageSize = 20;
   pageIndex = 0;
 

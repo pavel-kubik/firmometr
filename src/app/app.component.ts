@@ -20,8 +20,8 @@ import { AuthService } from './core/services/auth.service';
   ],
   template: `
     <mat-toolbar color="primary">
-      <mat-icon style="margin-right: 8px">policy</mat-icon>
-      <span style="font-weight: 700; margin-right: 32px">Lustrare</span>
+      <img src="firmometr-logo.png" alt="Firmometr" height="36" style="margin-right: 10px; flex-shrink: 0">
+      <span style="font-weight: 700; margin-right: 32px">Firmometr</span>
       <button mat-button routerLink="/dashboard" routerLinkActive="active-link">
         <mat-icon>dashboard</mat-icon> Sledované
       </button>
@@ -32,7 +32,7 @@ import { AuthService } from './core/services/auth.service';
       @if (user$ | async; as user) {
         <button mat-button [matMenuTriggerFor]="userMenu">
           <mat-icon>account_circle</mat-icon>
-          {{ user.email }}
+          <span class="user-email">{{ user.email }}</span>
           <mat-icon>arrow_drop_down</mat-icon>
         </button>
         <mat-menu #userMenu="matMenu">
@@ -52,6 +52,7 @@ import { AuthService } from './core/services/auth.service';
     mat-toolbar { position: sticky; top: 0; z-index: 100; }
     .active-link { background: rgba(255,255,255,0.15); border-radius: 4px; }
     .spacer { flex: 1 1 auto; }
+    .user-email { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle; }
   `]
 })
 export class AppComponent {

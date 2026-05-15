@@ -44,6 +44,13 @@ import { WatchedEntity } from '../../core/models/watch.model';
             <mat-card-subtitle>IČO: {{ entity.ico }}</mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
+            <div class="status-chips">
+              <mat-chip *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="chip-danger">Aktivní insolvenční řízení</mat-chip>
+              <mat-chip *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="chip-warn">Spoluodpovědný dlužník</mat-chip>
+              <mat-chip *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="chip-past">Minulý dlužník</mat-chip>
+              <mat-chip *ngIf="entity.isirClarity === 'CLEAR'" class="chip-ok">Bez insolvencí</mat-chip>
+              <mat-chip *ngIf="entity.dphNespolehlivy" class="chip-danger">Nespolehlivý plátce DPH</mat-chip>
+            </div>
             <p class="last-checked">
               <mat-icon class="small-icon">schedule</mat-icon>
               Poslední kontrola: {{ entity.lastCheckedAt ? formatDate(entity.lastCheckedAt) : 'Zatím nekontrolováno' }}
@@ -55,7 +62,7 @@ import { WatchedEntity } from '../../core/models/watch.model';
           </mat-card-content>
           <mat-card-actions>
             <button mat-button color="primary" (click)="goDetail(entity.ico)">
-              <mat-icon>open_in_new</mat-icon> Detail
+              <mat-icon>arrow_forward</mat-icon> Detail
             </button>
             <button mat-button color="warn" (click)="unwatch(entity)">
               <mat-icon>delete</mat-icon> Odebrat
@@ -76,9 +83,14 @@ import { WatchedEntity } from '../../core/models/watch.model';
     .empty-state h2 { color: #555; }
     .last-checked, .notify-email { display: flex; align-items: center; gap: 4px; color: #666; font-size: 14px; margin: 4px 0; }
     .small-icon { font-size: 16px; width: 16px; height: 16px; }
-    .status-green  { border-right: 4px solid #4caf50; }
-    .status-orange { border-right: 4px solid #ff9800; }
-    .status-red    { border-right: 4px solid #f44336; }
+    .status-green  { border-left: 4px solid #4caf50; }
+    .status-orange { border-left: 4px solid #ff9800; }
+    .status-red    { border-left: 4px solid #f44336; }
+    .status-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .chip-ok     { background: #e8f5e9 !important; color: #2e7d32 !important; font-size: 12px !important; }
+    .chip-past   { background: #fff8e1 !important; color: #f57f17 !important; font-size: 12px !important; }
+    .chip-warn   { background: #fff3e0 !important; color: #e65100 !important; font-size: 12px !important; }
+    .chip-danger { background: #ffebee !important; color: #c62828 !important; font-size: 12px !important; }
   `]
 })
 export class DashboardComponent implements OnInit {
@@ -118,5 +130,8 @@ export class DashboardComponent implements OnInit {
 
   goSearch() { this.router.navigate(['/search']); }
   goDetail(ico: string) { this.router.navigate(['/search', ico]); }
-  formatDate(iso: string) { return new Date(iso).toLocaleString('cs-CZ'); }
+  formatDate(iso: string) {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
+  }
 }

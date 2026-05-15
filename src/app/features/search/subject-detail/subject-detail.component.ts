@@ -38,10 +38,15 @@ import { SubjectDetail } from '../../../core/models/subject.model';
 
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
       <div *ngIf="error" class="error-msg">{{ error }}</div>
-      <div *ngIf="limitReached" class="error-msg limit-msg">
-        Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.
-        <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
-        <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
+      <div *ngIf="limitReached" class="limit-banner">
+        <mat-icon class="limit-icon">hourglass_top</mat-icon>
+        <div class="limit-text">
+          <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
+          <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+        </div>
+        <button mat-stroked-button routerLink="/login" class="limit-login-btn">
+          <mat-icon>lock_open</mat-icon> Přihlásit se
+        </button>
       </div>
 
       <ng-container *ngIf="subject">
@@ -51,11 +56,11 @@ import { SubjectDetail } from '../../../core/models/subject.model';
             <button mat-icon-button (click)="showQr = !showQr" matTooltip="QR kód stránky" [color]="showQr ? 'primary' : ''">
               <mat-icon>qr_code</mat-icon>
             </button>
-            <button mat-raised-button
-              [color]="subject.isWatched ? 'warn' : 'accent'"
-              (click)="toggleWatch()">
-              <mat-icon>{{ subject.isWatched ? 'visibility_off' : 'visibility' }}</mat-icon>
-              {{ subject.isWatched ? 'Přestat sledovat' : 'Sledovat' }}
+            <button *ngIf="!subject.isWatched" mat-raised-button color="accent" (click)="toggleWatch()">
+              <mat-icon>visibility</mat-icon> Sledovat
+            </button>
+            <button *ngIf="subject.isWatched" mat-stroked-button (click)="toggleWatch()">
+              <mat-icon>visibility_off</mat-icon> Přestat sledovat
             </button>
           </div>
         </div>
@@ -70,7 +75,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
           <mat-card>
             <mat-card-header>
               <mat-card-title>
-                <mat-icon>business</mat-icon> ARES — Obchodní rejstřík
+                <mat-icon>business</mat-icon> ARES — Základní údaje
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
@@ -78,7 +83,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
                 <tr><td>IČO</td><td><strong>{{ subject.ico }}</strong></td></tr>
                 <tr><td>Právní forma</td><td>{{ subject.pravniForma || '—' }}</td></tr>
                 <tr><td>Sídlo</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
-                <tr><td>Datum vzniku</td><td>{{ subject.datumVzniku || '—' }}</td></tr>
+                <tr><td>Datum vzniku</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>
                 <tr><td>Stav</td><td>
                   <mat-chip-listbox>
                     <mat-chip [class]="subject.stavKod === 'AKTIVNI' ? 'chip-active' : 'chip-inactive'">
@@ -123,7 +128,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
                     </span>
                   </div>
                   <div class="isir-record-meta">
-                    <span *ngIf="p.datumZahajeni">Zahájení: {{ p.datumZahajeni }}</span>
+                    <span *ngIf="p.datumZahajeni">Zahájení: {{ formatCzechDate(p.datumZahajeni) }}</span>
                     <a *ngIf="p.urlDetail" [href]="p.urlDetail" target="_blank" rel="noopener"
                        class="isir-link">
                       <mat-icon>open_in_new</mat-icon> Zobrazit v ISIR
@@ -154,7 +159,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
               <div *ngIf="subject.dph.nespolehlivy">
                 <p class="dph-warning">Nespolehlivý plátce DPH!</p>
                 <p *ngIf="subject.dph.datumNespolehlivosti" class="dph-date">
-                  Zveřejněno: {{ subject.dph.datumNespolehlivosti }}
+                  Zveřejněno: {{ formatCzechDate(subject.dph.datumNespolehlivosti) }}
                 </p>
               </div>
               <div *ngIf="subject.dph.ucty?.length" class="dph-accounts">
@@ -175,14 +180,13 @@ import { SubjectDetail } from '../../../core/models/subject.model';
               </mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-              <!-- TODO: add collapsed "Historie statutářů" section (members with datumZaniku) -->
               <div *ngIf="currentStatutari.length > 0" class="or-section">
                 <p class="or-section-label">Statutáři</p>
                 <div *ngFor="let s of pagedCurrentStatutari" class="statutar">
                   <div class="statutar-name">{{ s.jmeno || '—' }}</div>
                   <div class="statutar-meta">
                     <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
-                    <span *ngIf="s.datumVzniku" class="statutar-date">od {{ s.datumVzniku }}</span>
+                    <span *ngIf="s.datumVzniku" class="statutar-date">od {{ formatCzechDate(s.datumVzniku) }}</span>
                   </div>
                 </div>
                 <mat-paginator *ngIf="currentStatutari.length > statutarPageSize"
@@ -198,6 +202,23 @@ import { SubjectDetail } from '../../../core/models/subject.model';
                 <p>Žádní aktivní statutáři nenalezeni.</p>
               </div>
 
+              <div *ngIf="pastStatutari.length > 0" class="or-history-toggle">
+                <button mat-button (click)="showPastStatutari = !showPastStatutari" class="history-btn">
+                  <mat-icon>{{ showPastStatutari ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  {{ showPastStatutari ? 'Skrýt historii' : 'Historie statutářů (' + pastStatutari.length + ')' }}
+                </button>
+                <div *ngIf="showPastStatutari" class="past-statutari">
+                  <div *ngFor="let s of pastStatutari" class="statutar statutar-past">
+                    <div class="statutar-name">{{ s.jmeno || '—' }}</div>
+                    <div class="statutar-meta">
+                      <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
+                      <span *ngIf="s.datumVzniku" class="statutar-date">od {{ formatCzechDate(s.datumVzniku) }}</span>
+                      <span *ngIf="s.datumZaniku" class="statutar-date">do {{ formatCzechDate(s.datumZaniku) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <mat-divider *ngIf="subject.or.sbirkaListin.length > 0" class="or-divider"></mat-divider>
 
               <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
@@ -207,7 +228,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
                 </p>
                 <div *ngFor="let l of pagedListiny" class="listina">
                   <span class="listina-typ">{{ l.typListiny }}</span>
-                  <span *ngIf="l.datumVzniku" class="listina-date">{{ l.datumVzniku }}</span>
+                  <span *ngIf="l.datumVzniku" class="listina-date">{{ formatCzechDate(l.datumVzniku) }}</span>
                 </div>
                 <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
                   [length]="subject.or.sbirkaListin.length"
@@ -235,7 +256,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .back-nav { margin-bottom: 16px; }
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .header-actions { display: flex; align-items: center; gap: 8px; }
-    .qr-panel { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 16px; }
+    .qr-panel { display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 16px; }
     .qr-url { font-size: 11px; color: #757575; margin: 4px 0 0; word-break: break-all; max-width: 200px; }
     h1 { margin: 0; }
     .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
@@ -263,8 +284,10 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .isir-past-debtor { color: #f57f17; font-weight: 500; margin-bottom: 16px; }
     mat-card-title { display: flex; align-items: center; gap: 8px; }
     .error-msg { color: #f44336; margin: 16px 0; }
-    .limit-msg { color: #555; }
-    .login-link { color: #1565c0; margin-left: 8px; }
+    .limit-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .limit-icon { color: #f9a825; flex-shrink: 0; }
+    .limit-text { flex: 1; color: #555; font-size: 14px; }
+    .limit-login-btn { white-space: nowrap; color: #1565c0; border-color: #1565c0; }
     .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     mat-card { margin-bottom: 0; }
@@ -295,6 +318,10 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .or-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1565c0; text-decoration: none; }
     .or-link mat-icon { font-size: 14px; height: 14px; width: 14px; }
     .or-paginator { margin-top: 4px; }
+    .or-history-toggle { margin-top: 8px; }
+    .history-btn { color: #757575; font-size: 13px; padding: 0 4px; }
+    .past-statutari { margin-top: 4px; }
+    .statutar-past { opacity: 0.55; }
   `]
 })
 export class SubjectDetailComponent implements OnInit, OnDestroy {
@@ -314,6 +341,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
   error = '';
   limitReached = false;
   showQr = false;
+  showPastStatutari = false;
   pageUrl = '';
   listinaPage = 0;
   readonly listinaPageSize = 5;
@@ -328,6 +356,10 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     return this.subject?.or?.statutari.filter(s => !s.datumZaniku) ?? [];
   }
 
+  get pastStatutari() {
+    return this.subject?.or?.statutari.filter(s => !!s.datumZaniku) ?? [];
+  }
+
   get pagedCurrentStatutari() {
     const list = this.currentStatutari;
     return list.slice(this.statutarPage * this.statutarPageSize, (this.statutarPage + 1) * this.statutarPageSize);
@@ -340,7 +372,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
-    this.pageUrl = `https://lustrare-beta.netlify.app/search/${ico}`;
+    this.pageUrl = `https://firmometr.netlify.app/search/${ico}`;
     this.load(ico);
   }
 
@@ -405,6 +437,13 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+  }
+
+  formatCzechDate(iso: string | null | undefined): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });
   }
 
   dphCardClass(): string {
