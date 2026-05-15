@@ -15,4 +15,8 @@ export class SearchService {
     const params = new HttpParams().set('q', query).set('start', start);
     return this.http.get<SearchResult>('/api/v1/search', { params });
   }
+
+  capStatus(): Observable<{ retryAfter: number; blocked: boolean }> {
+    return this.http.get<{ retryAfter: number; blocked: boolean }>('/api/v1/cap-reset');
+  }
 }

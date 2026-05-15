@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,6 +14,7 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SearchService } from '../../../core/services/search.service';
+import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rate-limit';
 import { WatchService } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
@@ -38,7 +39,8 @@ import { SubjectDetail } from '../../../core/models/subject.model';
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
       <div *ngIf="error" class="error-msg">{{ error }}</div>
       <div *ngIf="limitReached" class="error-msg limit-msg">
-        Dosáhli jste limitu 5 bezplatných vyhledávání za 24 hodin.
+        Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.
+        <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
         <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
       </div>
 
@@ -295,7 +297,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .or-paginator { margin-top: 4px; }
   `]
 })
-export class SubjectDetailComponent implements OnInit {
+export class SubjectDetailComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private searchService = inject(SearchService);
@@ -303,6 +305,10 @@ export class SubjectDetailComponent implements OnInit {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
+  readonly freeCap = SEARCH_FREE_CAP;
+  readonly windowMinutes = SEARCH_WINDOW_MINUTES;
+  remainingSeconds = 0;
+  private countdownInterval: ReturnType<typeof setInterval> | null = null;
   subject: SubjectDetail | null = null;
   loading = false;
   error = '';
@@ -357,12 +363,48 @@ export class SubjectDetailComponent implements OnInit {
       error: (err: HttpErrorResponse) => {
         if (err.status === 429) {
           this.limitReached = true;
+          this.startCountdown(parseInt(err.headers.get('Retry-After') ?? '0', 10) || 0);
         } else {
           this.error = 'Nepodařilo se načíst data subjektu.';
         }
         this.loading = false;
       }
     });
+  }
+
+  get countdownDisplay(): string {
+    const m = Math.floor(this.remainingSeconds / 60);
+    const s = this.remainingSeconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  private startCountdown(seconds: number) {
+    const max = SEARCH_WINDOW_MINUTES * 60;
+    if (seconds > 0 && seconds <= max) {
+      this.startTimer(seconds);
+    } else {
+      this.remainingSeconds = max;
+      this.searchService.capStatus().subscribe({
+        next: ({ retryAfter }) => this.startTimer(Math.min(retryAfter, max)),
+        error: () => this.startTimer(max),
+      });
+    }
+  }
+
+  private startTimer(seconds: number) {
+    this.remainingSeconds = seconds;
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.countdownInterval = setInterval(() => {
+      this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
+      if (this.remainingSeconds === 0) {
+        clearInterval(this.countdownInterval!);
+        this.countdownInterval = null;
+      }
+    }, 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 
   dphCardClass(): string {

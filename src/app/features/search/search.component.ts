@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SearchService } from '../../core/services/search.service';
 import { SubjectSummary } from '../../core/models/subject.model';
+import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-limit';
 
 @Component({
   selector: 'app-search',
@@ -42,7 +43,8 @@ import { SubjectSummary } from '../../core/models/subject.model';
 
       <div *ngIf="error" class="error-msg">{{ error }}</div>
       <div *ngIf="limitReached" class="error-msg limit-msg">
-        Dosáhli jste limitu 5 bezplatných vyhledávání za 24 hodin.
+        Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.
+        <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
         <a routerLink="/login" class="login-link">Přihlaste se pro neomezený přístup →</a>
       </div>
 
@@ -113,10 +115,14 @@ import { SubjectSummary } from '../../core/models/subject.model';
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
   `]
 })
-export class SearchComponent {
+export class SearchComponent implements OnDestroy {
   private searchService = inject(SearchService);
   private router = inject(Router);
 
+  readonly freeCap = SEARCH_FREE_CAP;
+  readonly windowMinutes = SEARCH_WINDOW_MINUTES;
+  remainingSeconds = 0;
+  private countdownInterval: ReturnType<typeof setInterval> | null = null;
   query = '';
   results: SubjectSummary[] = [];
   total = 0;
@@ -162,6 +168,7 @@ export class SearchComponent {
       error: (err: HttpErrorResponse) => {
         if (err.status === 429) {
           this.limitReached = true;
+          this.startCountdown(parseInt(err.headers.get('Retry-After') ?? '0', 10) || 0);
         } else {
           this.error = 'Chyba při vyhledávání. Zkuste to prosím znovu.';
         }
@@ -173,5 +180,40 @@ export class SearchComponent {
 
   goToDetail(ico: string) {
     this.router.navigate(['/search', ico]);
+  }
+
+  get countdownDisplay(): string {
+    const m = Math.floor(this.remainingSeconds / 60);
+    const s = this.remainingSeconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  private startCountdown(seconds: number) {
+    const max = SEARCH_WINDOW_MINUTES * 60;
+    if (seconds > 0 && seconds <= max) {
+      this.startTimer(seconds);
+    } else {
+      this.remainingSeconds = max;
+      this.searchService.capStatus().subscribe({
+        next: ({ retryAfter }) => this.startTimer(Math.min(retryAfter, max)),
+        error: () => this.startTimer(max),
+      });
+    }
+  }
+
+  private startTimer(seconds: number) {
+    this.remainingSeconds = seconds;
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.countdownInterval = setInterval(() => {
+      this.remainingSeconds = Math.max(0, this.remainingSeconds - 1);
+      if (this.remainingSeconds === 0) {
+        clearInterval(this.countdownInterval!);
+        this.countdownInterval = null;
+      }
+    }, 1000);
+  }
+
+  ngOnDestroy() {
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
   }
 }
