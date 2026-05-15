@@ -81,6 +81,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
             <mat-card-content>
               <table class="info-table">
                 <tr><td>IČO</td><td><strong>{{ subject.ico }}</strong></td></tr>
+                <tr><td>DIČ</td><td>{{ subject.dic || '—' }}</td></tr>
                 <tr><td>Právní forma</td><td>{{ subject.pravniForma || '—' }}</td></tr>
                 <tr><td>Sídlo</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
                 <tr><td>Datum vzniku</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>

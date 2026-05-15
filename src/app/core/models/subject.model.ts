@@ -30,6 +30,7 @@ export interface DphStatus {
 
 export interface SubjectDetail {
   ico: string;
+  dic: string | null;
   obchodniFirma: string | null;
   pravniForma: string | null;
   sidloText: string | null;

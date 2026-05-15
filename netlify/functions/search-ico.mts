@@ -407,6 +407,7 @@ export default async (req: Request, context: Context) => {
 
   return withCap({
     ico,
+    dic: aresData?.dic ?? null,
     obchodniFirma: aresData?.obchodniJmeno ?? null,
     pravniForma: aresData?.pravniForma ?? null,
     sidloText,
