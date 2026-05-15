@@ -81,13 +81,12 @@ Watch list → localStorage (no backend)
 
 ## External API references
 
-| API | Docs |
-|---|---|
-| ARES | https://ares.gov.cz/ekonomicke-subjekty-v-be/rest/swagger-ui |
-| ISIR WS2 | https://isir.justice.cz/isir/help/Popis_WS_2_v1_13.pdf |
-| ČÚZK RUIAN | https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN |
-| VAT | https://adisspr.mfcr.cz/pmd/dokumentace/webove-sluzby-spolehlivost-platcu |
-
+| API | Docs | Swagger |
+|---|---|---|
+| ARES | https://ares.gov.cz/stranky/vyvojar-info | https://ares.gov.cz/swagger-ui/ |
+| ISIR WS2 | https://isir.justice.cz/isir/help/Popis_WS_2_v1_13.pdf | |
+| ČÚZK RUIAN | https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN | |
+| VAT | https://adisspr.mfcr.cz/pmd/dokumentace/ |webove-sluzby-spolehlivost-platcu | |
 ## External tools
 
 ### Netlify

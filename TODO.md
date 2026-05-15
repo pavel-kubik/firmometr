@@ -152,4 +152,13 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 Interesting ideas
 
 - [ ] Parse "ucetni uzaverka" and make graph with company financial perfirmance during years.
-- [ ] Improve design
+- [ ] Improve design and UX
+- [ ] Simple landing page
+
+Logo | Login
+
+Sledované subjekty
+
+Search _____ 
+
+- [ ] Distinquish access from localhost - block, netlify, prod at Google Analytics
