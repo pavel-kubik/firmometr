@@ -145,13 +145,16 @@ import { SubjectDetail } from '../../../core/models/subject.model';
             <mat-card-header>
               <mat-card-title>
                 <mat-icon [color]="subject.dph.nespolehlivy ? 'warn' : ''">
-                  {{ subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
+                  {{ subject.dph.nedostupne ? 'cloud_off' : subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
                 </mat-icon>
                 DPH — Registr plátců
               </mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <div *ngIf="!subject.dph.isPlatce" class="dph-neutral">
+              <div *ngIf="subject.dph.nedostupne" class="dph-unavailable">
+                <p>Data o DPH nejsou momentálně dostupná.</p>
+              </div>
+              <div *ngIf="!subject.dph.nedostupne && !subject.dph.isPlatce" class="dph-neutral">
                 <p>Subjekt není evidován jako plátce DPH.</p>
               </div>
               <div *ngIf="subject.dph.isPlatce && !subject.dph.nespolehlivy" class="dph-ok">
@@ -294,6 +297,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     mat-card { margin-bottom: 0; }
     mat-card-content { padding-top: 16px; }
     .dph-ok { color: #2e7d32; }
+    .dph-unavailable { color: #757575; font-style: italic; }
     .dph-neutral { color: #757575; }
     .dph-warning { color: #c62828; font-weight: 500; margin-bottom: 8px; }
     .dph-date { color: #757575; font-size: 13px; margin: 0; }

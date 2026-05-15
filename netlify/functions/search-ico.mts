@@ -135,9 +135,11 @@ interface DphResult {
   nespolehlivy: boolean | null;
   datumNespolehlivosti: string | null;
   ucty: string[];
+  nedostupne: boolean;
 }
 
-const DPH_NOT_PLATCE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [] };
+const DPH_NOT_PLATCE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [], nedostupne: false };
+const DPH_UNAVAILABLE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [], nedostupne: true };
 
 async function fetchDph(dic: string): Promise<DphResult> {
   const body = `<?xml version="1.0" encoding="UTF-8"?>
@@ -161,13 +163,17 @@ async function fetchDph(dic: string): Promise<DphResult> {
     const xml = await res.text();
     return parseDphResponse(xml);
   } catch {
-    return DPH_NOT_PLATCE;
+    return DPH_UNAVAILABLE;
   }
 }
 
 function parseDphResponse(xml: string): DphResult {
   const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", textNodeName: "_text" });
   const doc = parser.parse(xml);
+
+  // statusCode !== "0" means service error or scheduled maintenance — not "not a payer"
+  const statusEl = findNode(doc, "status");
+  if (statusEl && String(statusEl["@_statusCode"] ?? "0") !== "0") return DPH_UNAVAILABLE;
 
   const platceEl = findNode(doc, "statusPlatceDPH");
   if (!platceEl) return DPH_NOT_PLATCE;
@@ -193,7 +199,7 @@ function parseDphResponse(xml: string): DphResult {
     return [];
   }).filter(Boolean);
 
-  return { isPlatce: true, nespolehlivy, datumNespolehlivosti, ucty };
+  return { isPlatce: true, nespolehlivy, datumNespolehlivosti, ucty, nedostupne: false };
 }
 
 interface OrStatutar {

@@ -26,6 +26,7 @@ export interface DphStatus {
   nespolehlivy: boolean | null;
   datumNespolehlivosti: string | null;
   ucty: string[];
+  nedostupne: boolean;
 }
 
 export interface SubjectDetail {

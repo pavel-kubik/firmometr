@@ -27,6 +27,9 @@ const DPH_NE = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:so
 // 71379487 — Pavel Kubík (OSVČ) — DIČ is rodné číslo CZ8101120016, not CZ71379487; reliable payer
 const DPH_NE_OSOBNI = `<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header/><soapenv:Body><StatusNespolehlivyPlatceResponse xmlns="http://adis.mfcr.cz/rozhraniCRPDPH/"><status odpovedGenerovana="2026-05-14" statusCode="0" statusText="OK"/><statusPlatceDPH dic="CZ8101120016" nespolehlivyPlatce="NE" cisloFu="452"><zverejneneUcty><ucet datumZverejneni="2024-09-20"><standardniUcet predcisli="115" cislo="8359310247" kodBanky="0100"/></ucet></zverejneneUcty></statusPlatceDPH></StatusNespolehlivyPlatceResponse></soapenv:Body></soapenv:Envelope>`;
 
+// DPH service scheduled maintenance — statusCode="2", no statusPlatceDPH element
+const DPH_MAINTENANCE = `<?xml version="1.0" encoding="UTF-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Header/><soapenv:Body><StatusNespolehlivyPlatceResponse xmlns="http://adis.mfcr.cz/rozhraniCRPDPH/"><status odpovedGenerovana="2026-05-16" statusCode="2" statusText="Technologická odstávka služby (23:59:59 - 00:10:00)."/></StatusNespolehlivyPlatceResponse></soapenv:Body></soapenv:Envelope>`;
+
 const ARES_07102127 = JSON.stringify({
   ico: '07102127',
   obchodniJmeno: 'Butterfly Flowers s.r.o.',
@@ -223,6 +226,24 @@ describe('DPH integration', () => {
     expect(body.dph.isPlatce).toBe(true);
     expect(body.dph.nespolehlivy).toBe(false);
     expect(body.dph.ucty).toEqual(['115-8359310247/0100']);
+    expect(body.dph.nedostupne).toBe(false);
+  });
+
+  it('DPH statusCode 2 (maintenance window) → nedostupne: true, not shown as non-payer', async () => {
+    vi.stubGlobal('fetch', makeFetch('07102127', { ares: ARES_07102127, dph: DPH_MAINTENANCE }));
+    const body = await handler(new Request('http://x'), ctx('07102127')).then(r => r.json());
+
+    expect(body.dph.nedostupne).toBe(true);
+    expect(body.dph.isPlatce).toBe(false);
+    expect(body.dph.nespolehlivy).toBeNull();
+  });
+
+  it('71379487 during DPH maintenance → nedostupne: true, not "not a payer"', async () => {
+    vi.stubGlobal('fetch', makeFetch('71379487', { ares: ARES_71379487, dph: DPH_MAINTENANCE }));
+    const body = await handler(new Request('http://x'), ctx('71379487')).then(r => r.json());
+
+    expect(body.dph.nedostupne).toBe(true);
+    expect(body.dph.isPlatce).toBe(false);
   });
 });
 
