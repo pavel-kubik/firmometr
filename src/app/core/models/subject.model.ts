@@ -4,6 +4,7 @@ export interface OrStatutar {
   datumNarozeni: string | null;
   adresaText: string | null;
   datumVzniku: string | null;
+  datumZaniku: string | null;
 }
 
 export interface OrListina {

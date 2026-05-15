@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -9,11 +9,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { QRCodeModule } from 'angularx-qrcode';
 import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SearchService } from '../../../core/services/search.service';
 import { WatchService } from '../../../core/services/watch.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
 
 @Component({
@@ -23,7 +25,7 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     CommonModule, RouterLink,
     MatCardModule, MatButtonModule, MatChipsModule, MatProgressBarModule,
     MatIconModule, MatDividerModule, MatSnackBarModule, MatTooltipModule,
-    QRCodeModule
+    MatPaginatorModule, QRCodeModule
   ],
   template: `
     <div class="detail-page">
@@ -171,17 +173,26 @@ import { SubjectDetail } from '../../../core/models/subject.model';
               </mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-              <div *ngIf="subject.or.statutari.length > 0" class="or-section">
+              <!-- TODO: add collapsed "Historie statutářů" section (members with datumZaniku) -->
+              <div *ngIf="currentStatutari.length > 0" class="or-section">
                 <p class="or-section-label">Statutáři</p>
-                <div *ngFor="let s of subject.or.statutari" class="statutar">
+                <div *ngFor="let s of pagedCurrentStatutari" class="statutar">
                   <div class="statutar-name">{{ s.jmeno || '—' }}</div>
                   <div class="statutar-meta">
                     <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
                     <span *ngIf="s.datumVzniku" class="statutar-date">od {{ s.datumVzniku }}</span>
                   </div>
                 </div>
+                <mat-paginator *ngIf="currentStatutari.length > statutarPageSize"
+                  [length]="currentStatutari.length"
+                  [pageSize]="statutarPageSize"
+                  [pageIndex]="statutarPage"
+                  [hidePageSize]="true"
+                  (page)="statutarPage = $event.pageIndex"
+                  class="or-paginator">
+                </mat-paginator>
               </div>
-              <div *ngIf="subject.or.statutari.length === 0" class="or-neutral">
+              <div *ngIf="currentStatutari.length === 0" class="or-neutral">
                 <p>Žádní aktivní statutáři nenalezeni.</p>
               </div>
 
@@ -192,10 +203,18 @@ import { SubjectDetail } from '../../../core/models/subject.model';
                   Sbírka listin
                   <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">(celkem {{ subject.or.sbirkaListinCelkem }})</span>
                 </p>
-                <div *ngFor="let l of subject.or.sbirkaListin" class="listina">
+                <div *ngFor="let l of pagedListiny" class="listina">
                   <span class="listina-typ">{{ l.typListiny }}</span>
                   <span *ngIf="l.datumVzniku" class="listina-date">{{ l.datumVzniku }}</span>
                 </div>
+                <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
+                  [length]="subject.or.sbirkaListin.length"
+                  [pageSize]="listinaPageSize"
+                  [pageIndex]="listinaPage"
+                  [hidePageSize]="true"
+                  (page)="listinaPage = $event.pageIndex"
+                  class="or-paginator">
+                </mat-paginator>
               </div>
 
               <div *ngIf="subject.or.orUrl" class="or-link-row">
@@ -273,12 +292,15 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     .or-link-row { margin-top: 12px; }
     .or-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1565c0; text-decoration: none; }
     .or-link mat-icon { font-size: 14px; height: 14px; width: 14px; }
+    .or-paginator { margin-top: 4px; }
   `]
 })
 export class SubjectDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private searchService = inject(SearchService);
   private watchService = inject(WatchService);
+  private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
   subject: SubjectDetail | null = null;
@@ -287,6 +309,28 @@ export class SubjectDetailComponent implements OnInit {
   limitReached = false;
   showQr = false;
   pageUrl = '';
+  listinaPage = 0;
+  readonly listinaPageSize = 5;
+  statutarPage = 0;
+  readonly statutarPageSize = 3;
+
+  get isLoggedIn(): boolean {
+    return this.authService.currentUserId !== null;
+  }
+
+  get currentStatutari() {
+    return this.subject?.or?.statutari.filter(s => !s.datumZaniku) ?? [];
+  }
+
+  get pagedCurrentStatutari() {
+    const list = this.currentStatutari;
+    return list.slice(this.statutarPage * this.statutarPageSize, (this.statutarPage + 1) * this.statutarPageSize);
+  }
+
+  get pagedListiny() {
+    const list = this.subject?.or?.sbirkaListin ?? [];
+    return list.slice(this.listinaPage * this.listinaPageSize, (this.listinaPage + 1) * this.listinaPageSize);
+  }
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
@@ -298,6 +342,8 @@ export class SubjectDetailComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.limitReached = false;
+    this.listinaPage = 0;
+    this.statutarPage = 0;
     this.searchService.searchByIco(ico).pipe(
       switchMap(data => {
         this.subject = data;
@@ -327,6 +373,10 @@ export class SubjectDetailComponent implements OnInit {
 
   toggleWatch() {
     if (!this.subject) return;
+    if (!this.isLoggedIn) {
+      this.router.navigate(['/register']);
+      return;
+    }
     if (this.subject.isWatched) {
       this.watchService.unwatchByIco(this.subject.ico).subscribe(() => {
         this.subject!.isWatched = false;

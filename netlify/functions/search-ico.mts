@@ -218,6 +218,7 @@ interface OrStatutar {
   datumNarozeni: string | null;
   adresaText: string | null;
   datumVzniku: string | null;
+  datumZaniku: string | null;
 }
 
 interface OrListina {
@@ -253,6 +254,7 @@ async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; stat
       // funkce is nested at clenstvi.funkce.nazev in the actual ARES VR schema
       const funkce = str(m.clenstvi?.funkce?.nazev ?? m.nazevAngazma) ?? null;
       const datumVzniku = str(m.clenstvi?.funkce?.vznikFunkce ?? m.datumZapisu) ?? null;
+      const datumZaniku = str(m.clenstvi?.funkce?.zanikFunkce ?? m.datumVyskrtnuti) ?? null;
       if (fo) {
         const parts = [fo.titulPredJmenem, fo.jmeno, fo.prijmeni, fo.titulZaJmenem]
           .filter((v) => v != null && String(v).trim() !== "")
@@ -263,12 +265,13 @@ async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; stat
           datumNarozeni: str(fo.datumNarozeni) ?? null,
           adresaText: str(fo.adresa?.textovaAdresa) ?? null,
           datumVzniku,
+          datumZaniku,
         };
       }
       if (po) {
-        return { jmeno: str(po.obchodniJmeno) ?? null, funkce, datumNarozeni: null, adresaText: null, datumVzniku };
+        return { jmeno: str(po.obchodniJmeno) ?? null, funkce, datumNarozeni: null, adresaText: null, datumVzniku, datumZaniku };
       }
-      return { jmeno: null, funkce, datumNarozeni: null, adresaText: null, datumVzniku };
+      return { jmeno: null, funkce, datumNarozeni: null, adresaText: null, datumVzniku, datumZaniku };
     }
 
     const statutari: OrStatutar[] = allMembers.map(memberToStatutar);

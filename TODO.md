@@ -17,7 +17,7 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 - ✅ Obchodní rejstřík (or.justice.cz) — statutáři, základní sbírka listin
 
 ### User engagement
-- ⬜ cap free search without login (2 per IP / ??? / global cap per app)
+- ✅ cap free search without login (5 in session)
 - ✅ user registration
   - magic link login?
   - user / password
@@ -28,6 +28,7 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 - 🔶 Vyhledávání podle IČO a názvu firmy ✅ — podle osoby ⬜
 - ✅ Profil firmy — agregovaná data z ARES + ISIR + ČÚZK adresa
 - 🔶 Risk semafor — vizuální (červená/oranžová/zelená) ✅, plný risk scoring algoritmus (DPH, věk firmy) ⬜
+- ⬜ OR — Historie statutářů (členové s datumZaniku) — data jsou v API, jen skrytá v UI
 
 ### Watchlist & alerts
 - ✅ Watchlist — přidat IČO, sledovat změny (localStorage)
@@ -151,3 +152,4 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 Interesting ideas
 
 - [ ] Parse "ucetni uzaverka" and make graph with company financial perfirmance during years.
+- [ ] Improve design
