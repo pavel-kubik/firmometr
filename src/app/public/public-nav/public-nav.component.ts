@@ -13,13 +13,10 @@ import { AuthService } from '../../core/services/auth.service';
         <a class="pub-logo" routerLink="/">FIRM<span>O</span>METR</a>
 
         <div class="pub-nav-links">
-          @if (user$ | async) {
-            <a routerLink="/dashboard" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Sledované</a>
-            <a routerLink="/search" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Vyhledat</a>
-          } @else {
-            <a routerLink="/ceny" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Ceny</a>
-            <a routerLink="/kontakt" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Kontakt</a>
-          }
+          <a routerLink="/search" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Vyhledat</a>
+          <a routerLink="/dashboard" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Sledované</a>
+          <a routerLink="/ceny" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Ceny</a>
+          <a routerLink="/kontakt" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Kontakt</a>
         </div>
 
         <div class="pub-nav-actions">
@@ -47,15 +44,14 @@ import { AuthService } from '../../core/services/auth.service';
 
       @if (menuOpen()) {
         <div class="pub-nav-mobile-links">
+          <a routerLink="/search" (click)="menuOpen.set(false)">Vyhledat</a>
+          <a routerLink="/dashboard" (click)="menuOpen.set(false)">Sledované</a>
+          <a routerLink="/ceny" (click)="menuOpen.set(false)">Ceny</a>
+          <a routerLink="/kontakt" (click)="menuOpen.set(false)">Kontakt</a>
           @if (user$ | async) {
-            <a routerLink="/dashboard" (click)="menuOpen.set(false)">Sledované</a>
-            <a routerLink="/search" (click)="menuOpen.set(false)">Vyhledat</a>
             <button class="mobile-action-btn" (click)="logout()">Odhlásit se</button>
           } @else {
-            <a routerLink="/ceny" (click)="menuOpen.set(false)">Ceny</a>
-            <a routerLink="/kontakt" (click)="menuOpen.set(false)">Kontakt</a>
             <a routerLink="/login" (click)="menuOpen.set(false)">Přihlásit se</a>
-            <a routerLink="/search" class="pub-btn pub-btn-primary pub-btn-sm" style="text-align:center" (click)="menuOpen.set(false)">Vyzkoušet zdarma →</a>
           }
         </div>
       }
