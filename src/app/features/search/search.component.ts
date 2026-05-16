@@ -1,7 +1,7 @@
-import { Component, OnDestroy, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -131,9 +131,10 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
     .row-chevron { color: #bdbdbd; vertical-align: middle; }
   `]
 })
-export class SearchComponent implements OnDestroy {
+export class SearchComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   readonly freeCap = SEARCH_FREE_CAP;
   readonly windowMinutes = SEARCH_WINDOW_MINUTES;
@@ -141,6 +142,11 @@ export class SearchComponent implements OnDestroy {
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   query = '';
   results: SubjectSummary[] = [];
+
+  ngOnInit() {
+    const q = this.route.snapshot.queryParamMap.get('q');
+    if (q) { this.query = q; this.search(); }
+  }
   total = 0;
   loading = false;
   searched = false;
