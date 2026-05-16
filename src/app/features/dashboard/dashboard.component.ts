@@ -7,6 +7,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WatchService } from '../../core/services/watch.service';
 import { WatchedEntity } from '../../core/models/watch.model';
+import { AuthService } from '../../core/services/auth.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
@@ -33,14 +34,15 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
       <div class="dashboard-content">
         <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
 
-        <div *ngIf="!loading && entities.length === 0" class="empty-state">
+        <div *ngIf="!loading && isLoggedIn && entities.length === 0" class="empty-state">
           <mat-icon>visibility_off</mat-icon>
           <h2>Zatím žádné sledované subjekty</h2>
           <p>Vyhledejte firmu nebo osobu a přidejte ji ke sledování.</p>
           <button class="pub-btn pub-btn-primary" (click)="goSearch()">Vyhledat subjekt</button>
         </div>
 
-        <div class="entities-grid">
+        <!-- Real entities (logged in) -->
+        <div *ngIf="isLoggedIn" class="entities-grid">
           <mat-card *ngFor="let entity of entities" class="entity-card" [ngClass]="getStatusClass(entity)">
             <mat-card-header>
               <mat-icon mat-card-avatar>business</mat-icon>
@@ -70,6 +72,37 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
             </mat-card-actions>
           </mat-card>
         </div>
+
+        <!-- Demo entities (not logged in) -->
+        <ng-container *ngIf="!loading && !isLoggedIn">
+          <p class="demo-notice">
+            <mat-icon class="small-icon">info</mat-icon>
+            Přihlaste se pro správu vlastního portfolia sledovaných subjektů.
+          </p>
+          <div class="entities-grid">
+            <mat-card *ngFor="let entity of demoEntities" class="entity-card demo-card" [ngClass]="getStatusClass(entity)">
+              <div class="demo-strap">DEMO</div>
+              <mat-card-header>
+                <mat-icon mat-card-avatar>business</mat-icon>
+                <mat-card-title>{{ entity.displayName }}</mat-card-title>
+                <mat-card-subtitle>IČO: {{ entity.ico }}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="status-chips">
+                  <span *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="badge badge-danger">Aktivní insolvenční řízení</span>
+                  <span *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="badge badge-warn">Spoluodpovědný dlužník</span>
+                  <span *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="badge badge-past">Minulý dlužník</span>
+                  <span *ngIf="entity.isirClarity === 'CLEAR'" class="badge badge-ok">Bez insolvencí</span>
+                  <span *ngIf="entity.dphNespolehlivy" class="badge badge-danger">Nespolehlivý plátce DPH</span>
+                </div>
+                <p class="last-checked">
+                  <mat-icon class="small-icon">schedule</mat-icon>
+                  Poslední kontrola: {{ formatDate(entity.lastCheckedAt!) }}
+                </p>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </ng-container>
       </div>
 
     </main>
@@ -107,25 +140,61 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     .badge-past   { background: #fff8e1; color: #f57f17; }
     .badge-warn   { background: #fff3e0; color: #e65100; }
     .badge-danger { background: #ffebee; color: #c62828; }
+    .demo-notice { display: flex; align-items: center; gap: 6px; color: #666; font-size: 14px; margin-bottom: 20px; }
+    .demo-card { position: relative; overflow: hidden; }
+    .demo-strap {
+      position: absolute; top: 22px; right: -30px;
+      width: 120px; text-align: center;
+      background: #059669; color: #fff;
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      padding: 5px 0;
+      transform: rotate(45deg);
+      pointer-events: none;
+      z-index: 1;
+    }
   `]
 })
 export class DashboardComponent implements OnInit {
   private watchService = inject(WatchService);
+  private authService = inject(AuthService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
   entities: WatchedEntity[] = [];
   loading = true;
+  isLoggedIn = false;
+
+  readonly demoEntities: WatchedEntity[] = [
+    {
+      id: 'demo-1', ico: '12345678', displayName: 'Spolehlivý řemeslník',
+      addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
+      notifyEmail: null, isirClarity: 'CLEAR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
+    },
+    {
+      id: 'demo-2', ico: '87654321', displayName: 'Podezřelá a.s.',
+      addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
+      notifyEmail: null, isirClarity: 'PAST_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
+    },
+    {
+      id: 'demo-3', ico: '11223344', displayName: 'Nespolehlivá s.r.o.',
+      addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
+      notifyEmail: null, isirClarity: 'ACTIVE_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: true,
+    },
+  ];
 
   ngOnInit() {
-    this.load();
+    this.authService.user$.subscribe(user => {
+      this.isLoggedIn = !!user;
+      if (this.isLoggedIn) this.load();
+      else this.loading = false;
+    });
   }
 
   load() {
     this.loading = true;
     this.watchService.listAll().subscribe({
       next: (data) => { this.entities = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      error: () => { this.loading = false; },
     });
   }
 
