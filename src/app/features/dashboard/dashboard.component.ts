@@ -1,23 +1,34 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { WatchService } from '../../core/services/watch.service';
 import { WatchedEntity } from '../../core/models/watch.model';
 import { AuthService } from '../../core/services/auth.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
+function passwordMatchValidator(group: AbstractControl) {
+  return group.get('password')?.value === group.get('confirmPassword')?.value
+    ? null : { passwordMismatch: true };
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatCardModule, MatIconModule,
     MatProgressBarModule, MatSnackBarModule,
+    MatFormFieldModule, MatInputModule, MatTabsModule,
     PublicNavComponent, PublicFooterComponent,
   ],
   template: `
@@ -105,6 +116,100 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
         </ng-container>
       </div>
 
+      <!-- Auth CTA section (not logged in) -->
+      <section *ngIf="!loading && !isLoggedIn" class="auth-section">
+        <div class="auth-inner">
+          <h2 class="auth-heading">Začněte sledovat firmy ještě dnes</h2>
+          <p class="auth-sub">Zaregistrujte se zdarma a získejte přehled o svých obchodních partnerech.</p>
+
+          <mat-card class="auth-card">
+            <mat-card-content>
+              <mat-tab-group>
+
+                <mat-tab label="Přihlásit se">
+                  <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form">
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>E-mail</mat-label>
+                      <input matInput type="email" formControlName="email" autocomplete="email">
+                      @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+                        <mat-error>E-mail je povinný</mat-error>
+                      } @else if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+                        <mat-error>Zadejte platný e-mail</mat-error>
+                      }
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-full">
+                      <mat-label>Heslo</mat-label>
+                      <input matInput type="password" formControlName="password" autocomplete="current-password">
+                      @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+                        <mat-error>Heslo je povinné</mat-error>
+                      }
+                    </mat-form-field>
+
+                    @if (loginError) {
+                      <p class="auth-error">{{ loginError }}</p>
+                    }
+
+                    <button class="pub-btn pub-btn-primary auth-submit" type="submit" [disabled]="authLoading">
+                      {{ authLoading ? 'Přihlašuji…' : 'Přihlásit se' }}
+                    </button>
+                  </form>
+                </mat-tab>
+
+                <mat-tab label="Registrovat se">
+                  @if (!registered) {
+                    <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form">
+                      <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>E-mail</mat-label>
+                        <input matInput type="email" formControlName="email" autocomplete="email">
+                        @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
+                          <mat-error>E-mail je povinný</mat-error>
+                        } @else if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
+                          <mat-error>Zadejte platný e-mail</mat-error>
+                        }
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Heslo</mat-label>
+                        <input matInput type="password" formControlName="password" autocomplete="new-password">
+                        @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
+                          <mat-error>Heslo je povinné</mat-error>
+                        } @else if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
+                          <mat-error>Heslo musí mít alespoň 6 znaků</mat-error>
+                        }
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Potvrdit heslo</mat-label>
+                        <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password">
+                        @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+                          <mat-error>Hesla se neshodují</mat-error>
+                        }
+                      </mat-form-field>
+
+                      @if (registerError) {
+                        <p class="auth-error">{{ registerError }}</p>
+                      }
+
+                      <button class="pub-btn pub-btn-primary auth-submit" type="submit" [disabled]="authLoading">
+                        {{ authLoading ? 'Registruji…' : 'Zaregistrovat se' }}
+                      </button>
+                    </form>
+                  } @else {
+                    <div class="auth-confirm">
+                      <mat-icon class="confirm-icon">mark_email_read</mat-icon>
+                      <h3>Potvrďte e-mail</h3>
+                      <p>Zaslali jsme vám potvrzovací odkaz. Klikněte na něj pro dokončení registrace.</p>
+                    </div>
+                  }
+                </mat-tab>
+
+              </mat-tab-group>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </section>
+
     </main>
     <app-public-footer />
   `,
@@ -122,7 +227,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     }
     .hero-inner h1 { margin: 0; font-size: 28px; font-weight: 700; color: var(--pub-text); }
 
-    .dashboard-content { flex: 1; padding: 32px 24px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+    .dashboard-content { padding: 32px 24px; max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
     .entities-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 768px) { .entities-grid { grid-template-columns: 1fr; } }
     .entity-card { height: 100%; }
@@ -152,11 +257,49 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
       pointer-events: none;
       z-index: 1;
     }
+
+    /* Auth CTA section */
+    .auth-section {
+      background: linear-gradient(160deg, #f0fdf4 0%, #ecfdf5 50%, #fff 100%);
+      padding: 56px 24px 64px;
+    }
+    .auth-inner {
+      max-width: 480px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .auth-heading {
+      color: #000;
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+    .auth-sub {
+      color: rgba(0,0,0,0.85);
+      font-size: 15px;
+      margin: 0 0 32px;
+    }
+    .auth-card { width: 100%; text-align: left; }
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 20px 0 8px;
+    }
+    .w-full { width: 100%; }
+    .auth-submit { width: 100%; margin-top: 8px; }
+    .auth-error { color: #f44336; font-size: 14px; margin: 0; }
+    .auth-confirm {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 8px; padding: 32px 0;
+    }
+    .confirm-icon { font-size: 48px; width: 48px; height: 48px; color: #059669; }
   `]
 })
 export class DashboardComponent implements OnInit {
   private watchService = inject(WatchService);
   private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
@@ -164,9 +307,28 @@ export class DashboardComponent implements OnInit {
   loading = true;
   isLoggedIn = false;
 
+  authLoading = false;
+  loginError = '';
+  registerError = '';
+  registered = false;
+
+  loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
+  });
+
+  registerForm = this.fb.group(
+    {
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', Validators.required],
+    },
+    { validators: passwordMatchValidator }
+  );
+
   readonly demoEntities: WatchedEntity[] = [
     {
-      id: 'demo-1', ico: '12345678', displayName: 'Spolehlivý řemeslník',
+      id: 'demo-1', ico: '12345678', displayName: 'Spolehlivý řemeslník s.r.o.',
       addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
       notifyEmail: null, isirClarity: 'CLEAR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
     },
@@ -196,6 +358,28 @@ export class DashboardComponent implements OnInit {
       next: (data) => { this.entities = data; this.loading = false; },
       error: () => { this.loading = false; },
     });
+  }
+
+  async login() {
+    if (this.loginForm.invalid) { this.loginForm.markAllAsTouched(); return; }
+    this.authLoading = true;
+    this.loginError = '';
+    const { email, password } = this.loginForm.value;
+    const { error } = await this.authService.signInWithPassword(email!, password!);
+    if (error) { this.loginError = error.message; }
+    else { this.router.navigate(['/dashboard']); }
+    this.authLoading = false;
+  }
+
+  async register() {
+    if (this.registerForm.invalid) { this.registerForm.markAllAsTouched(); return; }
+    this.authLoading = true;
+    this.registerError = '';
+    const { email, password } = this.registerForm.value;
+    const { error } = await this.authService.signUp(email!, password!);
+    if (error) { this.registerError = error.message; }
+    else { this.registered = true; }
+    this.authLoading = false;
   }
 
   unwatch(entity: WatchedEntity) {
