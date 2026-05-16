@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { AuthService } from '../../core/services/auth.service';
+import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
+import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
 @Component({
   selector: 'app-login',
@@ -21,8 +23,11 @@ import { AuthService } from '../../core/services/auth.service';
     MatIconModule,
     MatInputModule,
     MatTabsModule,
+    PublicNavComponent,
+    PublicFooterComponent,
   ],
   template: `
+    <app-public-nav />
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
@@ -101,12 +106,15 @@ import { AuthService } from '../../core/services/auth.service';
         </mat-card-content>
       </mat-card>
     </div>
+    <app-public-footer />
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
     .page {
       display: flex;
       justify-content: center;
       padding: 48px 24px;
+      flex: 1;
     }
     .auth-card {
       width: 100%;

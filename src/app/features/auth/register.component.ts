@@ -7,6 +7,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { AuthService } from '../../core/services/auth.service';
+import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
+import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
 function passwordMatchValidator(group: AbstractControl) {
   const pw = group.get('password')?.value;
@@ -25,8 +27,11 @@ function passwordMatchValidator(group: AbstractControl) {
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    PublicNavComponent,
+    PublicFooterComponent,
   ],
   template: `
+    <app-public-nav />
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
@@ -88,12 +93,15 @@ function passwordMatchValidator(group: AbstractControl) {
         </mat-card-content>
       </mat-card>
     </div>
+    <app-public-footer />
   `,
   styles: [`
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
     .page {
       display: flex;
       justify-content: center;
       padding: 48px 24px;
+      flex: 1;
     }
     .auth-card {
       width: 100%;

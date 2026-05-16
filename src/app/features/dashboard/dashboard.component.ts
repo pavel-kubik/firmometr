@@ -9,6 +9,8 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WatchService } from '../../core/services/watch.service';
 import { WatchedEntity } from '../../core/models/watch.model';
+import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
+import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,9 +18,11 @@ import { WatchedEntity } from '../../core/models/watch.model';
   imports: [
     CommonModule,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatProgressBarModule, MatChipsModule, MatSnackBarModule
+    MatProgressBarModule, MatChipsModule, MatSnackBarModule,
+    PublicNavComponent, PublicFooterComponent,
   ],
   template: `
+    <app-public-nav />
     <div class="dashboard-page">
       <div class="page-header">
         <h1>Sledované subjekty</h1>
@@ -71,9 +75,11 @@ import { WatchedEntity } from '../../core/models/watch.model';
         </mat-card>
       </div>
     </div>
+    <app-public-footer />
   `,
   styles: [`
-    .dashboard-page { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    .dashboard-page { padding: 24px; max-width: 1200px; margin: 0 auto; flex: 1; }
     .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
     h1 { margin: 0; }
     .entities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }

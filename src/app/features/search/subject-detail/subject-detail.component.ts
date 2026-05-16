@@ -18,6 +18,8 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rat
 import { WatchService } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
+import { PublicNavComponent } from '../../../public/public-nav/public-nav.component';
+import { PublicFooterComponent } from '../../../public/public-footer/public-footer.component';
 
 @Component({
   selector: 'app-subject-detail',
@@ -26,9 +28,10 @@ import { SubjectDetail } from '../../../core/models/subject.model';
     CommonModule, RouterLink,
     MatCardModule, MatButtonModule, MatChipsModule, MatProgressBarModule,
     MatIconModule, MatDividerModule, MatSnackBarModule, MatTooltipModule,
-    MatPaginatorModule, QRCodeModule
+    MatPaginatorModule, QRCodeModule, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
+    <app-public-nav />
     <div class="detail-page">
       <div class="back-nav">
         <button mat-button routerLink="/search">
@@ -254,9 +257,11 @@ import { SubjectDetail } from '../../../core/models/subject.model';
         </div>
       </ng-container>
     </div>
+    <app-public-footer />
   `,
   styles: [`
-    .detail-page { padding: 24px; max-width: 1100px; margin: 0 auto; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    .detail-page { padding: 24px; max-width: 1100px; margin: 0 auto; flex: 1; }
     .back-nav { margin-bottom: 16px; }
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .header-actions { display: flex; align-items: center; gap: 8px; }

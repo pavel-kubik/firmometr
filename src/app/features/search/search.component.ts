@@ -14,6 +14,8 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SearchService } from '../../core/services/search.service';
 import { SubjectSummary } from '../../core/models/subject.model';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-limit';
+import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
+import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
 @Component({
   selector: 'app-search',
@@ -22,9 +24,10 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
     CommonModule, FormsModule, RouterLink,
     MatFormFieldModule, MatInputModule, MatButtonModule,
     MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule,
-    MatPaginatorModule
+    MatPaginatorModule, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
+    <app-public-nav />
     <div class="search-page">
       <h1>Vyhledat subjekt</h1>
       <p class="search-subtitle">Ověřte solventnost a registrační stav českých firem z veřejných rejstříků (ARES, ISIR, DPH).</p>
@@ -107,9 +110,11 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-l
         <p>Žádné výsledky pro „{{ query }}"</p>
       </div>
     </div>
+    <app-public-footer />
   `,
   styles: [`
-    .search-page { padding: 24px; max-width: 1000px; margin: 0 auto; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    .search-page { padding: 24px; max-width: 1000px; margin: 0 auto; flex: 1; }
     h1 { margin-bottom: 24px; }
     .search-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
     .search-field { flex: 1; }
