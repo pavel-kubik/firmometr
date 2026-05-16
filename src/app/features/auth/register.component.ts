@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,7 +21,6 @@ function passwordMatchValidator(group: AbstractControl) {
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatIconModule,
@@ -73,7 +71,7 @@ function passwordMatchValidator(group: AbstractControl) {
                 <p class="error">{{ error }}</p>
               }
 
-              <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+              <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
                 {{ loading ? 'Registruji…' : 'Zaregistrovat se' }}
               </button>
 
@@ -87,7 +85,7 @@ function passwordMatchValidator(group: AbstractControl) {
               <mat-icon class="confirm-icon">mark_email_read</mat-icon>
               <h3>Potvrďte e-mail</h3>
               <p>Zaslali jsme vám potvrzovací odkaz. Zkontrolujte svůj e-mail a klikněte na odkaz pro dokončení registrace.</p>
-              <a routerLink="/login" mat-stroked-button>Zpět na přihlášení</a>
+              <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm">Zpět na přihlášení</a>
             </div>
           }
         </mat-card-content>

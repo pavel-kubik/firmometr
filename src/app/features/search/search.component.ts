@@ -5,7 +5,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
@@ -22,7 +21,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatFormFieldModule, MatInputModule,
     MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule,
     MatPaginatorModule, PublicNavComponent, PublicFooterComponent,
   ],
@@ -38,9 +37,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
           <input matInput [(ngModel)]="query" (keyup.enter)="search()" placeholder="Např. 27082440 nebo Avast">
           <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
-        <button mat-raised-button color="primary" (click)="search()" [disabled]="loading">
-          Hledat
-        </button>
+        <button class="pub-btn pub-btn-primary" (click)="search()" [disabled]="loading">Hledat</button>
       </div>
 
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -52,9 +49,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
           <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
           <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
         </div>
-        <button mat-stroked-button routerLink="/login" class="limit-login-btn">
-          <mat-icon>lock_open</mat-icon> Přihlásit se
-        </button>
+        <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
       </div>
 
       <div *ngIf="results.length > 0" class="results">
@@ -126,7 +121,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     .limit-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
     .limit-icon { color: #f9a825; flex-shrink: 0; }
     .limit-text { flex: 1; color: #555; font-size: 14px; }
-    .limit-login-btn { white-space: nowrap; color: #1565c0; border-color: #1565c0; }
+    .limit-login-btn { white-space: nowrap; }
     .search-subtitle { color: #666; margin: -12px 0 24px; font-size: 15px; }
     .empty-state, .zero-state { text-align: center; padding: 48px; color: #999; }
     .empty-state mat-icon, .zero-state mat-icon { font-size: 48px; width: 48px; height: 48px; display: block; margin: 0 auto 12px; }

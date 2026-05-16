@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatChipsModule } from '@angular/material/chips';
@@ -17,7 +16,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
   standalone: true,
   imports: [
     CommonModule,
-    MatCardModule, MatButtonModule, MatIconModule,
+    MatCardModule, MatIconModule,
     MatProgressBarModule, MatChipsModule, MatSnackBarModule,
     PublicNavComponent, PublicFooterComponent,
   ],
@@ -26,9 +25,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     <div class="dashboard-page">
       <div class="page-header">
         <h1>Sledované subjekty</h1>
-        <button mat-raised-button color="primary" (click)="goSearch()">
-          <mat-icon>add</mat-icon> Přidat subjekt
-        </button>
+        <button class="pub-btn pub-btn-primary" (click)="goSearch()">+ Přidat subjekt</button>
       </div>
 
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -37,7 +34,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
         <mat-icon>visibility_off</mat-icon>
         <h2>Zatím žádné sledované subjekty</h2>
         <p>Vyhledejte firmu nebo osobu a přidejte ji ke sledování.</p>
-        <button mat-raised-button color="primary" (click)="goSearch()">Vyhledat subjekt</button>
+        <button class="pub-btn pub-btn-primary" (click)="goSearch()">Vyhledat subjekt</button>
       </div>
 
       <div class="entities-grid">
@@ -65,12 +62,8 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
             </p>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button color="primary" (click)="goDetail(entity.ico)">
-              <mat-icon>arrow_forward</mat-icon> Detail
-            </button>
-            <button mat-button color="warn" (click)="unwatch(entity)">
-              <mat-icon>delete</mat-icon> Odebrat
-            </button>
+            <button class="pub-btn pub-btn-ghost pub-btn-sm" (click)="goDetail(entity.ico)">Detail →</button>
+            <button class="pub-btn pub-btn-danger pub-btn-sm" (click)="unwatch(entity)">Odebrat</button>
           </mat-card-actions>
         </mat-card>
       </div>

@@ -2,13 +2,11 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { QRCodeModule } from 'angularx-qrcode';
 import { switchMap } from 'rxjs/operators';
@@ -26,17 +24,15 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
   standalone: true,
   imports: [
     CommonModule, RouterLink,
-    MatCardModule, MatButtonModule, MatChipsModule, MatProgressBarModule,
-    MatIconModule, MatDividerModule, MatSnackBarModule, MatTooltipModule,
+    MatCardModule, MatChipsModule, MatProgressBarModule,
+    MatIconModule, MatDividerModule, MatSnackBarModule,
     MatPaginatorModule, QRCodeModule, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
     <div class="detail-page">
       <div class="back-nav">
-        <button mat-button routerLink="/search">
-          <mat-icon>arrow_back</mat-icon> Zpět na vyhledávání
-        </button>
+        <a routerLink="/search" class="pub-btn pub-btn-ghost pub-btn-sm">← Zpět na vyhledávání</a>
       </div>
 
       <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
@@ -47,24 +43,18 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
           <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
           <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
         </div>
-        <button mat-stroked-button routerLink="/login" class="limit-login-btn">
-          <mat-icon>lock_open</mat-icon> Přihlásit se
-        </button>
+        <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
       </div>
 
       <ng-container *ngIf="subject">
         <div class="header-row">
           <h1>{{ subject.obchodniFirma || 'IČO ' + subject.ico }}</h1>
           <div class="header-actions">
-            <button mat-icon-button (click)="showQr = !showQr" matTooltip="QR kód stránky" [color]="showQr ? 'primary' : ''">
+            <button class="qr-btn" (click)="showQr = !showQr" title="QR kód stránky" [class.qr-btn--active]="showQr">
               <mat-icon>qr_code</mat-icon>
             </button>
-            <button *ngIf="!subject.isWatched" mat-raised-button color="accent" (click)="toggleWatch()">
-              <mat-icon>visibility</mat-icon> Sledovat
-            </button>
-            <button *ngIf="subject.isWatched" mat-stroked-button (click)="toggleWatch()">
-              <mat-icon>visibility_off</mat-icon> Přestat sledovat
-            </button>
+            <button *ngIf="!subject.isWatched" class="pub-btn pub-btn-primary" (click)="toggleWatch()">Sledovat</button>
+            <button *ngIf="subject.isWatched" class="pub-btn pub-btn-ghost" (click)="toggleWatch()">Přestat sledovat</button>
           </div>
         </div>
 
@@ -210,9 +200,8 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
               </div>
 
               <div *ngIf="pastStatutari.length > 0" class="or-history-toggle">
-                <button mat-button (click)="showPastStatutari = !showPastStatutari" class="history-btn">
-                  <mat-icon>{{ showPastStatutari ? 'expand_less' : 'expand_more' }}</mat-icon>
-                  {{ showPastStatutari ? 'Skrýt historii' : 'Historie statutářů (' + pastStatutari.length + ')' }}
+                <button class="pub-btn pub-btn-ghost pub-btn-sm history-btn" (click)="showPastStatutari = !showPastStatutari">
+                  {{ showPastStatutari ? '▲ Skrýt historii' : '▼ Historie statutářů (' + pastStatutari.length + ')' }}
                 </button>
                 <div *ngIf="showPastStatutari" class="past-statutari">
                   <div *ngFor="let s of pastStatutari" class="statutar statutar-past">
@@ -296,7 +285,9 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     .limit-banner { display: flex; align-items: center; gap: 12px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
     .limit-icon { color: #f9a825; flex-shrink: 0; }
     .limit-text { flex: 1; color: #555; font-size: 14px; }
-    .limit-login-btn { white-space: nowrap; color: #1565c0; border-color: #1565c0; }
+    .limit-login-btn { white-space: nowrap; }
+    .qr-btn { background: none; border: 1px solid var(--pub-border); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--pub-text-muted); transition: color .15s, border-color .15s; }
+    .qr-btn:hover, .qr-btn--active { color: var(--pub-green); border-color: var(--pub-green); }
     .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
     .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     mat-card { margin-bottom: 0; }
@@ -329,7 +320,7 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     .or-link mat-icon { font-size: 14px; height: 14px; width: 14px; }
     .or-paginator { margin-top: 4px; }
     .or-history-toggle { margin-top: 8px; }
-    .history-btn { color: #757575; font-size: 13px; padding: 0 4px; }
+    .history-btn { margin-top: 4px; }
     .past-statutari { margin-top: 4px; }
     .statutar-past { opacity: 0.55; }
   `]

@@ -1,7 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +16,6 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
   imports: [
     ReactiveFormsModule,
     RouterLink,
-    MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
     MatIconModule,
@@ -60,7 +58,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                   <p class="error">{{ passwordError }}</p>
                 }
 
-                <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+                <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
                   {{ loading ? 'Přihlašuji…' : 'Přihlásit se' }}
                 </button>
 
@@ -89,7 +87,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                     <p class="error">{{ magicError }}</p>
                   }
 
-                  <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+                  <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
                     {{ loading ? 'Odesílám…' : 'Odeslat odkaz' }}
                   </button>
                 </form>
