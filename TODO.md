@@ -28,12 +28,14 @@ Goal: working product with freemium acquisition. Timeline: 2–3 months.
 - 🔶 Vyhledávání podle IČO a názvu firmy ✅ — podle osoby ⬜
 - ✅ Profil firmy — agregovaná data z ARES + ISIR + ČÚZK adresa
 - 🔶 Risk semafor — vizuální (červená/oranžová/zelená) ✅, plný risk scoring algoritmus (DPH, věk firmy) ⬜
-- ⬜ OR — Historie statutářů (členové s datumZaniku) — data jsou v API, jen skrytá v UI
+- ✅ OR — Historie statutářů (členové s datumZaniku) — data jsou v API, jen skrytá v UI
 
 ### Watchlist & alerts
 - ✅ Watchlist — přidat IČO, sledovat změny (localStorage)
+- ✅ Watchlist — přidat IČO, sledovat změny (DB for registred users)
 - ⬜ E-mail alerty (okamžitě / denní souhrn) — pole notifyEmail existuje v modelu, backend chybí
 - ⬜ Hromadný import IČO ze CSV
+- ⬜ Connect fakturoid
 
 ### Free tier limits
 - ⬜ Max 5 sledovaných IČO — bez auth nelze vynucovat
@@ -162,3 +164,5 @@ Sledované subjekty
 Search _____ 
 
 - [ ] Distinquish access from localhost - block, netlify, prod at Google Analytics
+- [ ] Get VAT registration date from registry, it should be 01.08.2024 for ICO 71379487
+- [ ] Angular SSG (Static Site Generation) for sattic pages

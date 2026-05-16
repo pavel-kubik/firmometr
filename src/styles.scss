@@ -2,3 +2,25 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+:root {
+  --pub-green: #059669;
+  --pub-green-light: #dcfce7;
+  --pub-green-bg: #f0fdf4;
+  --pub-text: #0f172a;
+  --pub-text-muted: #475569;
+  --pub-text-subtle: #94a3b8;
+  --pub-border: #e2e8f0;
+  --pub-dark: #0f172a;
+  --pub-surface: #ffffff;
+}
+
+.pub-btn {
+  display: inline-block; cursor: pointer; border: none; font-family: inherit;
+  font-weight: 600; text-decoration: none; border-radius: 8px; transition: opacity .15s;
+}
+.pub-btn:hover { opacity: .88; }
+.pub-btn-primary { background: var(--pub-green); color: #fff; padding: 11px 24px; font-size: 15px; }
+.pub-btn-ghost { background: transparent; color: var(--pub-text-muted); padding: 10px 20px; font-size: 15px; border: 1px solid var(--pub-border); }
+.pub-btn-outline { background: transparent; color: var(--pub-green); padding: 9px 20px; font-size: 14px; border: 1.5px solid var(--pub-green); border-radius: 8px; }
+.pub-btn-sm { padding: 8px 16px; font-size: 13px; }
