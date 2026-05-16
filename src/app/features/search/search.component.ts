@@ -3,11 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { SearchService } from '../../core/services/search.service';
@@ -21,98 +18,131 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    MatFormFieldModule, MatInputModule,
-    MatTableModule, MatProgressBarModule, MatChipsModule, MatIconModule,
+    MatTableModule, MatProgressBarModule, MatIconModule,
     MatPaginatorModule, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
-    <div class="search-page">
-      <h1>Vyhledat subjekt</h1>
-      <p class="search-subtitle">Ověřte solventnost a registrační stav českých firem z veřejných rejstříků (ARES, ISIR, DPH).</p>
+    <main class="page-main">
 
-      <div class="search-bar">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>IČO nebo název firmy</mat-label>
-          <input matInput [(ngModel)]="query" (keyup.enter)="search()" placeholder="Např. 27082440 nebo Avast">
-          <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
-        <button class="pub-btn pub-btn-primary" (click)="search()" [disabled]="loading">Hledat</button>
-      </div>
-
-      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-
-      <div *ngIf="error" class="error-msg">{{ error }}</div>
-      <div *ngIf="limitReached" class="limit-banner">
-        <mat-icon class="limit-icon">hourglass_top</mat-icon>
-        <div class="limit-text">
-          <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
-          <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+      <section class="search-hero">
+        <div class="hero-inner">
+          <div class="section-label">Vyhledávání</div>
+          <h1>Vyhledat subjekt</h1>
+          <p class="hero-sub">Ověřte solventnost a registrační stav českých firem z veřejných rejstříků (ARES, ISIR, DPH).</p>
+          <div class="search-box">
+            <div class="search-box-label">IČO nebo název firmy</div>
+            <div class="search-row">
+              <input
+                class="search-input-field"
+                [(ngModel)]="query"
+                (keyup.enter)="search()"
+                placeholder="Např. 27082440 nebo Avast"
+                [disabled]="loading"
+              >
+              <button class="pub-btn pub-btn-primary" (click)="search()" [disabled]="loading">Hledat</button>
+            </div>
+          </div>
         </div>
-        <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
-      </div>
+      </section>
 
-      <div *ngIf="results.length > 0" class="results">
-        <p class="result-count">Nalezeno: {{ total }} subjektů</p>
-        <table mat-table [dataSource]="results" class="results-table">
-          <ng-container matColumnDef="ico">
-            <th mat-header-cell *matHeaderCellDef>IČO</th>
-            <td mat-cell *matCellDef="let r">{{ r.ico }}</td>
-          </ng-container>
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Název</th>
-            <td mat-cell *matCellDef="let r">{{ r.obchodniFirma }}</td>
-          </ng-container>
-          <ng-container matColumnDef="address">
-            <th mat-header-cell *matHeaderCellDef>Sídlo</th>
-            <td mat-cell *matCellDef="let r">{{ r.sidloText }}</td>
-          </ng-container>
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Stav</th>
-            <td mat-cell *matCellDef="let r">
-              <mat-chip-listbox>
-                <mat-chip [class]="r.stavNazev === 'Aktivní' ? 'chip-active' : 'chip-inactive'">
+      <div class="search-content">
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+        <div *ngIf="error" class="error-msg">{{ error }}</div>
+        <div *ngIf="limitReached" class="limit-banner">
+          <mat-icon class="limit-icon">hourglass_top</mat-icon>
+          <div class="limit-text">
+            <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
+            <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+          </div>
+          <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
+        </div>
+
+        <div *ngIf="results.length > 0" class="results">
+          <p class="result-count">Nalezeno: {{ total }} subjektů</p>
+          <table mat-table [dataSource]="results" class="results-table">
+            <ng-container matColumnDef="ico">
+              <th mat-header-cell *matHeaderCellDef>IČO</th>
+              <td mat-cell *matCellDef="let r">{{ r.ico }}</td>
+            </ng-container>
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Název</th>
+              <td mat-cell *matCellDef="let r">{{ r.obchodniFirma }}</td>
+            </ng-container>
+            <ng-container matColumnDef="address">
+              <th mat-header-cell *matHeaderCellDef>Sídlo</th>
+              <td mat-cell *matCellDef="let r">{{ r.sidloText }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Stav</th>
+              <td mat-cell *matCellDef="let r">
+                <span [class]="'status-badge ' + (r.stavNazev === 'Aktivní' ? 'badge-active' : 'badge-inactive')">
                   {{ r.stavNazev }}
-                </mat-chip>
-              </mat-chip-listbox>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="chevron">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let r" class="chevron-cell">
-              <mat-icon class="row-chevron">chevron_right</mat-icon>
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="columns"></tr>
-          <tr mat-row *matRowDef="let row; columns: columns;" class="clickable-row" (click)="goToDetail(row.ico)"></tr>
-        </table>
-        <mat-paginator
-          [length]="total"
-          [pageSize]="pageSize"
-          [pageIndex]="pageIndex"
-          [hidePageSize]="true"
-          (page)="onPage($event)">
-        </mat-paginator>
+                </span>
+              </td>
+            </ng-container>
+            <ng-container matColumnDef="chevron">
+              <th mat-header-cell *matHeaderCellDef></th>
+              <td mat-cell *matCellDef="let r" class="chevron-cell">
+                <mat-icon class="row-chevron">chevron_right</mat-icon>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns;" class="clickable-row" (click)="goToDetail(row.ico)"></tr>
+          </table>
+          <mat-paginator
+            [length]="total"
+            [pageSize]="pageSize"
+            [pageIndex]="pageIndex"
+            [hidePageSize]="true"
+            (page)="onPage($event)">
+          </mat-paginator>
+        </div>
+
+        <div *ngIf="!loading && !searched" class="zero-state">
+          <mat-icon>manage_search</mat-icon>
+          <p>Zadejte IČO nebo název firmy a stiskněte Enter.</p>
+        </div>
+
+        <div *ngIf="!loading && searched && results.length === 0 && !error" class="empty-state">
+          <mat-icon>search_off</mat-icon>
+          <p>Žádné výsledky pro „{{ query }}"</p>
+        </div>
       </div>
 
-      <div *ngIf="!loading && !searched" class="zero-state">
-        <mat-icon>manage_search</mat-icon>
-        <p>Zadejte IČO nebo název firmy a stiskněte Enter.</p>
-      </div>
-
-      <div *ngIf="!loading && searched && results.length === 0 && !error" class="empty-state">
-        <mat-icon>search_off</mat-icon>
-        <p>Žádné výsledky pro „{{ query }}"</p>
-      </div>
-    </div>
+    </main>
     <app-public-footer />
   `,
   styles: [`
     :host { display: flex; flex-direction: column; min-height: 100vh; }
-    .search-page { padding: 24px; max-width: 1000px; margin: 0 auto; flex: 1; }
-    h1 { margin-bottom: 24px; }
-    .search-bar { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
-    .search-field { flex: 1; }
+    .page-main { flex: 1; display: flex; flex-direction: column; }
+
+    .search-hero {
+      background: linear-gradient(160deg, #f0fdf4 0%, #ecfdf5 50%, #fff 100%);
+      border-bottom: 1px solid #d1fae5;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .hero-inner { max-width: 620px; margin: 0 auto; }
+    .section-label { font-size: 12px; font-weight: 700; color: var(--pub-green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+    .search-hero h1 { font-size: 36px; font-weight: 700; color: var(--pub-text); margin: 0 0 12px; }
+    .hero-sub { font-size: 16px; color: var(--pub-text-muted); margin: 0 0 28px; line-height: 1.6; }
+
+    .search-box {
+      background: #fff; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid var(--pub-border);
+      text-align: left;
+    }
+    .search-box-label { font-size: 11px; font-weight: 700; color: var(--pub-text-subtle); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .search-row { display: flex; gap: 8px; }
+    .search-input-field {
+      flex: 1; padding: 10px 14px; border: 1px solid var(--pub-border); border-radius: 8px;
+      font-size: 14px; font-family: inherit; background: #f8fafc; color: #333; outline: none;
+    }
+    .search-input-field:focus { border-color: var(--pub-green); }
+    .search-input-field:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .search-content { flex: 1; padding: 32px 24px; max-width: 1000px; margin: 0 auto; width: 100%; box-sizing: border-box; }
     .results-table { width: 100%; }
     .clickable-row { cursor: pointer; }
     .clickable-row:hover { background: #f5f5f5; }
@@ -122,13 +152,14 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     .limit-icon { color: #f9a825; flex-shrink: 0; }
     .limit-text { flex: 1; color: #555; font-size: 14px; }
     .limit-login-btn { white-space: nowrap; }
-    .search-subtitle { color: #666; margin: -12px 0 24px; font-size: 15px; }
     .empty-state, .zero-state { text-align: center; padding: 48px; color: #999; }
     .empty-state mat-icon, .zero-state mat-icon { font-size: 48px; width: 48px; height: 48px; display: block; margin: 0 auto 12px; }
-    .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
-    .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     .chevron-cell { width: 32px; padding-right: 8px; }
     .row-chevron { color: #bdbdbd; vertical-align: middle; }
+
+    .status-badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .badge-active { background: #dcfce7; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
   `]
 })
 export class SearchComponent implements OnInit, OnDestroy {

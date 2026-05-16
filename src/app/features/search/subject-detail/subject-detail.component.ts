@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
@@ -24,244 +23,267 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
   standalone: true,
   imports: [
     CommonModule, RouterLink,
-    MatCardModule, MatChipsModule, MatProgressBarModule,
+    MatCardModule, MatProgressBarModule,
     MatIconModule, MatDividerModule, MatSnackBarModule,
     MatPaginatorModule, QRCodeModule, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
-    <div class="detail-page">
-      <div class="back-nav">
-        <a routerLink="/search" class="pub-btn pub-btn-ghost pub-btn-sm">← Zpět na vyhledávání</a>
-      </div>
+    <main class="page-main">
 
-      <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
-      <div *ngIf="error" class="error-msg">{{ error }}</div>
-      <div *ngIf="limitReached" class="limit-banner">
-        <mat-icon class="limit-icon">hourglass_top</mat-icon>
-        <div class="limit-text">
-          <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
-          <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
-        </div>
-        <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
-      </div>
-
-      <ng-container *ngIf="subject">
-        <div class="header-row">
-          <h1>{{ subject.obchodniFirma || 'IČO ' + subject.ico }}</h1>
-          <div class="header-actions">
-            <button class="qr-btn" (click)="showQr = !showQr" title="QR kód stránky" [class.qr-btn--active]="showQr">
-              <mat-icon>qr_code</mat-icon>
-            </button>
-            <button *ngIf="!subject.isWatched" class="pub-btn pub-btn-primary" (click)="toggleWatch()">Sledovat</button>
-            <button *ngIf="subject.isWatched" class="pub-btn pub-btn-ghost" (click)="toggleWatch()">Přestat sledovat</button>
+      <section class="detail-hero">
+        <div class="hero-inner">
+          <a routerLink="/search" class="back-link">← Zpět na vyhledávání</a>
+          <div class="hero-title-row" *ngIf="subject">
+            <h1>{{ subject.obchodniFirma || 'IČO ' + subject.ico }}</h1>
+            <div class="header-actions">
+              <button class="qr-btn" (click)="showQr = !showQr" title="QR kód stránky" [class.qr-btn--active]="showQr">
+                <mat-icon>qr_code</mat-icon>
+              </button>
+              <button *ngIf="!subject.isWatched" class="pub-btn pub-btn-primary" (click)="toggleWatch()">Sledovat</button>
+              <button *ngIf="subject.isWatched" class="pub-btn pub-btn-ghost" (click)="toggleWatch()">Přestat sledovat</button>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div *ngIf="showQr" class="qr-panel">
+      <div class="detail-content">
+        <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>
+
+        <div *ngIf="showQr && subject" class="qr-panel">
           <qrcode [qrdata]="pageUrl" [width]="160" [margin]="1" errorCorrectionLevel="M"></qrcode>
           <p class="qr-url">{{ pageUrl }}</p>
         </div>
 
-        <div class="cards-grid">
-          <!-- ARES card -->
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>business</mat-icon> ARES — Základní údaje
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <table class="info-table">
-                <tr><td>IČO</td><td><strong>{{ subject.ico }}</strong></td></tr>
-                <tr><td>DIČ</td><td>{{ subject.dic || '—' }}</td></tr>
-                <tr><td>Právní forma</td><td>{{ subject.pravniForma || '—' }}</td></tr>
-                <tr><td>Sídlo</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
-                <tr><td>Datum vzniku</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>
-                <tr><td>Stav</td><td>
-                  <mat-chip-listbox>
-                    <mat-chip [class]="subject.stavKod === 'AKTIVNI' ? 'chip-active' : 'chip-inactive'">
+        <div *ngIf="error" class="error-msg">{{ error }}</div>
+        <div *ngIf="limitReached" class="limit-banner">
+          <mat-icon class="limit-icon">hourglass_top</mat-icon>
+          <div class="limit-text">
+            <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
+            <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+          </div>
+          <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
+        </div>
+
+        <ng-container *ngIf="subject">
+          <div class="cards-grid">
+            <!-- ARES card -->
+            <mat-card>
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>business</mat-icon> ARES — Základní údaje
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <table class="info-table">
+                  <tr><td>IČO</td><td><strong>{{ subject.ico }}</strong></td></tr>
+                  <tr><td>DIČ</td><td>{{ subject.dic || '—' }}</td></tr>
+                  <tr><td>Právní forma</td><td>{{ subject.pravniForma || '—' }}</td></tr>
+                  <tr><td>Sídlo</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
+                  <tr><td>Datum vzniku</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>
+                  <tr><td>Stav</td><td>
+                    <span [class]="'status-badge ' + (subject.stavKod === 'AKTIVNI' ? 'badge-active' : 'badge-inactive')">
                       {{ subject.stavNazev || subject.stavKod || 'Neznámý' }}
-                    </mat-chip>
-                  </mat-chip-listbox>
-                </td></tr>
-              </table>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- ISIR card -->
-          <mat-card [class]="subject.isir.clarity === 'ACTIVE_DEBTOR' || subject.isir.clarity === 'ACTIVE_CO_DEBTOR' ? 'card-warning' : subject.isir.clarity === 'PAST_DEBTOR' ? 'card-past' : ''">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon [color]="subject.isir.clarity === 'ACTIVE_DEBTOR' || subject.isir.clarity === 'ACTIVE_CO_DEBTOR' ? 'warn' : ''">
-                  {{ subject.isir.clarity === 'CLEAR' ? 'check_circle' : subject.isir.clarity === 'PAST_DEBTOR' ? 'history' : 'warning' }}
-                </mat-icon>
-                ISIR — Insolvenční rejstřík
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div *ngIf="subject.isir.clarity === 'CLEAR'" class="isir-ok">
-                <p>Žádná aktivní insolvenční řízení</p>
-              </div>
-              <div *ngIf="subject.isir.clarity === 'ACTIVE_DEBTOR'">
-                <p class="isir-warning">Subjekt je dlužníkem v aktivním insolvenčním řízení!</p>
-              </div>
-              <div *ngIf="subject.isir.clarity === 'ACTIVE_CO_DEBTOR'">
-                <p class="isir-warning isir-warning-soft">Subjekt je společným dlužníkem (SNM) v aktivním řízení.</p>
-              </div>
-              <div *ngIf="subject.isir.clarity === 'PAST_DEBTOR'">
-                <p class="isir-past-debtor">Subjekt byl v minulosti dlužníkem v insolvenčním řízení (řízení již skončilo).</p>
-              </div>
-              <div *ngIf="subject.isir.proceedings?.length" class="isir-records">
-                <div *ngFor="let p of subject.isir.proceedings || []"
-                     [class]="'isir-record ' + (p.isActive ? 'isir-record-active' : 'isir-record-inactive')">
-                  <div class="isir-record-main">
-                    <span class="isir-sp-znacka">{{ p.senZnacka || '—' }}</span>
-                    <span [class]="'isir-stav-badge ' + (p.isActive ? 'isir-stav-active' : 'isir-stav-done')">
-                      {{ p.stavKonkursu || '—' }}
                     </span>
-                  </div>
-                  <div class="isir-record-meta">
-                    <span *ngIf="p.datumZahajeni">Zahájení: {{ formatCzechDate(p.datumZahajeni) }}</span>
-                    <a *ngIf="p.urlDetail" [href]="p.urlDetail" target="_blank" rel="noopener"
-                       class="isir-link">
-                      <mat-icon>open_in_new</mat-icon> Zobrazit v ISIR
-                    </a>
+                  </td></tr>
+                </table>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- ISIR card -->
+            <mat-card [class]="subject.isir.clarity === 'ACTIVE_DEBTOR' || subject.isir.clarity === 'ACTIVE_CO_DEBTOR' ? 'card-warning' : subject.isir.clarity === 'PAST_DEBTOR' ? 'card-past' : ''">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon [color]="subject.isir.clarity === 'ACTIVE_DEBTOR' || subject.isir.clarity === 'ACTIVE_CO_DEBTOR' ? 'warn' : ''">
+                    {{ subject.isir.clarity === 'CLEAR' ? 'check_circle' : subject.isir.clarity === 'PAST_DEBTOR' ? 'history' : 'warning' }}
+                  </mat-icon>
+                  ISIR — Insolvenční rejstřík
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="subject.isir.clarity === 'CLEAR'" class="isir-ok">
+                  <p>Žádná aktivní insolvenční řízení</p>
+                </div>
+                <div *ngIf="subject.isir.clarity === 'ACTIVE_DEBTOR'">
+                  <p class="isir-warning">Subjekt je dlužníkem v aktivním insolvenčním řízení!</p>
+                </div>
+                <div *ngIf="subject.isir.clarity === 'ACTIVE_CO_DEBTOR'">
+                  <p class="isir-warning isir-warning-soft">Subjekt je společným dlužníkem (SNM) v aktivním řízení.</p>
+                </div>
+                <div *ngIf="subject.isir.clarity === 'PAST_DEBTOR'">
+                  <p class="isir-past-debtor">Subjekt byl v minulosti dlužníkem v insolvenčním řízení (řízení již skončilo).</p>
+                </div>
+                <div *ngIf="subject.isir.proceedings.length" class="isir-records">
+                  <div *ngFor="let p of subject.isir.proceedings || []"
+                       [class]="'isir-record ' + (p.isActive ? 'isir-record-active' : 'isir-record-inactive')">
+                    <div class="isir-record-main">
+                      <span class="isir-sp-znacka">{{ p.senZnacka || '—' }}</span>
+                      <span [class]="'isir-stav-badge ' + (p.isActive ? 'isir-stav-active' : 'isir-stav-done')">
+                        {{ p.stavKonkursu || '—' }}
+                      </span>
+                    </div>
+                    <div class="isir-record-meta">
+                      <span *ngIf="p.datumZahajeni">Zahájení: {{ formatCzechDate(p.datumZahajeni) }}</span>
+                      <a *ngIf="p.urlDetail" [href]="p.urlDetail" target="_blank" rel="noopener"
+                         class="isir-link">
+                        <mat-icon>open_in_new</mat-icon> Zobrazit v ISIR
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+              </mat-card-content>
+            </mat-card>
 
-          <!-- DPH card -->
-          <mat-card [class]="dphCardClass()">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon [color]="subject.dph.nespolehlivy ? 'warn' : ''">
-                  {{ subject.dph.nedostupne ? 'cloud_off' : subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
-                </mat-icon>
-                DPH — Registr plátců
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div *ngIf="subject.dph.nedostupne" class="dph-unavailable">
-                <p>Data o DPH nejsou momentálně dostupná.</p>
-              </div>
-              <div *ngIf="!subject.dph.nedostupne && !subject.dph.isPlatce" class="dph-neutral">
-                <p>Subjekt není evidován jako plátce DPH.</p>
-              </div>
-              <div *ngIf="subject.dph.isPlatce && !subject.dph.nespolehlivy" class="dph-ok">
-                <p>Spolehlivý plátce DPH</p>
-              </div>
-              <div *ngIf="subject.dph.nespolehlivy">
-                <p class="dph-warning">Nespolehlivý plátce DPH!</p>
-                <p *ngIf="subject.dph.datumNespolehlivosti" class="dph-date">
-                  Zveřejněno: {{ formatCzechDate(subject.dph.datumNespolehlivosti) }}
-                </p>
-              </div>
-              <div *ngIf="subject.dph.ucty?.length" class="dph-accounts">
-                <p class="dph-accounts-label">Zveřejněné účty:</p>
-                <div *ngFor="let u of subject.dph.ucty" class="dph-account">{{ u }}</div>
-              </div>
-            </mat-card-content>
-          </mat-card>
-
-          <!-- OR card -->
-          <mat-card *ngIf="subject.or">
-            <mat-card-header>
-              <mat-card-title>
-                <mat-icon>domain</mat-icon> OR — Obchodní rejstřík
-              </mat-card-title>
-              <mat-card-subtitle *ngIf="subject.or.spisovatel">
-                Sp. zn. {{ subject.or.spisovatel }}
-              </mat-card-subtitle>
-            </mat-card-header>
-            <mat-card-content>
-              <div *ngIf="currentStatutari.length > 0" class="or-section">
-                <p class="or-section-label">Statutáři</p>
-                <div *ngFor="let s of pagedCurrentStatutari" class="statutar">
-                  <div class="statutar-name">{{ s.jmeno || '—' }}</div>
-                  <div class="statutar-meta">
-                    <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
-                    <span *ngIf="s.datumVzniku" class="statutar-date">od {{ formatCzechDate(s.datumVzniku) }}</span>
-                  </div>
+            <!-- DPH card -->
+            <mat-card [class]="dphCardClass()">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon [color]="subject.dph.nespolehlivy ? 'warn' : ''">
+                    {{ subject.dph.nedostupne ? 'cloud_off' : subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
+                  </mat-icon>
+                  DPH — Registr plátců
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="subject.dph.nedostupne" class="dph-unavailable">
+                  <p>Data o DPH nejsou momentálně dostupná.</p>
                 </div>
-                <mat-paginator *ngIf="currentStatutari.length > statutarPageSize"
-                  [length]="currentStatutari.length"
-                  [pageSize]="statutarPageSize"
-                  [pageIndex]="statutarPage"
-                  [hidePageSize]="true"
-                  (page)="statutarPage = $event.pageIndex"
-                  class="or-paginator">
-                </mat-paginator>
-              </div>
-              <div *ngIf="currentStatutari.length === 0" class="or-neutral">
-                <p>Žádní aktivní statutáři nenalezeni.</p>
-              </div>
+                <div *ngIf="!subject.dph.nedostupne && !subject.dph.isPlatce" class="dph-neutral">
+                  <p>Subjekt není evidován jako plátce DPH.</p>
+                </div>
+                <div *ngIf="subject.dph.isPlatce && !subject.dph.nespolehlivy" class="dph-ok">
+                  <p>Spolehlivý plátce DPH</p>
+                </div>
+                <div *ngIf="subject.dph.nespolehlivy">
+                  <p class="dph-warning">Nespolehlivý plátce DPH!</p>
+                  <p *ngIf="subject.dph.datumNespolehlivosti" class="dph-date">
+                    Zveřejněno: {{ formatCzechDate(subject.dph.datumNespolehlivosti) }}
+                  </p>
+                </div>
+                <div *ngIf="subject.dph.ucty.length" class="dph-accounts">
+                  <p class="dph-accounts-label">Zveřejněné účty:</p>
+                  <div *ngFor="let u of subject.dph.ucty" class="dph-account">{{ u }}</div>
+                </div>
+              </mat-card-content>
+            </mat-card>
 
-              <div *ngIf="pastStatutari.length > 0" class="or-history-toggle">
-                <button class="pub-btn pub-btn-ghost pub-btn-sm history-btn" (click)="showPastStatutari = !showPastStatutari">
-                  {{ showPastStatutari ? '▲ Skrýt historii' : '▼ Historie statutářů (' + pastStatutari.length + ')' }}
-                </button>
-                <div *ngIf="showPastStatutari" class="past-statutari">
-                  <div *ngFor="let s of pastStatutari" class="statutar statutar-past">
+            <!-- OR card -->
+            <mat-card *ngIf="subject.or">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>domain</mat-icon> OR — Obchodní rejstřík
+                </mat-card-title>
+                <mat-card-subtitle *ngIf="subject.or.spisovatel">
+                  Sp. zn. {{ subject.or.spisovatel }}
+                </mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <div *ngIf="currentStatutari.length > 0" class="or-section">
+                  <p class="or-section-label">Statutáři</p>
+                  <div *ngFor="let s of pagedCurrentStatutari" class="statutar">
                     <div class="statutar-name">{{ s.jmeno || '—' }}</div>
                     <div class="statutar-meta">
                       <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
                       <span *ngIf="s.datumVzniku" class="statutar-date">od {{ formatCzechDate(s.datumVzniku) }}</span>
-                      <span *ngIf="s.datumZaniku" class="statutar-date">do {{ formatCzechDate(s.datumZaniku) }}</span>
+                    </div>
+                  </div>
+                  <mat-paginator *ngIf="currentStatutari.length > statutarPageSize"
+                    [length]="currentStatutari.length"
+                    [pageSize]="statutarPageSize"
+                    [pageIndex]="statutarPage"
+                    [hidePageSize]="true"
+                    (page)="statutarPage = $event.pageIndex"
+                    class="or-paginator">
+                  </mat-paginator>
+                </div>
+                <div *ngIf="currentStatutari.length === 0" class="or-neutral">
+                  <p>Žádní aktivní statutáři nenalezeni.</p>
+                </div>
+
+                <div *ngIf="pastStatutari.length > 0" class="or-history-toggle">
+                  <button class="pub-btn pub-btn-ghost pub-btn-sm history-btn" (click)="showPastStatutari = !showPastStatutari">
+                    {{ showPastStatutari ? '▲ Skrýt historii' : '▼ Historie statutářů (' + pastStatutari.length + ')' }}
+                  </button>
+                  <div *ngIf="showPastStatutari" class="past-statutari">
+                    <div *ngFor="let s of pastStatutari" class="statutar statutar-past">
+                      <div class="statutar-name">{{ s.jmeno || '—' }}</div>
+                      <div class="statutar-meta">
+                        <span *ngIf="s.funkce" class="statutar-funkce">{{ s.funkce }}</span>
+                        <span *ngIf="s.datumVzniku" class="statutar-date">od {{ formatCzechDate(s.datumVzniku) }}</span>
+                        <span *ngIf="s.datumZaniku" class="statutar-date">do {{ formatCzechDate(s.datumZaniku) }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <mat-divider *ngIf="subject.or.sbirkaListin.length > 0" class="or-divider"></mat-divider>
+                <mat-divider *ngIf="subject.or.sbirkaListin.length > 0" class="or-divider"></mat-divider>
 
-              <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
-                <p class="or-section-label">
-                  Sbírka listin
-                  <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">(celkem {{ subject.or.sbirkaListinCelkem }})</span>
-                </p>
-                <div *ngFor="let l of pagedListiny" class="listina">
-                  <span class="listina-typ">{{ l.typListiny }}</span>
-                  <span *ngIf="l.datumVzniku" class="listina-date">{{ formatCzechDate(l.datumVzniku) }}</span>
+                <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
+                  <p class="or-section-label">
+                    Sbírka listin
+                    <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">(celkem {{ subject.or.sbirkaListinCelkem }})</span>
+                  </p>
+                  <div *ngFor="let l of pagedListiny" class="listina">
+                    <span class="listina-typ">{{ l.typListiny }}</span>
+                    <span *ngIf="l.datumVzniku" class="listina-date">{{ formatCzechDate(l.datumVzniku) }}</span>
+                  </div>
+                  <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
+                    [length]="subject.or.sbirkaListin.length"
+                    [pageSize]="listinaPageSize"
+                    [pageIndex]="listinaPage"
+                    [hidePageSize]="true"
+                    (page)="listinaPage = $event.pageIndex"
+                    class="or-paginator">
+                  </mat-paginator>
                 </div>
-                <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
-                  [length]="subject.or.sbirkaListin.length"
-                  [pageSize]="listinaPageSize"
-                  [pageIndex]="listinaPage"
-                  [hidePageSize]="true"
-                  (page)="listinaPage = $event.pageIndex"
-                  class="or-paginator">
-                </mat-paginator>
-              </div>
 
-              <div *ngIf="subject.or.orUrl" class="or-link-row">
-                <a [href]="subject.or.orUrl" target="_blank" rel="noopener" class="or-link">
-                  <mat-icon>open_in_new</mat-icon> Zobrazit v OR
-                </a>
-              </div>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </ng-container>
-    </div>
+                <div *ngIf="subject.or.orUrl" class="or-link-row">
+                  <a [href]="subject.or.orUrl" target="_blank" rel="noopener" class="or-link">
+                    <mat-icon>open_in_new</mat-icon> Zobrazit v OR
+                  </a>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </ng-container>
+      </div>
+
+    </main>
     <app-public-footer />
   `,
   styles: [`
     :host { display: flex; flex-direction: column; min-height: 100vh; }
-    .detail-page { padding: 24px; max-width: 1100px; margin: 0 auto; flex: 1; }
-    .back-nav { margin-bottom: 16px; }
-    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .header-actions { display: flex; align-items: center; gap: 8px; }
-    .qr-panel { display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 16px; }
-    .qr-url { font-size: 11px; color: #757575; margin: 4px 0 0; word-break: break-all; max-width: 200px; }
-    h1 { margin: 0; }
-    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+    .page-main { flex: 1; display: flex; flex-direction: column; }
+
+    .detail-hero {
+      background: linear-gradient(160deg, #f0fdf4 0%, #ecfdf5 50%, #fff 100%);
+      border-bottom: 1px solid #d1fae5;
+    }
+    .hero-inner { max-width: 1100px; margin: 0 auto; padding: 24px 24px 32px; }
+    .back-link {
+      display: inline-block; margin-bottom: 16px; font-size: 14px; font-weight: 500;
+      color: var(--pub-green); text-decoration: none;
+    }
+    .back-link:hover { opacity: 0.8; }
+    .hero-title-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .hero-title-row h1 { margin: 0; font-size: 28px; font-weight: 700; color: var(--pub-text); }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .detail-content { flex: 1; padding: 32px 24px; max-width: 1100px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+    .qr-panel { display: inline-flex; flex-direction: column; align-items: center; border: 1px solid var(--pub-border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+    .qr-url { font-size: 11px; color: #757575; margin: 8px 0 0; word-break: break-all; max-width: 200px; text-align: center; }
+
+    .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 768px) { .cards-grid { grid-template-columns: 1fr; } }
+
     .info-table { width: 100%; border-collapse: collapse; }
     .info-table td { padding: 8px 4px; }
     .info-table td:first-child { color: #666; width: 140px; }
+
+    .status-badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .badge-active { background: #dcfce7; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
     .isir-ok { color: #2e7d32; display: flex; align-items: center; gap: 8px; }
     .isir-warning { color: #c62828; font-weight: 500; margin-bottom: 16px; }
     .isir-warning-soft { color: #e65100; }
@@ -288,8 +310,6 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     .limit-login-btn { white-space: nowrap; }
     .qr-btn { background: none; border: 1px solid var(--pub-border); border-radius: 8px; width: 40px; height: 40px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--pub-text-muted); transition: color .15s, border-color .15s; }
     .qr-btn:hover, .qr-btn--active { color: var(--pub-green); border-color: var(--pub-green); }
-    .chip-active { background: #e8f5e9 !important; color: #2e7d32 !important; }
-    .chip-inactive { background: #fce4ec !important; color: #c62828 !important; }
     mat-card { margin-bottom: 0; }
     mat-card-content { padding-top: 16px; }
     .dph-ok { color: #2e7d32; }
