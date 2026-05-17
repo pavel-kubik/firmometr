@@ -29,7 +29,13 @@ jobs:
         run: npm run build
 
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --dir=./dist/firmometr-ui/browser --prod --message "Deploy from GitHub Actions"
+        run: |
+          zip -r deploy.zip dist/firmometr-ui/browser
+          curl --fail-with-body \
+               -H "Content-Type: application/zip" \
+               -H "Authorization: Bearer $NETLIFY_AUTH_TOKEN" \
+               --data-binary "@deploy.zip" \
+               "https://api.netlify.com/api/v1/sites/$NETLIFY_SITE_ID/deploys"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
