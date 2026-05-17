@@ -1,5 +1,5 @@
 import { XMLParser } from "fast-xml-parser";
-import { checkCap, withCap } from '../../../../../_shared/_cap';
+import { checkCap, withCap } from '../../../../_shared/_cap';
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";

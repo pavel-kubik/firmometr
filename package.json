@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:functions": "vitest run functions",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "dev:cf": "wrangler pages dev --proxy 4201 --compatibility-date=2024-01-01"
   },
   "dependencies": {
     "@angular/animations": "^18.2.0",
@@ -43,6 +44,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "^5.5.4",
-    "vitest": "^3"
+    "vitest": "^3",
+    "wrangler": "^4.92.0"
   }
 }

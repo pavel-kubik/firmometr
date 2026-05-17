@@ -1,4 +1,4 @@
-import { resetCap, withCap } from '../../../_shared/_cap';
+import { resetCap, withCap } from '../../_shared/_cap';
 
 export const onRequest = async ({ request }: { request: Request }) => {
   const cap = resetCap(request);
