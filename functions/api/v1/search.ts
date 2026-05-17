@@ -1,5 +1,4 @@
-import type { Config } from "@netlify/functions";
-import { checkCap, withCap } from './_cap.mjs';
+import { checkCap, withCap } from '../../../_shared/_cap';
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 
@@ -17,8 +16,8 @@ function stavKodFrom(data: any): string | null {
   return raw === "NEEXISTUJICI" ? null : (raw ?? null);
 }
 
-export default async (req: Request) => {
-  const url = new URL(req.url);
+export const onRequest = async ({ request }: { request: Request }) => {
+  const url = new URL(request.url);
   const q = url.searchParams.get("q") ?? "";
   const start = parseInt(url.searchParams.get("start") ?? "0", 10) || 0;
 
@@ -26,7 +25,7 @@ export default async (req: Request) => {
     return Response.json({ total: 0, items: [] });
   }
 
-  const cap = checkCap(req);
+  const cap = checkCap(request);
   if (cap.blocked) return withCap({ error: 'limit_reached' }, cap, 429);
 
   try {
@@ -56,8 +55,4 @@ export default async (req: Request) => {
   } catch {
     return withCap({ total: 0, items: [] }, cap);
   }
-};
-
-export const config: Config = {
-  path: "/api/v1/search",
 };

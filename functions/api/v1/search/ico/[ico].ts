@@ -1,6 +1,5 @@
-import type { Config, Context } from "@netlify/functions";
 import { XMLParser } from "fast-xml-parser";
-import { checkCap, withCap } from './_cap.mjs';
+import { checkCap, withCap } from '../../../../../_shared/_cap';
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
@@ -36,7 +35,7 @@ function isActive(r: IsirRecord): boolean {
   const s = r.druhStavKonkursu;
   if (s === "MYLNÝ ZÁP." || s === "PRAVOMOCNA" || s === "ODSKRTNUTA") return false;
   if (s && ACTIVE_STATI.has(s)) return true;
-  return true; // unknown/null → conservative
+  return true;
 }
 
 function assessClearance(records: IsirRecord[]) {
@@ -107,7 +106,6 @@ function parseIsirResponse(xml: string): IsirRecord[] {
   const parser = new XMLParser({ ignoreAttributes: false, textNodeName: "_text" });
   const doc = parser.parse(xml);
 
-  // Navigate into SOAP body — structure varies, walk to find stav/data
   const body = findNode(doc, "Body") ?? doc;
   const responseEl = findNode(body, "getIsirWsCuzkDataResponse") ?? findNode(body, "return") ?? body;
 
@@ -171,7 +169,6 @@ function parseDphResponse(xml: string): DphResult {
   const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", textNodeName: "_text" });
   const doc = parser.parse(xml);
 
-  // statusCode !== "0" means service error or scheduled maintenance — not "not a payer"
   const statusEl = findNode(doc, "status");
   if (statusEl && String(statusEl["@_statusCode"] ?? "0") !== "0") return DPH_UNAVAILABLE;
 
@@ -229,19 +226,16 @@ async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; stat
     const primary = zaznamy.find((z: any) => z.primarniZaznam) ?? zaznamy[0];
     if (!primary) return { spisovatel: null, statutari: [] };
 
-    // spisovatel is an array [{soud, oddil, vlozka}], not a plain string
     const szArr: any[] = Array.isArray(primary.spisovaZnacka) ? primary.spisovaZnacka : [];
     const sz = szArr[0];
     const spisovatel = sz ? `${sz.oddil} ${sz.vlozka}` : null;
 
-    // statutarniOrgany is an array of organs; members live in organ.clenoveOrganu[]
     const organy: any[] = primary.statutarniOrgany ?? [];
     const allMembers: any[] = organy.flatMap((o: any) => o.clenoveOrganu ?? []);
 
     function memberToStatutar(m: any): OrStatutar {
       const fo = m.fyzickaOsoba;
       const po = m.pravnickaOsoba;
-      // funkce is nested at clenstvi.funkce.nazev in the actual ARES VR schema
       const funkce = str(m.clenstvi?.funkce?.nazev ?? m.nazevAngazma) ?? null;
       const datumVzniku = str(m.clenstvi?.funkce?.vznikFunkce ?? m.datumZapisu) ?? null;
       const datumZaniku = str(m.clenstvi?.funkce?.zanikFunkce ?? m.datumVyskrtnuti) ?? null;
@@ -265,7 +259,6 @@ async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; stat
     }
 
     const statutari: OrStatutar[] = allMembers.map(memberToStatutar);
-
     return { spisovatel, statutari };
   } catch {
     return { spisovatel: null, statutari: [] };
@@ -339,7 +332,6 @@ async function fetchCuzk(addressText: string): Promise<string | null> {
   }
 }
 
-// XML tree helpers
 function findNode(obj: any, key: string): any {
   if (!obj || typeof obj !== "object") return undefined;
   for (const k of Object.keys(obj)) {
@@ -371,20 +363,19 @@ function str(v: any): string | undefined {
   return s === "" ? undefined : s;
 }
 
-export default async (req: Request, context: Context) => {
-  const ico = context.params['ico'];
+export const onRequest = async ({ request, params }: { request: Request; params: Record<string, string> }) => {
+  const ico = params['ico'];
   if (!ico || !/^\d{1,8}$/.test(ico)) {
     return Response.json({ error: "Invalid IČO" }, { status: 400 });
   }
 
-  const cap = checkCap(req);
+  const cap = checkCap(request);
   if (cap.blocked) return withCap({ error: 'limit_reached' }, cap, 429);
 
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
     fetchAres(ico), fetchIsir(ico), fetchOrVr(ico), fetchOrSubjektId(ico),
   ]);
 
-  // Use the DIČ from ARES — for sole traders it differs from "CZ"+IČO (it's the rodné číslo).
   const dic = aresData?.dic ?? ("CZ" + ico.padStart(8, "0"));
   const sidloText: string | null = aresData?.sidlo?.textovaAdresa ?? null;
   const [dphResult, cuzkAddress, sbirkaListinResult] = await Promise.all([
@@ -434,8 +425,4 @@ export default async (req: Request, context: Context) => {
     } : null,
     isWatched: false,
   }, cap);
-};
-
-export const config: Config = {
-  path: "/api/v1/search/ico/:ico",
 };
