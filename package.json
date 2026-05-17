@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^18.2.0",
     "@angular/platform-browser-dynamic": "^18.2.0",
     "@angular/router": "^18.2.0",
+    "@jsverse/transloco": "^8.3.0",
     "@sentry/angular": "^10.52.0",
     "@supabase/supabase-js": "^2.105.4",
     "angularx-qrcode": "^18.0.2",
