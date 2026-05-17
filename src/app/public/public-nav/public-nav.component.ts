@@ -1,22 +1,24 @@
 import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
+import { LangService } from '../../core/services/lang.service';
 
 @Component({
   selector: 'app-public-nav',
   standalone: true,
-  imports: [AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [AsyncPipe, RouterLink, RouterLinkActive, TranslocoPipe],
   template: `
     <nav class="pub-nav">
       <div class="pub-nav-inner">
-        <a class="pub-logo" routerLink="/">FIRM<span>O</span>METR</a>
+        <a class="pub-logo" [routerLink]="ls.p('/')">FIRM<span>O</span>METR</a>
 
         <div class="pub-nav-links">
-          <a routerLink="/search" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Vyhledat</a>
-          <a routerLink="/dashboard" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Sledované</a>
-          <a routerLink="/ceny" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Ceny</a>
-          <a routerLink="/kontakt" routerLinkActive="nav-active" (click)="menuOpen.set(false)">Kontakt</a>
+          <a [routerLink]="ls.p('/search')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
+          <a [routerLink]="ls.p('/dashboard')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.watched' | transloco }}</a>
+          <a [routerLink]="ls.p('/ceny')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.pricing' | transloco }}</a>
+          <a [routerLink]="ls.p('/kontakt')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.contact' | transloco }}</a>
         </div>
 
         <div class="pub-nav-actions">
@@ -28,15 +30,42 @@ import { AuthService } from '../../core/services/auth.service';
               </button>
               @if (userMenuOpen()) {
                 <div class="user-dropdown">
-                  <button (click)="logout()">Odhlásit se</button>
+                  <button (click)="logout()">{{ 'nav.logout' | transloco }}</button>
                 </div>
               }
             </div>
           } @else {
-            <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm">Přihlásit se</a>
-            <a routerLink="/search" class="pub-btn pub-btn-primary pub-btn-sm">Vyzkoušet zdarma →</a>
+            <a [routerLink]="ls.p('/login')" class="pub-btn pub-btn-ghost pub-btn-sm">{{ 'nav.login' | transloco }}</a>
+            <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-primary pub-btn-sm">{{ 'nav.try_free' | transloco }}</a>
           }
-          <button class="pub-hamburger" (click)="menuOpen.set(!menuOpen())" [attr.aria-label]="menuOpen() ? 'Zavřít menu' : 'Otevřít menu'">
+
+          <!-- Language switcher -->
+          <div class="lang-switcher">
+            <button
+              class="lang-btn"
+              [class.lang-btn--active]="ls.lang() === 'cs'"
+              (click)="ls.switchLang('cs')"
+              title="Česky"
+            >
+              <span class="flag">🇨🇿</span>
+              <span class="lang-code">CZ</span>
+            </button>
+            <button
+              class="lang-btn"
+              [class.lang-btn--active]="ls.lang() === 'en'"
+              (click)="ls.switchLang('en')"
+              title="English"
+            >
+              <span class="flag">🇬🇧</span>
+              <span class="lang-code">EN</span>
+            </button>
+          </div>
+
+          <button
+            class="pub-hamburger"
+            (click)="menuOpen.set(!menuOpen())"
+            [attr.aria-label]="(menuOpen() ? 'nav.close_menu' : 'nav.open_menu') | transloco"
+          >
             {{ menuOpen() ? '✕' : '☰' }}
           </button>
         </div>
@@ -44,15 +73,23 @@ import { AuthService } from '../../core/services/auth.service';
 
       @if (menuOpen()) {
         <div class="pub-nav-mobile-links">
-          <a routerLink="/search" (click)="menuOpen.set(false)">Vyhledat</a>
-          <a routerLink="/dashboard" (click)="menuOpen.set(false)">Sledované</a>
-          <a routerLink="/ceny" (click)="menuOpen.set(false)">Ceny</a>
-          <a routerLink="/kontakt" (click)="menuOpen.set(false)">Kontakt</a>
+          <a [routerLink]="ls.p('/search')" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
+          <a [routerLink]="ls.p('/dashboard')" (click)="menuOpen.set(false)">{{ 'nav.watched' | transloco }}</a>
+          <a [routerLink]="ls.p('/ceny')" (click)="menuOpen.set(false)">{{ 'nav.pricing' | transloco }}</a>
+          <a [routerLink]="ls.p('/kontakt')" (click)="menuOpen.set(false)">{{ 'nav.contact' | transloco }}</a>
           @if (user$ | async) {
-            <button class="mobile-action-btn" (click)="logout()">Odhlásit se</button>
+            <button class="mobile-action-btn" (click)="logout()">{{ 'nav.logout' | transloco }}</button>
           } @else {
-            <a routerLink="/login" (click)="menuOpen.set(false)">Přihlásit se</a>
+            <a [routerLink]="ls.p('/login')" (click)="menuOpen.set(false)">{{ 'nav.login' | transloco }}</a>
           }
+          <div class="mobile-lang-switcher">
+            <button class="lang-btn" [class.lang-btn--active]="ls.lang() === 'cs'" (click)="ls.switchLang('cs'); menuOpen.set(false)">
+              <span class="flag">🇨🇿</span> CZ
+            </button>
+            <button class="lang-btn" [class.lang-btn--active]="ls.lang() === 'en'" (click)="ls.switchLang('en'); menuOpen.set(false)">
+              <span class="flag">🇬🇧</span> EN
+            </button>
+          </div>
         </div>
       }
     </nav>
@@ -107,6 +144,23 @@ import { AuthService } from '../../core/services/auth.service';
       color: var(--pub-text-muted); border-radius: 8px;
     }
     .user-dropdown button:hover { background: var(--pub-green-bg); color: var(--pub-green); }
+
+    /* Language switcher */
+    .lang-switcher {
+      display: flex; align-items: center; gap: 2px;
+      border: 1px solid var(--pub-border); border-radius: 8px; overflow: hidden;
+    }
+    .lang-btn {
+      display: flex; align-items: center; gap: 4px;
+      background: none; border: none; padding: 5px 8px; cursor: pointer;
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      color: var(--pub-text-muted); transition: all .15s; letter-spacing: .5px;
+    }
+    .lang-btn:hover { background: var(--pub-green-bg); color: var(--pub-green); }
+    .lang-btn--active { background: var(--pub-green-light); color: var(--pub-green); }
+    .flag { font-size: 14px; line-height: 1; }
+    .lang-code { font-size: 11px; }
+
     .pub-nav-mobile-links {
       display: none; flex-direction: column; gap: 4px;
       padding: 12px 24px 16px; border-top: 1px solid var(--pub-border); background: #fff;
@@ -120,12 +174,20 @@ import { AuthService } from '../../core/services/auth.service';
       background: none; border: none; padding: 8px 0; font-family: inherit;
       font-size: 15px; color: var(--pub-text-muted); cursor: pointer; text-align: left;
     }
+    .mobile-lang-switcher {
+      display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid var(--pub-border); margin-top: 4px;
+    }
+    .mobile-lang-switcher .lang-btn {
+      border: 1px solid var(--pub-border); border-radius: 6px; padding: 6px 12px;
+      font-size: 13px;
+    }
     @media (max-width: 768px) {
       .pub-nav-links { display: none; }
       .pub-hamburger { display: flex; }
       .pub-nav-actions .pub-btn-ghost,
       .pub-nav-actions .pub-btn-primary { display: none; }
       .nav-user { display: none; }
+      .lang-switcher { display: none; }
       .pub-nav-mobile-links { display: flex; }
     }
   `]
@@ -133,6 +195,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class PublicNavComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
+  ls = inject(LangService);
 
   user$ = this.auth.user$;
   menuOpen = signal(false);
@@ -142,6 +205,6 @@ export class PublicNavComponent {
     await this.auth.signOut();
     this.userMenuOpen.set(false);
     this.menuOpen.set(false);
-    this.router.navigate(['/']);
+    this.router.navigate([this.ls.p('/')]);
   }
 }

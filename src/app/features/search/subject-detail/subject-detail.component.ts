@@ -10,10 +10,12 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { QRCodeModule } from 'angularx-qrcode';
 import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { SearchService } from '../../../core/services/search.service';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rate-limit';
 import { WatchService } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LangService } from '../../../core/services/lang.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
 import { PublicNavComponent } from '../../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../../public/public-footer/public-footer.component';
@@ -25,7 +27,7 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     CommonModule, RouterLink,
     MatCardModule, MatProgressBarModule,
     MatIconModule, MatDividerModule, MatSnackBarModule,
-    MatPaginatorModule, QRCodeModule, PublicNavComponent, PublicFooterComponent,
+    MatPaginatorModule, QRCodeModule, TranslocoPipe, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
@@ -33,15 +35,15 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
 
       <section class="detail-hero">
         <div class="hero-inner">
-          <a routerLink="/search" class="back-link">← Zpět na vyhledávání</a>
+          <a [routerLink]="ls.p('/search')" class="back-link">← {{ 'search.title' | transloco }}</a>
           <div class="hero-title-row" *ngIf="subject">
             <h1>{{ subject.obchodniFirma || 'IČO ' + subject.ico }}</h1>
             <div class="header-actions">
-              <button class="qr-btn" (click)="showQr = !showQr" title="QR kód stránky" [class.qr-btn--active]="showQr">
+              <button class="qr-btn" (click)="showQr = !showQr" [title]="'detail.qr_title' | transloco" [class.qr-btn--active]="showQr">
                 <mat-icon>qr_code</mat-icon>
               </button>
-              <button *ngIf="!subject.isWatched" class="pub-btn pub-btn-primary" (click)="toggleWatch()">Sledovat</button>
-              <button *ngIf="subject.isWatched" class="pub-btn pub-btn-ghost" (click)="toggleWatch()">Přestat sledovat</button>
+              <button *ngIf="!subject.isWatched" class="pub-btn pub-btn-primary" (click)="toggleWatch()">{{ 'detail.watch' | transloco }}</button>
+              <button *ngIf="subject.isWatched" class="pub-btn pub-btn-ghost" (click)="toggleWatch()">{{ 'detail.unwatch' | transloco }}</button>
             </div>
           </div>
         </div>
@@ -59,10 +61,10 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
         <div *ngIf="limitReached" class="limit-banner">
           <mat-icon class="limit-icon">hourglass_top</mat-icon>
           <div class="limit-text">
-            <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
-            <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+            <strong>{{ 'search.limit_msg' | transloco: { freeCap: freeCap, windowMinutes: windowMinutes } }}</strong>
+            <span *ngIf="remainingSeconds > 0"> {{ 'search.limit_retry' | transloco: { countdown: countdownDisplay } }}</span>
           </div>
-          <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
+          <a [routerLink]="ls.p('/login')" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">{{ 'detail.login_cta' | transloco }}</a>
         </div>
 
         <ng-container *ngIf="subject">
@@ -71,17 +73,17 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
             <mat-card>
               <mat-card-header>
                 <mat-card-title>
-                  <mat-icon>business</mat-icon> ARES — Základní údaje
+                  <mat-icon>business</mat-icon> {{ 'detail.ares_title' | transloco }}
                 </mat-card-title>
               </mat-card-header>
               <mat-card-content>
                 <table class="info-table">
-                  <tr><td>IČO</td><td><strong>{{ subject.ico }}</strong></td></tr>
-                  <tr><td>DIČ</td><td>{{ subject.dic || '—' }}</td></tr>
-                  <tr><td>Právní forma</td><td>{{ subject.pravniForma || '—' }}</td></tr>
-                  <tr><td>Sídlo</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
-                  <tr><td>Datum vzniku</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>
-                  <tr><td>Stav</td><td>
+                  <tr><td>{{ 'detail.col_ico' | transloco }}</td><td><strong>{{ subject.ico }}</strong></td></tr>
+                  <tr><td>{{ 'detail.col_dic' | transloco }}</td><td>{{ subject.dic || '—' }}</td></tr>
+                  <tr><td>{{ 'detail.col_legal_form' | transloco }}</td><td>{{ subject.pravniForma || '—' }}</td></tr>
+                  <tr><td>{{ 'detail.col_address' | transloco }}</td><td>{{ subject.sidloEnriched || subject.sidloText || '—' }}</td></tr>
+                  <tr><td>{{ 'detail.col_founded' | transloco }}</td><td>{{ formatCzechDate(subject.datumVzniku) }}</td></tr>
+                  <tr><td>{{ 'detail.col_status' | transloco }}</td><td>
                     <span [class]="'status-badge ' + (subject.stavKod === 'AKTIVNI' ? 'badge-active' : 'badge-inactive')">
                       {{ subject.stavNazev || subject.stavKod || 'Neznámý' }}
                     </span>
@@ -97,21 +99,21 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
                   <mat-icon [color]="subject.isir.clarity === 'ACTIVE_DEBTOR' || subject.isir.clarity === 'ACTIVE_CO_DEBTOR' ? 'warn' : ''">
                     {{ subject.isir.clarity === 'CLEAR' ? 'check_circle' : subject.isir.clarity === 'PAST_DEBTOR' ? 'history' : 'warning' }}
                   </mat-icon>
-                  ISIR — Insolvenční rejstřík
+                  {{ 'detail.isir_title' | transloco }}
                 </mat-card-title>
               </mat-card-header>
               <mat-card-content>
                 <div *ngIf="subject.isir.clarity === 'CLEAR'" class="isir-ok">
-                  <p>Žádná aktivní insolvenční řízení</p>
+                  <p>{{ 'detail.isir_clear' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.isir.clarity === 'ACTIVE_DEBTOR'">
-                  <p class="isir-warning">Subjekt je dlužníkem v aktivním insolvenčním řízení!</p>
+                  <p class="isir-warning">{{ 'detail.isir_active' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.isir.clarity === 'ACTIVE_CO_DEBTOR'">
-                  <p class="isir-warning isir-warning-soft">Subjekt je společným dlužníkem (SNM) v aktivním řízení.</p>
+                  <p class="isir-warning isir-warning-soft">{{ 'detail.isir_co_debtor' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.isir.clarity === 'PAST_DEBTOR'">
-                  <p class="isir-past-debtor">Subjekt byl v minulosti dlužníkem v insolvenčním řízení (řízení již skončilo).</p>
+                  <p class="isir-past-debtor">{{ 'detail.isir_past' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.isir.proceedings.length" class="isir-records">
                   <div *ngFor="let p of subject.isir.proceedings || []"
@@ -123,10 +125,10 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
                       </span>
                     </div>
                     <div class="isir-record-meta">
-                      <span *ngIf="p.datumZahajeni">Zahájení: {{ formatCzechDate(p.datumZahajeni) }}</span>
+                      <span *ngIf="p.datumZahajeni">{{ 'detail.isir_start_date' | transloco }} {{ formatCzechDate(p.datumZahajeni) }}</span>
                       <a *ngIf="p.urlDetail" [href]="p.urlDetail" target="_blank" rel="noopener"
                          class="isir-link">
-                        <mat-icon>open_in_new</mat-icon> Zobrazit v ISIR
+                        <mat-icon>open_in_new</mat-icon> {{ 'detail.isir_link' | transloco }}
                       </a>
                     </div>
                   </div>
@@ -141,27 +143,27 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
                   <mat-icon [color]="subject.dph.nespolehlivy ? 'warn' : ''">
                     {{ subject.dph.nedostupne ? 'cloud_off' : subject.dph.nespolehlivy ? 'warning' : subject.dph.isPlatce ? 'verified' : 'remove_circle_outline' }}
                   </mat-icon>
-                  DPH — Registr plátců
+                  {{ 'detail.dph_title' | transloco }}
                 </mat-card-title>
               </mat-card-header>
               <mat-card-content>
                 <div *ngIf="subject.dph.nedostupne" class="dph-unavailable">
-                  <p>Data o DPH nejsou momentálně dostupná.</p>
+                  <p>{{ 'detail.dph_unavailable' | transloco }}</p>
                 </div>
                 <div *ngIf="!subject.dph.nedostupne && !subject.dph.isPlatce" class="dph-neutral">
-                  <p>Subjekt není evidován jako plátce DPH.</p>
+                  <p>{{ 'detail.dph_not_registered' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.dph.isPlatce && !subject.dph.nespolehlivy" class="dph-ok">
-                  <p>Spolehlivý plátce DPH</p>
+                  <p>{{ 'detail.dph_reliable' | transloco }}</p>
                 </div>
                 <div *ngIf="subject.dph.nespolehlivy">
-                  <p class="dph-warning">Nespolehlivý plátce DPH!</p>
+                  <p class="dph-warning">{{ 'detail.dph_unreliable' | transloco }}</p>
                   <p *ngIf="subject.dph.datumNespolehlivosti" class="dph-date">
-                    Zveřejněno: {{ formatCzechDate(subject.dph.datumNespolehlivosti) }}
+                    {{ 'detail.dph_since' | transloco }} {{ formatCzechDate(subject.dph.datumNespolehlivosti) }}
                   </p>
                 </div>
                 <div *ngIf="subject.dph.ucty.length" class="dph-accounts">
-                  <p class="dph-accounts-label">Zveřejněné účty:</p>
+                  <p class="dph-accounts-label">{{ 'detail.dph_accounts' | transloco }}</p>
                   <div *ngFor="let u of subject.dph.ucty" class="dph-account">{{ u }}</div>
                 </div>
               </mat-card-content>
@@ -171,15 +173,15 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
             <mat-card *ngIf="subject.or">
               <mat-card-header>
                 <mat-card-title>
-                  <mat-icon>domain</mat-icon> OR — Obchodní rejstřík
+                  <mat-icon>domain</mat-icon> {{ 'detail.or_title' | transloco }}
                 </mat-card-title>
                 <mat-card-subtitle *ngIf="subject.or.spisovatel">
-                  Sp. zn. {{ subject.or.spisovatel }}
+                  {{ 'detail.or_file_ref' | transloco }} {{ subject.or.spisovatel }}
                 </mat-card-subtitle>
               </mat-card-header>
               <mat-card-content>
                 <div *ngIf="currentStatutari.length > 0" class="or-section">
-                  <p class="or-section-label">Statutáři</p>
+                  <p class="or-section-label">{{ 'detail.or_directors' | transloco }}</p>
                   <div *ngFor="let s of pagedCurrentStatutari" class="statutar">
                     <div class="statutar-name">{{ s.jmeno || '—' }}</div>
                     <div class="statutar-meta">
@@ -197,12 +199,12 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
                   </mat-paginator>
                 </div>
                 <div *ngIf="currentStatutari.length === 0" class="or-neutral">
-                  <p>Žádní aktivní statutáři nenalezeni.</p>
+                  <p>{{ 'detail.or_no_directors' | transloco }}</p>
                 </div>
 
                 <div *ngIf="pastStatutari.length > 0" class="or-history-toggle">
                   <button class="pub-btn pub-btn-ghost pub-btn-sm history-btn" (click)="showPastStatutari = !showPastStatutari">
-                    {{ showPastStatutari ? '▲ Skrýt historii' : '▼ Historie statutářů (' + pastStatutari.length + ')' }}
+                    {{ showPastStatutari ? ('detail.hide_past_directors' | transloco) : ('detail.show_past_directors' | transloco) + ' (' + pastStatutari.length + ')' }}
                   </button>
                   <div *ngIf="showPastStatutari" class="past-statutari">
                     <div *ngFor="let s of pastStatutari" class="statutar statutar-past">
@@ -220,8 +222,8 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
 
                 <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
                   <p class="or-section-label">
-                    Sbírka listin
-                    <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">(celkem {{ subject.or.sbirkaListinCelkem }})</span>
+                    {{ 'detail.or_documents' | transloco }}
+                    <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">({{ 'detail.or_documents_total' | transloco: { count: subject.or.sbirkaListinCelkem } }})</span>
                   </p>
                   <div *ngFor="let l of pagedListiny" class="listina">
                     <span class="listina-typ">{{ l.typListiny }}</span>
@@ -239,7 +241,7 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
 
                 <div *ngIf="subject.or.orUrl" class="or-link-row">
                   <a [href]="subject.or.orUrl" target="_blank" rel="noopener" class="or-link">
-                    <mat-icon>open_in_new</mat-icon> Zobrazit v OR
+                    <mat-icon>open_in_new</mat-icon> {{ 'detail.or_link' | transloco }}
                   </a>
                 </div>
               </mat-card-content>
@@ -352,6 +354,8 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
   private watchService = inject(WatchService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private transloco = inject(TranslocoService);
+  ls = inject(LangService);
 
   readonly freeCap = SEARCH_FREE_CAP;
   readonly windowMinutes = SEARCH_WINDOW_MINUTES;
@@ -418,7 +422,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
           this.limitReached = true;
           this.startCountdown(parseInt(err.headers.get('Retry-After') ?? '0', 10) || 0);
         } else {
-          this.error = 'Nepodařilo se načíst data subjektu.';
+          this.error = this.transloco.translate('detail.load_error');
         }
         this.loading = false;
       }
@@ -482,7 +486,10 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     if (this.subject.isWatched) {
       this.watchService.unwatchByIco(this.subject.ico).subscribe(() => {
         this.subject!.isWatched = false;
-        this.snackBar.open('Sledování odebráno', 'OK', { duration: 3000 });
+        this.snackBar.open(
+          this.transloco.translate('detail.unwatched_snack', { name: this.subject!.obchodniFirma || `IČO ${this.subject!.ico}` }),
+          'OK', { duration: 3000 }
+        );
       });
     } else {
       this.watchService.watch({
@@ -494,10 +501,13 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
       }).subscribe({
         next: () => {
           this.subject!.isWatched = true;
-          this.snackBar.open('Subjekt přidán ke sledování', 'OK', { duration: 3000 });
+          this.snackBar.open(
+            this.transloco.translate('detail.watched_snack', { name: this.subject!.obchodniFirma || `IČO ${this.subject!.ico}` }),
+            'OK', { duration: 3000 }
+          );
         },
         error: () => {
-          this.snackBar.open('Chyba při přidávání ke sledování', 'OK', { duration: 3000 });
+          this.snackBar.open(this.transloco.translate('detail.watch_error'), 'OK', { duration: 3000 });
         }
       });
     }

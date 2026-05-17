@@ -1,39 +1,40 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [ReactiveFormsModule, PublicNavComponent, PublicFooterComponent],
+  imports: [ReactiveFormsModule, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
   template: `
     <app-public-nav />
 
     <main class="contact-page">
       <div class="page-hero">
-        <div class="section-label">Kontakt</div>
-        <h1>Napište nám</h1>
-        <p>Máte otázku, nápad nebo chcete vědět více? Rádi se ozveme.</p>
+        <div class="section-label">{{ 'contact.label' | transloco }}</div>
+        <h1>{{ 'contact.title' | transloco }}</h1>
+        <p>{{ 'contact.sub' | transloco }}</p>
       </div>
 
       <div class="contact-body">
 
         <!-- Info -->
         <div class="contact-info">
-          <h2>Kontaktní údaje</h2>
+          <h2>{{ 'contact.info_title' | transloco }}</h2>
           <div class="info-item">
             <div class="info-icon">✉️</div>
             <div>
-              <div class="info-label">E-mail</div>
+              <div class="info-label">{{ 'contact.email_label' | transloco }}</div>
               <a href="mailto:info@firmometr.cz" class="info-value">info&#64;firmometr.cz</a>
             </div>
           </div>
           <div class="info-item">
             <div class="info-icon">🏢</div>
             <div>
-              <div class="info-label">Provozovatel</div>
+              <div class="info-label">{{ 'contact.company_label' | transloco }}</div>
               <div class="info-value">Butterfly Flowers s.r.o.</div>
               <div class="info-sub">IČO 07102127</div>
               <div class="info-sub">Srbínská 867/4, Strašnice<br>10000 Praha 10</div>
@@ -42,8 +43,8 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
           <div class="info-item">
             <div class="info-icon">⏱️</div>
             <div>
-              <div class="info-label">Odezva</div>
-              <div class="info-value">Obvykle do 24–48 hodin</div>
+              <div class="info-label">{{ 'contact.response_label' | transloco }}</div>
+              <div class="info-value">{{ 'contact.response_value' | transloco }}</div>
             </div>
           </div>
         </div>
@@ -53,11 +54,11 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
           @if (!submitted) {
             <form [formGroup]="form" (ngSubmit)="submit()" class="contact-form">
               <div class="form-group">
-                <label>Jméno</label>
-                <input formControlName="name" type="text" placeholder="Jan Novák" class="form-input">
+                <label>{{ 'contact.form_name_label' | transloco }}</label>
+                <input formControlName="name" type="text" [placeholder]="'contact.form_name_placeholder' | transloco" class="form-input">
               </div>
               <div class="form-group">
-                <label>E-mail *</label>
+                <label>{{ 'contact.form_email_label' | transloco }}</label>
                 <input
                   formControlName="email"
                   type="email"
@@ -66,34 +67,31 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
                   [class.invalid]="form.get('email')?.invalid && form.get('email')?.touched"
                 >
                 @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                  <span class="form-error">Zadejte platný e-mail.</span>
+                  <span class="form-error">{{ 'common.email_invalid' | transloco }}</span>
                 }
               </div>
               <div class="form-group">
-                <label>Zpráva *</label>
+                <label>{{ 'contact.form_message_label' | transloco }}</label>
                 <textarea
                   formControlName="message"
                   rows="5"
-                  placeholder="Váš dotaz nebo zpráva…"
+                  [placeholder]="'contact.form_message_placeholder' | transloco"
                   class="form-input"
                   [class.invalid]="form.get('message')?.invalid && form.get('message')?.touched"
                 ></textarea>
-                @if (form.get('message')?.invalid && form.get('message')?.touched) {
-                  <span class="form-error">Zpráva je povinná.</span>
-                }
               </div>
               @if (error) {
                 <p class="form-error-global">Nepodařilo se odeslat. Napište přímo na <a href="mailto:info@firmometr.cz">info&#64;firmometr.cz</a>.</p>
               }
               <button type="submit" class="pub-btn pub-btn-primary" [disabled]="form.invalid || submitting">
-                {{ submitting ? 'Odesílám…' : 'Odeslat zprávu' }}
+                {{ 'contact.form_btn' | transloco }}
               </button>
             </form>
           } @else {
             <div class="success-box">
               <div class="success-icon">✓</div>
-              <h2>Zpráva odeslána!</h2>
-              <p>Ozveme se vám do 24–48 hodin na zadaný e-mail.</p>
+              <h2>{{ 'contact.success_title' | transloco }}</h2>
+              <p>{{ 'contact.success_sub' | transloco }}</p>
             </div>
           }
         </div>

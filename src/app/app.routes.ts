@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [
+const childRoutes: Routes = [
   { path: '', pathMatch: 'full', loadComponent: () => import('./public/landing/landing.component').then(m => m.LandingComponent) },
   { path: 'ceny', loadComponent: () => import('./public/pricing/pricing.component').then(m => m.PricingComponent) },
   { path: 'kontakt', loadComponent: () => import('./public/contact/contact.component').then(m => m.ContactComponent) },
@@ -11,4 +11,9 @@ export const routes: Routes = [
   { path: 'search/:ico', loadComponent: () => import('./features/search/subject-detail/subject-detail.component').then(m => m.SubjectDetailComponent) },
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
+];
+
+export const routes: Routes = [
+  ...childRoutes,
+  { path: 'en', children: childRoutes },
 ];

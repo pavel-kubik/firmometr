@@ -87,6 +87,7 @@ Watch list → localStorage (no backend)
 | ISIR WS2 | https://isir.justice.cz/isir/help/Popis_WS_2_v1_13.pdf | |
 | ČÚZK RUIAN | https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN | |
 | VAT | https://adisspr.mfcr.cz/pmd/dokumentace/ |webove-sluzby-spolehlivost-platcu | |
+
 ## External tools
 
 ### Netlify
@@ -102,3 +103,7 @@ https://supabase.com/ github account
 - Go to your Supabase dashboard → Project Settings → API → copy Project URL and anon public key
 - Paste them into both environment files
 - In Supabase → Authentication → URL Configuration, set Redirect URLs to http://localhost:4201 (dev) and your production URL
+
+### Brevo
+
+https://brevo.com

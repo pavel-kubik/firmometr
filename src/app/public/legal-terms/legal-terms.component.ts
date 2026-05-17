@@ -1,20 +1,21 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 
 @Component({
   selector: 'app-legal-terms',
   standalone: true,
-  imports: [RouterLink, PublicNavComponent, PublicFooterComponent],
+  imports: [RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
   template: `
     <app-public-nav />
 
     <main class="legal-page">
       <div class="legal-inner">
-        <div class="section-label">Právní dokumenty</div>
-        <h1>Obchodní podmínky</h1>
-        <p class="effective">Účinné od 16. 5. 2026</p>
+        <div class="section-label">{{ 'terms.label' | transloco }}</div>
+        <h1>{{ 'terms.title' | transloco }}</h1>
+        <p class="effective">{{ 'terms.effective' | transloco }}</p>
 
         <div class="legal-body">
 

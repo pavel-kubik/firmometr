@@ -2,21 +2,23 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { LangService } from '../../core/services/lang.service';
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, PublicNavComponent, PublicFooterComponent],
+  imports: [ReactiveFormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
   template: `
     <app-public-nav />
 
     <main class="pricing-page">
       <div class="page-hero">
-        <div class="section-label">Plány</div>
-        <h1>Vyberte plán podle potřeb</h1>
-        <p>Základní prověření zdarma. Pokročilé funkce pro registrované uživatele.</p>
+        <div class="section-label">{{ 'pricing.label' | transloco }}</div>
+        <h1>{{ 'pricing.title' | transloco }}</h1>
+        <p>{{ 'pricing.sub' | transloco }}</p>
       </div>
 
       <div class="plans-section">
@@ -24,43 +26,43 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
 
           <!-- Free -->
           <div class="plan-card">
-            <div class="plan-name">Free</div>
-            <div class="plan-price">Zdarma navždy</div>
+            <div class="plan-name">{{ 'pricing.plan_free_name' | transloco }}</div>
+            <div class="plan-price">{{ 'pricing.plan_free_price' | transloco }}</div>
             <ul class="plan-features">
-              <li>5 vyhledání za relaci</li>
-              <li>ISIR + DPH semafor</li>
-              <li>Základní profil firmy</li>
+              <li>{{ 'pricing.plan_free_feat1' | transloco }}</li>
+              <li>{{ 'pricing.plan_free_feat2' | transloco }}</li>
+              <li>{{ 'pricing.plan_free_feat3' | transloco }}</li>
             </ul>
-            <a routerLink="/search" class="pub-btn pub-btn-outline plan-btn">Začít zdarma</a>
+            <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_free_cta' | transloco }}</a>
           </div>
 
           <!-- Solo -->
           <div class="plan-card plan-featured">
-            <div class="plan-badge">PŘIPRAVUJEME</div>
-            <div class="plan-name">Solo</div>
-            <div class="plan-price">Brzy dostupné</div>
+            <div class="plan-badge">{{ 'pricing.plan_solo_badge' | transloco }}</div>
+            <div class="plan-name">{{ 'pricing.plan_solo_name' | transloco }}</div>
+            <div class="plan-price">{{ 'pricing.plan_solo_price' | transloco }}</div>
             <ul class="plan-features">
-              <li>20 sledovaných IČO</li>
-              <li>ISIR + DPH + OR alerty</li>
-              <li>E-mailová upozornění</li>
-              <li>CSV import</li>
+              <li>{{ 'pricing.plan_solo_feat1' | transloco }}</li>
+              <li>{{ 'pricing.plan_solo_feat2' | transloco }}</li>
+              <li>{{ 'pricing.plan_solo_feat3' | transloco }}</li>
+              <li>{{ 'pricing.plan_solo_feat4' | transloco }}</li>
             </ul>
-            <a href="#waitlist" class="pub-btn pub-btn-primary plan-btn" (click)="selectPlan('solo', $event)">Přidat na waitlist</a>
+            <a href="#waitlist" class="pub-btn pub-btn-primary plan-btn" (click)="selectPlan('solo', $event)">{{ 'pricing.plan_solo_cta' | transloco }}</a>
           </div>
 
           <!-- Business -->
           <div class="plan-card">
-            <div class="plan-badge plan-badge-gray">PŘIPRAVUJEME</div>
-            <div class="plan-name">Business</div>
-            <div class="plan-price">Brzy dostupné</div>
+            <div class="plan-badge plan-badge-gray">{{ 'pricing.plan_business_badge' | transloco }}</div>
+            <div class="plan-name">{{ 'pricing.plan_business_name' | transloco }}</div>
+            <div class="plan-price">{{ 'pricing.plan_business_price' | transloco }}</div>
             <ul class="plan-features">
-              <li>100 sledovaných IČO</li>
-              <li>Vše ze Solo +</li>
-              <li>Export Excel / PDF</li>
-              <li>Multi-user a role</li>
-              <li>Sbírka listin</li>
+              <li>{{ 'pricing.plan_business_feat1' | transloco }}</li>
+              <li>{{ 'pricing.plan_business_feat2' | transloco }}</li>
+              <li>{{ 'pricing.plan_business_feat3' | transloco }}</li>
+              <li>{{ 'pricing.plan_business_feat4' | transloco }}</li>
+              <li>{{ 'pricing.plan_business_feat5' | transloco }}</li>
             </ul>
-            <a href="#waitlist" class="pub-btn pub-btn-outline plan-btn" (click)="selectPlan('business', $event)">Přidat na waitlist</a>
+            <a href="#waitlist" class="pub-btn pub-btn-outline plan-btn" (click)="selectPlan('business', $event)">{{ 'pricing.plan_business_cta' | transloco }}</a>
           </div>
 
         </div>
@@ -70,39 +72,39 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
       <section class="waitlist-section" id="waitlist">
         <div class="waitlist-inner">
           @if (!submitted) {
-            <div class="waitlist-label">WAITLIST</div>
-            <h2>Upozorníme vás, jakmile bude plán dostupný</h2>
-            <p>Vyplňte e-mail a my vás budeme první informovat při spuštění.</p>
+            <div class="waitlist-label">{{ 'pricing.waitlist_label' | transloco }}</div>
+            <h2>{{ 'pricing.waitlist_title' | transloco }}</h2>
+            <p>{{ 'pricing.waitlist_sub' | transloco }}</p>
             <form [formGroup]="form" (ngSubmit)="submit()" class="waitlist-form">
               <div class="form-row">
                 <input
                   formControlName="email"
                   type="email"
-                  placeholder="Váš e-mail *"
+                  [placeholder]="'pricing.waitlist_placeholder' | transloco"
                   class="form-input"
                   [class.invalid]="form.get('email')?.invalid && form.get('email')?.touched"
                 >
                 <select formControlName="plan" class="form-input form-select">
-                  <option value="">Vyberte plán</option>
+                  <option value="">{{ 'pricing.waitlist_plan_placeholder' | transloco }}</option>
                   <option value="solo">Solo</option>
                   <option value="business">Business</option>
                 </select>
                 <button type="submit" class="pub-btn pub-btn-primary" [disabled]="form.invalid || submitting">
-                  {{ submitting ? 'Odesílám…' : 'Přidat na waitlist' }}
+                  {{ (submitting ? 'common.loading' : 'pricing.waitlist_btn') | transloco }}
                 </button>
               </div>
               @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                <p class="form-error">Zadejte platný e-mail.</p>
+                <p class="form-error">{{ 'common.email_invalid' | transloco }}</p>
               }
               @if (error) {
-                <p class="form-error">Nepodařilo se odeslat. Napište nám na <a href="mailto:info@firmometr.cz">info&#64;firmometr.cz</a>.</p>
+                <p class="form-error">{{ 'pricing.waitlist_error' | transloco }}</p>
               }
             </form>
           } @else {
             <div class="success-box">
               <div class="success-icon">✓</div>
-              <h2>Jste na čekací listině!</h2>
-              <p>Pošleme vám e-mail, jakmile bude plán dostupný.</p>
+              <h2>{{ 'pricing.waitlist_success_title' | transloco }}</h2>
+              <p>{{ 'pricing.waitlist_success_sub' | transloco }}</p>
             </div>
           }
         </div>
@@ -186,6 +188,7 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
 export class PricingComponent {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  ls = inject(LangService);
 
   submitted = false;
   submitting = false;

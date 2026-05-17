@@ -1,13 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { LangService } from '../../core/services/lang.service';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [FormsModule, RouterLink, PublicNavComponent, PublicFooterComponent],
+  imports: [FormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
   template: `
     <app-public-nav />
 
@@ -16,25 +18,25 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
       <!-- Hero -->
       <section class="hero">
         <div class="hero-inner">
-          <div class="hero-badge">✓ Bez registrace, bez kreditní karty</div>
-          <h1>Prověřte každého<br>obchodního partnera<br><em>za 10 sekund</em></h1>
-          <p class="hero-sub">Insolvence, DPH registr, obchodní rejstřík a statutáři — vše z českých veřejných rejstříků na jednom místě.</p>
+          <div class="hero-badge">{{ 'landing.badge' | transloco }}</div>
+          <h1>{{ 'landing.hero_title_line1' | transloco }}<br>{{ 'landing.hero_title_line2' | transloco }}<br><em>{{ 'landing.hero_title_em' | transloco }}</em></h1>
+          <p class="hero-sub">{{ 'landing.hero_sub' | transloco }}</p>
           <div class="hero-actions">
-            <a routerLink="/search" class="pub-btn pub-btn-primary">Vyhledat firmu zdarma</a>
-            <a routerLink="/ceny" class="pub-btn pub-btn-ghost">Zobrazit ceny</a>
+            <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-primary">{{ 'landing.cta_search' | transloco }}</a>
+            <a [routerLink]="ls.p('/ceny')" class="pub-btn pub-btn-ghost">{{ 'landing.cta_pricing' | transloco }}</a>
           </div>
           <div class="search-demo">
-            <div class="search-label">ŽIVÉ DEMO</div>
+            <div class="search-label">{{ 'landing.demo_label' | transloco }}</div>
             <div class="search-row">
-              <input class="search-input" [(ngModel)]="searchQuery" placeholder="Zadejte IČO nebo název firmy…" (keyup.enter)="goSearch()">
-              <button class="search-btn" (click)="goSearch()">Hledat</button>
+              <input class="search-input" [(ngModel)]="searchQuery" [placeholder]="'landing.search_placeholder' | transloco" (keyup.enter)="goSearch()">
+              <button class="search-btn" (click)="goSearch()">{{ 'landing.search_btn' | transloco }}</button>
             </div>
           </div>
           <div class="trust-strip">
-            <span class="trust-item"><span class="dot"></span>ISIR — Insolvenční rejstřík</span>
-            <span class="trust-item"><span class="dot"></span>DPH — Nespolehliví plátci</span>
-            <span class="trust-item"><span class="dot"></span>OR — Obchodní rejstřík</span>
-            <span class="trust-item"><span class="dot"></span>ARES — Základní údaje</span>
+            <span class="trust-item"><span class="dot"></span>{{ 'landing.trust_isir' | transloco }}</span>
+            <span class="trust-item"><span class="dot"></span>{{ 'landing.trust_dph' | transloco }}</span>
+            <span class="trust-item"><span class="dot"></span>{{ 'landing.trust_or' | transloco }}</span>
+            <span class="trust-item"><span class="dot"></span>{{ 'landing.trust_ares' | transloco }}</span>
           </div>
         </div>
       </section>
@@ -42,38 +44,38 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
       <!-- Features -->
       <section class="features">
         <div class="section-inner">
-          <div class="section-label">Co Firmometr kontroluje</div>
-          <h2>Kompletní prověření firmy<br>z veřejných rejstříků</h2>
+          <div class="section-label">{{ 'landing.features_label' | transloco }}</div>
+          <h2>{{ 'landing.features_title_line1' | transloco }}<br>{{ 'landing.features_title_line2' | transloco }}</h2>
           <div class="features-grid">
             <div class="feature-card">
               <div class="feature-icon">⚖️</div>
-              <h3>Insolvenční rejstřík (ISIR)</h3>
-              <p>Okamžitá kontrola aktivních i historických insolvencí. Semafor: čistá / minulý dlužník / aktivní řízení.</p>
+              <h3>{{ 'landing.feat_isir_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_isir_desc' | transloco }}</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">🧾</div>
-              <h3>Nespolehliví plátci DPH</h3>
-              <p>Databáze Ministerstva financí — ověření spolehlivosti plátce nebo zjištění, zda firma DPH vůbec odvádí.</p>
+              <h3>{{ 'landing.feat_dph_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_dph_desc' | transloco }}</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">🏢</div>
-              <h3>Obchodní rejstřík</h3>
-              <p>Statutáři, právní forma, datum vzniku, základní kapitál a stav firmy přímo z justice.cz.</p>
+              <h3>{{ 'landing.feat_or_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_or_desc' | transloco }}</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">📍</div>
-              <h3>Adresa a základní údaje</h3>
-              <p>Ověřená adresa ze ČÚZK / RUIAN, IČO, DIČ, právní forma a celý profil z ARES.</p>
+              <h3>{{ 'landing.feat_ares_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_ares_desc' | transloco }}</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">🔔</div>
-              <h3>Watchlist a sledování</h3>
-              <p>Uložte si firmy do sledovaných a mějte přehled o jejich stavu bez nutnosti hledat znova.</p>
+              <h3>{{ 'landing.feat_watchlist_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_watchlist_desc' | transloco }}</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">🚦</div>
-              <h3>Rizikový semafor</h3>
-              <p>Vizuální přehled: zelená = ok, oranžová = pozor, červená = problém. Rychlé rozhodnutí na první pohled.</p>
+              <h3>{{ 'landing.feat_semaphore_title' | transloco }}</h3>
+              <p>{{ 'landing.feat_semaphore_desc' | transloco }}</p>
             </div>
           </div>
         </div>
@@ -82,25 +84,25 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
       <!-- How it works -->
       <section class="how">
         <div class="section-inner">
-          <div class="section-label">Jak to funguje</div>
-          <h2>3 kroky k úplnému přehledu</h2>
+          <div class="section-label">{{ 'landing.how_label' | transloco }}</div>
+          <h2>{{ 'landing.how_title' | transloco }}</h2>
           <div class="how-grid">
             <div class="how-step">
               <div class="step-num">1</div>
-              <h3>Zadejte IČO nebo název</h3>
-              <p>Vyhledejte firmu bez registrace — okamžitě a zdarma.</p>
+              <h3>{{ 'landing.how_step1_title' | transloco }}</h3>
+              <p>{{ 'landing.how_step1_desc' | transloco }}</p>
             </div>
             <div class="how-arrow">→</div>
             <div class="how-step">
               <div class="step-num">2</div>
-              <h3>Získejte kompletní profil</h3>
-              <p>Firmometr agreguje data z ISIR, DPH registru, ARES a OR do přehledného profilu.</p>
+              <h3>{{ 'landing.how_step2_title' | transloco }}</h3>
+              <p>{{ 'landing.how_step2_desc' | transloco }}</p>
             </div>
             <div class="how-arrow">→</div>
             <div class="how-step">
               <div class="step-num">3</div>
-              <h3>Sledujte změny</h3>
-              <p>Přidejte firmu do watchlistu a mějte vždy přehled o aktuálním stavu.</p>
+              <h3>{{ 'landing.how_step3_title' | transloco }}</h3>
+              <p>{{ 'landing.how_step3_desc' | transloco }}</p>
             </div>
           </div>
         </div>
@@ -109,43 +111,43 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
       <!-- Pricing teaser -->
       <section class="pricing-teaser">
         <div class="section-inner">
-          <div class="section-label">Plány</div>
-          <h2>Vyberte plán podle potřeb</h2>
-          <p class="section-sub">Základní prověření zdarma. Pokročilé funkce pro registrované uživatele.</p>
+          <div class="section-label">{{ 'landing.plans_label' | transloco }}</div>
+          <h2>{{ 'landing.plans_title' | transloco }}</h2>
+          <p class="section-sub">{{ 'landing.plans_sub' | transloco }}</p>
           <div class="plans-grid">
             <div class="plan-card">
-              <div class="plan-name">Free</div>
-              <div class="plan-desc">Zdarma navždy</div>
+              <div class="plan-name">{{ 'landing.plan_free_name' | transloco }}</div>
+              <div class="plan-desc">{{ 'landing.plan_free_price' | transloco }}</div>
               <ul class="plan-features">
-                <li>5 vyhledání za relaci</li>
-                <li>ISIR + DPH semafor</li>
-                <li>Základní profil firmy</li>
+                <li>{{ 'landing.plan_free_feat1' | transloco }}</li>
+                <li>{{ 'landing.plan_free_feat2' | transloco }}</li>
+                <li>{{ 'landing.plan_free_feat3' | transloco }}</li>
               </ul>
-              <a routerLink="/search" class="pub-btn pub-btn-outline">Začít zdarma</a>
+              <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
             <div class="plan-card plan-featured">
-              <div class="plan-badge">BRZY</div>
-              <div class="plan-name">Solo</div>
-              <div class="plan-desc">Připravujeme</div>
+              <div class="plan-badge">{{ 'landing.plan_solo_badge' | transloco }}</div>
+              <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
+              <div class="plan-desc">{{ 'landing.plan_solo_price' | transloco }}</div>
               <ul class="plan-features">
-                <li>20 sledovaných IČO</li>
-                <li>ISIR + DPH + OR alerty</li>
-                <li>E-mailová upozornění</li>
-                <li>CSV import</li>
+                <li>{{ 'landing.plan_solo_feat1' | transloco }}</li>
+                <li>{{ 'landing.plan_solo_feat2' | transloco }}</li>
+                <li>{{ 'landing.plan_solo_feat3' | transloco }}</li>
+                <li>{{ 'landing.plan_solo_feat4' | transloco }}</li>
               </ul>
-              <a routerLink="/ceny" class="pub-btn pub-btn-primary">Přidat na waitlist</a>
+              <a [routerLink]="ls.p('/ceny')" class="pub-btn pub-btn-primary">{{ 'landing.plan_solo_cta' | transloco }}</a>
             </div>
             <div class="plan-card">
-              <div class="plan-badge plan-badge-gray">BRZY</div>
-              <div class="plan-name">Business</div>
-              <div class="plan-desc">Připravujeme</div>
+              <div class="plan-badge plan-badge-gray">{{ 'landing.plan_business_badge' | transloco }}</div>
+              <div class="plan-name">{{ 'landing.plan_business_name' | transloco }}</div>
+              <div class="plan-desc">{{ 'landing.plan_business_price' | transloco }}</div>
               <ul class="plan-features">
-                <li>100 sledovaných IČO</li>
-                <li>Vše ze Solo +</li>
-                <li>Export Excel / PDF</li>
-                <li>Multi-user a role</li>
+                <li>{{ 'landing.plan_business_feat1' | transloco }}</li>
+                <li>{{ 'landing.plan_business_feat2' | transloco }}</li>
+                <li>{{ 'landing.plan_business_feat3' | transloco }}</li>
+                <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
               </ul>
-              <a routerLink="/ceny" class="pub-btn pub-btn-outline">Přidat na waitlist</a>
+              <a [routerLink]="ls.p('/ceny')" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
             </div>
           </div>
         </div>
@@ -153,9 +155,10 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
 
       <!-- Dark CTA -->
       <section class="cta-dark">
-        <h2>Prověřte prvního partnera hned teď</h2>
-        <p>Bez registrace, bez kreditní karty. Prvních 5 vyhledání zdarma.</p>
-        <a routerLink="/search" class="pub-btn pub-btn-primary">Vyhledat firmu →</a>
+        <div class="section-label">{{ 'landing.cta_section_label' | transloco }}</div>
+        <h2>{{ 'landing.cta_section_title' | transloco }}</h2>
+        <p>{{ 'landing.cta_section_sub' | transloco }}</p>
+        <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-primary">{{ 'landing.cta_section_btn' | transloco }}</a>
       </section>
 
     </main>
@@ -285,11 +288,12 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
 })
 export class LandingComponent {
   private router = inject(Router);
+  ls = inject(LangService);
   searchQuery = '';
 
   goSearch() {
     const q = this.searchQuery.trim();
     if (!q) return;
-    this.router.navigate(['/search'], { queryParams: { q } });
+    this.router.navigate([this.ls.p('/search')], { queryParams: { q } });
   }
 }

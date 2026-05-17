@@ -1,35 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslocoPipe } from '@jsverse/transloco';
+import { LangService } from '../../core/services/lang.service';
 
 @Component({
   selector: 'app-public-footer',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, TranslocoPipe],
   template: `
     <footer class="pub-footer">
       <div class="pub-footer-inner">
         <div class="pub-footer-brand">
           <span class="pub-logo">FIRM<span>O</span>METR</span>
-          <p>Prověřování českých firem z veřejných rejstříků.<br>Butterfly Flowers s.r.o., IČO 07102127</p>
+          <p>{{ 'footer.tagline' | transloco }}<br>{{ 'footer.company' | transloco }}</p>
         </div>
         <div class="pub-footer-col">
-          <h4>Produkt</h4>
+          <h4>{{ 'footer.col_product' | transloco }}</h4>
           <ul>
-            <li><a routerLink="/search">Vyhledat firmu</a></li>
-            <li><a routerLink="/ceny">Ceny</a></li>
-            <li><a routerLink="/kontakt">Kontakt</a></li>
+            <li><a [routerLink]="ls.p('/search')">{{ 'footer.search' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/ceny')">{{ 'footer.pricing' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/kontakt')">{{ 'footer.contact' | transloco }}</a></li>
           </ul>
         </div>
         <div class="pub-footer-col">
-          <h4>Právní</h4>
+          <h4>{{ 'footer.col_legal' | transloco }}</h4>
           <ul>
-            <li><a routerLink="/obchodni-podminky">Obchodní podmínky</a></li>
-            <li><a routerLink="/gdpr">GDPR / Ochrana dat</a></li>
+            <li><a [routerLink]="ls.p('/obchodni-podminky')">{{ 'footer.terms' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/gdpr')">{{ 'footer.gdpr' | transloco }}</a></li>
           </ul>
         </div>
       </div>
       <div class="pub-footer-bottom">
-        <span>© 2026 Firmometr. Všechna práva vyhrazena.</span>
+        <span>{{ 'footer.copyright' | transloco }}</span>
         <span>info&#64;firmometr.cz</span>
       </div>
     </footer>
@@ -72,4 +74,6 @@ import { RouterLink } from '@angular/router';
     }
   `]
 })
-export class PublicFooterComponent {}
+export class PublicFooterComponent {
+  ls = inject(LangService);
+}

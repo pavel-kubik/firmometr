@@ -9,9 +9,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { WatchService } from '../../core/services/watch.service';
 import { WatchedEntity } from '../../core/models/watch.model';
 import { AuthService } from '../../core/services/auth.service';
+import { LangService } from '../../core/services/lang.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
@@ -29,7 +31,7 @@ function passwordMatchValidator(group: AbstractControl) {
     MatCardModule, MatIconModule,
     MatProgressBarModule, MatSnackBarModule,
     MatFormFieldModule, MatInputModule, MatTabsModule,
-    PublicNavComponent, PublicFooterComponent,
+    TranslocoPipe, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
@@ -37,8 +39,8 @@ function passwordMatchValidator(group: AbstractControl) {
 
       <section class="dashboard-hero">
         <div class="hero-inner">
-          <h1>Sledované subjekty</h1>
-          <button class="pub-btn pub-btn-primary" (click)="goSearch()">+ Přidat subjekt</button>
+          <h1>{{ 'dashboard.title' | transloco }}</h1>
+          <button class="pub-btn pub-btn-primary" (click)="goSearch()">{{ 'dashboard.add_btn' | transloco }}</button>
         </div>
       </section>
 
@@ -47,9 +49,9 @@ function passwordMatchValidator(group: AbstractControl) {
 
         <div *ngIf="!loading && isLoggedIn && entities.length === 0" class="empty-state">
           <mat-icon>visibility_off</mat-icon>
-          <h2>Zatím žádné sledované subjekty</h2>
-          <p>Vyhledejte firmu nebo osobu a přidejte ji ke sledování.</p>
-          <button class="pub-btn pub-btn-primary" (click)="goSearch()">Vyhledat subjekt</button>
+          <h2>{{ 'dashboard.empty_title' | transloco }}</h2>
+          <p>{{ 'dashboard.empty_sub' | transloco }}</p>
+          <button class="pub-btn pub-btn-primary" (click)="goSearch()">{{ 'dashboard.empty_btn' | transloco }}</button>
         </div>
 
         <!-- Real entities (logged in) -->
@@ -62,15 +64,15 @@ function passwordMatchValidator(group: AbstractControl) {
             </mat-card-header>
             <mat-card-content>
               <div class="status-chips">
-                <span *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="badge badge-danger">Aktivní insolvenční řízení</span>
-                <span *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="badge badge-warn">Spoluodpovědný dlužník</span>
-                <span *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="badge badge-past">Minulý dlužník</span>
-                <span *ngIf="entity.isirClarity === 'CLEAR'" class="badge badge-ok">Bez insolvencí</span>
-                <span *ngIf="entity.dphNespolehlivy" class="badge badge-danger">Nespolehlivý plátce DPH</span>
+                <span *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="badge badge-danger">{{ 'dashboard.badge_active_debtor' | transloco }}</span>
+                <span *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="badge badge-warn">{{ 'dashboard.badge_co_debtor' | transloco }}</span>
+                <span *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="badge badge-past">{{ 'dashboard.badge_past_debtor' | transloco }}</span>
+                <span *ngIf="entity.isirClarity === 'CLEAR'" class="badge badge-ok">{{ 'dashboard.badge_clear' | transloco }}</span>
+                <span *ngIf="entity.dphNespolehlivy" class="badge badge-danger">{{ 'dashboard.badge_dph' | transloco }}</span>
               </div>
               <p class="last-checked">
                 <mat-icon class="small-icon">schedule</mat-icon>
-                Poslední kontrola: {{ entity.lastCheckedAt ? formatDate(entity.lastCheckedAt) : 'Zatím nekontrolováno' }}
+                {{ 'dashboard.last_checked' | transloco }} {{ entity.lastCheckedAt ? formatDate(entity.lastCheckedAt) : ('dashboard.not_checked' | transloco) }}
               </p>
               <p *ngIf="entity.notifyEmail" class="notify-email">
                 <mat-icon class="small-icon">email</mat-icon>
@@ -78,8 +80,8 @@ function passwordMatchValidator(group: AbstractControl) {
               </p>
             </mat-card-content>
             <mat-card-actions>
-              <button class="pub-btn pub-btn-ghost pub-btn-sm" (click)="goDetail(entity.ico)">Detail →</button>
-              <button class="pub-btn pub-btn-danger pub-btn-sm" (click)="unwatch(entity)">Odebrat</button>
+              <button class="pub-btn pub-btn-ghost pub-btn-sm" (click)="goDetail(entity.ico)">{{ 'dashboard.btn_detail' | transloco }}</button>
+              <button class="pub-btn pub-btn-danger pub-btn-sm" (click)="unwatch(entity)">{{ 'dashboard.btn_remove' | transloco }}</button>
             </mat-card-actions>
           </mat-card>
         </div>
@@ -88,7 +90,7 @@ function passwordMatchValidator(group: AbstractControl) {
         <ng-container *ngIf="!loading && !isLoggedIn">
           <p class="demo-notice">
             <mat-icon class="small-icon">info</mat-icon>
-            Přihlaste se pro správu vlastního portfolia sledovaných subjektů.
+            {{ 'dashboard.demo_notice' | transloco }}
           </p>
           <div class="entities-grid">
             <mat-card *ngFor="let entity of demoEntities" class="entity-card demo-card" [ngClass]="getStatusClass(entity)">
@@ -100,15 +102,15 @@ function passwordMatchValidator(group: AbstractControl) {
               </mat-card-header>
               <mat-card-content>
                 <div class="status-chips">
-                  <span *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="badge badge-danger">Aktivní insolvenční řízení</span>
-                  <span *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="badge badge-warn">Spoluodpovědný dlužník</span>
-                  <span *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="badge badge-past">Minulý dlužník</span>
-                  <span *ngIf="entity.isirClarity === 'CLEAR'" class="badge badge-ok">Bez insolvencí</span>
-                  <span *ngIf="entity.dphNespolehlivy" class="badge badge-danger">Nespolehlivý plátce DPH</span>
+                  <span *ngIf="entity.isirClarity === 'ACTIVE_DEBTOR'" class="badge badge-danger">{{ 'dashboard.badge_active_debtor' | transloco }}</span>
+                  <span *ngIf="entity.isirClarity === 'ACTIVE_CO_DEBTOR'" class="badge badge-warn">{{ 'dashboard.badge_co_debtor' | transloco }}</span>
+                  <span *ngIf="entity.isirClarity === 'PAST_DEBTOR'" class="badge badge-past">{{ 'dashboard.badge_past_debtor' | transloco }}</span>
+                  <span *ngIf="entity.isirClarity === 'CLEAR'" class="badge badge-ok">{{ 'dashboard.badge_clear' | transloco }}</span>
+                  <span *ngIf="entity.dphNespolehlivy" class="badge badge-danger">{{ 'dashboard.badge_dph' | transloco }}</span>
                 </div>
                 <p class="last-checked">
                   <mat-icon class="small-icon">schedule</mat-icon>
-                  Poslední kontrola: {{ formatDate(entity.lastCheckedAt!) }}
+                  {{ 'dashboard.last_checked' | transloco }} {{ formatDate(entity.lastCheckedAt!) }}
                 </p>
               </mat-card-content>
             </mat-card>
@@ -119,30 +121,30 @@ function passwordMatchValidator(group: AbstractControl) {
       <!-- Auth CTA section (not logged in) -->
       <section *ngIf="!loading && !isLoggedIn" class="auth-section">
         <div class="auth-inner">
-          <h2 class="auth-heading">Začněte sledovat firmy ještě dnes</h2>
-          <p class="auth-sub">Zaregistrujte se zdarma a získejte přehled o svých obchodních partnerech.</p>
+          <h2 class="auth-heading">{{ 'dashboard.auth_title' | transloco }}</h2>
+          <p class="auth-sub">{{ 'dashboard.auth_sub' | transloco }}</p>
 
           <mat-card class="auth-card">
             <mat-card-content>
               <mat-tab-group>
 
-                <mat-tab label="Přihlásit se">
+                <mat-tab [label]="'dashboard.tab_login' | transloco">
                   <form [formGroup]="loginForm" (ngSubmit)="login()" class="auth-form">
                     <mat-form-field appearance="outline" class="w-full">
-                      <mat-label>E-mail</mat-label>
+                      <mat-label>{{ 'common.email_label' | transloco }}</mat-label>
                       <input matInput type="email" formControlName="email" autocomplete="email">
                       @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
-                        <mat-error>E-mail je povinný</mat-error>
+                        <mat-error>{{ 'common.email_required' | transloco }}</mat-error>
                       } @else if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
-                        <mat-error>Zadejte platný e-mail</mat-error>
+                        <mat-error>{{ 'common.email_invalid' | transloco }}</mat-error>
                       }
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
-                      <mat-label>Heslo</mat-label>
+                      <mat-label>{{ 'common.password_label' | transloco }}</mat-label>
                       <input matInput type="password" formControlName="password" autocomplete="current-password">
                       @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
-                        <mat-error>Heslo je povinné</mat-error>
+                        <mat-error>{{ 'common.password_required' | transloco }}</mat-error>
                       }
                     </mat-form-field>
 
@@ -151,39 +153,39 @@ function passwordMatchValidator(group: AbstractControl) {
                     }
 
                     <button class="pub-btn pub-btn-primary auth-submit" type="submit" [disabled]="authLoading">
-                      {{ authLoading ? 'Přihlašuji…' : 'Přihlásit se' }}
+                      {{ (authLoading ? 'dashboard.login_btn_loading' : 'dashboard.login_btn') | transloco }}
                     </button>
                   </form>
                 </mat-tab>
 
-                <mat-tab label="Registrovat se">
+                <mat-tab [label]="'dashboard.tab_register' | transloco">
                   @if (!registered) {
                     <form [formGroup]="registerForm" (ngSubmit)="register()" class="auth-form">
                       <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>E-mail</mat-label>
+                        <mat-label>{{ 'common.email_label' | transloco }}</mat-label>
                         <input matInput type="email" formControlName="email" autocomplete="email">
                         @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
-                          <mat-error>E-mail je povinný</mat-error>
+                          <mat-error>{{ 'common.email_required' | transloco }}</mat-error>
                         } @else if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
-                          <mat-error>Zadejte platný e-mail</mat-error>
+                          <mat-error>{{ 'common.email_invalid' | transloco }}</mat-error>
                         }
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Heslo</mat-label>
+                        <mat-label>{{ 'common.password_label' | transloco }}</mat-label>
                         <input matInput type="password" formControlName="password" autocomplete="new-password">
                         @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
-                          <mat-error>Heslo je povinné</mat-error>
+                          <mat-error>{{ 'common.password_required' | transloco }}</mat-error>
                         } @else if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-                          <mat-error>Heslo musí mít alespoň 6 znaků</mat-error>
+                          <mat-error>{{ 'common.password_minlength' | transloco }}</mat-error>
                         }
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Potvrdit heslo</mat-label>
+                        <mat-label>{{ 'common.confirm_password_label' | transloco }}</mat-label>
                         <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password">
                         @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-                          <mat-error>Hesla se neshodují</mat-error>
+                          <mat-error>{{ 'common.passwords_mismatch' | transloco }}</mat-error>
                         }
                       </mat-form-field>
 
@@ -192,14 +194,14 @@ function passwordMatchValidator(group: AbstractControl) {
                       }
 
                       <button class="pub-btn pub-btn-primary auth-submit" type="submit" [disabled]="authLoading">
-                        {{ authLoading ? 'Registruji…' : 'Zaregistrovat se' }}
+                        {{ (authLoading ? 'dashboard.register_btn_loading' : 'dashboard.register_btn') | transloco }}
                       </button>
                     </form>
                   } @else {
                     <div class="auth-confirm">
                       <mat-icon class="confirm-icon">mark_email_read</mat-icon>
-                      <h3>Potvrďte e-mail</h3>
-                      <p>Zaslali jsme vám potvrzovací odkaz. Klikněte na něj pro dokončení registrace.</p>
+                      <h3>{{ 'dashboard.confirm_title' | transloco }}</h3>
+                      <p>{{ 'dashboard.confirm_msg' | transloco }}</p>
                     </div>
                   }
                 </mat-tab>
@@ -302,6 +304,8 @@ export class DashboardComponent implements OnInit {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private transloco = inject(TranslocoService);
+  ls = inject(LangService);
 
   entities: WatchedEntity[] = [];
   loading = true;
@@ -367,7 +371,7 @@ export class DashboardComponent implements OnInit {
     const { email, password } = this.loginForm.value;
     const { error } = await this.authService.signInWithPassword(email!, password!);
     if (error) { this.loginError = error.message; }
-    else { this.router.navigate(['/dashboard']); }
+    else { this.router.navigate([this.ls.p('/dashboard')]); }
     this.authLoading = false;
   }
 
@@ -385,7 +389,7 @@ export class DashboardComponent implements OnInit {
   unwatch(entity: WatchedEntity) {
     this.watchService.unwatch(entity.id).subscribe(() => {
       this.entities = this.entities.filter(e => e.id !== entity.id);
-      this.snackBar.open(`${entity.displayName} odebrán ze sledování`, 'OK', { duration: 3000 });
+      this.snackBar.open(`${entity.displayName} — ${this.transloco.translate('dashboard.removed_snack')}`, 'OK', { duration: 3000 });
     });
   }
 
@@ -397,8 +401,8 @@ export class DashboardComponent implements OnInit {
     return 'status-orange';
   }
 
-  goSearch() { this.router.navigate(['/search']); }
-  goDetail(ico: string) { this.router.navigate(['/search', ico]); }
+  goSearch() { this.router.navigate([this.ls.p('/search')]); }
+  goDetail(ico: string) { this.router.navigate([this.ls.p('/search'), ico]); }
   formatDate(iso: string) {
     const d = new Date(iso);
     return isNaN(d.getTime()) ? iso : d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'numeric', year: 'numeric' });

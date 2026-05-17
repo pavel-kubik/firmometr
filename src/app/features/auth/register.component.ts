@@ -5,7 +5,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
+import { LangService } from '../../core/services/lang.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
@@ -25,6 +27,7 @@ function passwordMatchValidator(group: AbstractControl) {
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
+    TranslocoPipe,
     PublicNavComponent,
     PublicFooterComponent,
   ],
@@ -33,37 +36,37 @@ function passwordMatchValidator(group: AbstractControl) {
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
-          <mat-card-title>Registrace</mat-card-title>
+          <mat-card-title>{{ 'register.title' | transloco }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           @if (!registered) {
             <form [formGroup]="registerForm" (ngSubmit)="register()" class="form">
 
               <mat-form-field appearance="outline">
-                <mat-label>E-mail</mat-label>
+                <mat-label>{{ 'common.email_label' | transloco }}</mat-label>
                 <input matInput type="email" formControlName="email" autocomplete="email">
                 @if (registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched) {
-                  <mat-error>E-mail je povinný</mat-error>
+                  <mat-error>{{ 'common.email_required' | transloco }}</mat-error>
                 } @else if (registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched) {
-                  <mat-error>Zadejte platný e-mail</mat-error>
+                  <mat-error>{{ 'common.email_invalid' | transloco }}</mat-error>
                 }
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Heslo</mat-label>
+                <mat-label>{{ 'common.password_label' | transloco }}</mat-label>
                 <input matInput type="password" formControlName="password" autocomplete="new-password">
                 @if (registerForm.get('password')?.hasError('required') && registerForm.get('password')?.touched) {
-                  <mat-error>Heslo je povinné</mat-error>
+                  <mat-error>{{ 'common.password_required' | transloco }}</mat-error>
                 } @else if (registerForm.get('password')?.hasError('minlength') && registerForm.get('password')?.touched) {
-                  <mat-error>Heslo musí mít alespoň 6 znaků</mat-error>
+                  <mat-error>{{ 'common.password_minlength' | transloco }}</mat-error>
                 }
               </mat-form-field>
 
               <mat-form-field appearance="outline">
-                <mat-label>Potvrdit heslo</mat-label>
+                <mat-label>{{ 'common.confirm_password_label' | transloco }}</mat-label>
                 <input matInput type="password" formControlName="confirmPassword" autocomplete="new-password">
                 @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
-                  <mat-error>Hesla se neshodují</mat-error>
+                  <mat-error>{{ 'common.passwords_mismatch' | transloco }}</mat-error>
                 }
               </mat-form-field>
 
@@ -72,20 +75,20 @@ function passwordMatchValidator(group: AbstractControl) {
               }
 
               <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
-                {{ loading ? 'Registruji…' : 'Zaregistrovat se' }}
+                {{ (loading ? 'register.btn_loading' : 'register.btn') | transloco }}
               </button>
 
               <p class="link-hint">
-                Již máte účet? <a routerLink="/login">Přihlaste se</a>
+                {{ 'register.has_account' | transloco }} <a [routerLink]="ls.p('/login')">{{ 'register.login_link' | transloco }}</a>
               </p>
 
             </form>
           } @else {
             <div class="confirmation">
               <mat-icon class="confirm-icon">mark_email_read</mat-icon>
-              <h3>Potvrďte e-mail</h3>
-              <p>Zaslali jsme vám potvrzovací odkaz. Zkontrolujte svůj e-mail a klikněte na odkaz pro dokončení registrace.</p>
-              <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm">Zpět na přihlášení</a>
+              <h3>{{ 'register.confirm_title' | transloco }}</h3>
+              <p>{{ 'register.confirm_msg' | transloco }}</p>
+              <a [routerLink]="ls.p('/login')" class="pub-btn pub-btn-ghost pub-btn-sm">{{ 'register.back_to_login' | transloco }}</a>
             </div>
           }
         </mat-card-content>
@@ -133,6 +136,7 @@ function passwordMatchValidator(group: AbstractControl) {
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  ls = inject(LangService);
 
   registerForm = this.fb.group(
     {

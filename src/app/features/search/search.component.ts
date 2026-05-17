@@ -7,9 +7,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { SearchService } from '../../core/services/search.service';
 import { SubjectSummary } from '../../core/models/subject.model';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-limit';
+import { LangService } from '../../core/services/lang.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
@@ -19,7 +21,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
   imports: [
     CommonModule, FormsModule, RouterLink,
     MatTableModule, MatProgressBarModule, MatIconModule,
-    MatPaginatorModule, PublicNavComponent, PublicFooterComponent,
+    MatPaginatorModule, TranslocoPipe, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
     <app-public-nav />
@@ -27,20 +29,20 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
 
       <section class="search-hero">
         <div class="hero-inner">
-          <div class="section-label">Vyhledávání</div>
-          <h1>Vyhledat subjekt</h1>
-          <p class="hero-sub">Ověřte solventnost a registrační stav českých firem z veřejných rejstříků (ARES, ISIR, DPH).</p>
+          <div class="section-label">{{ 'search.label' | transloco }}</div>
+          <h1>{{ 'search.title' | transloco }}</h1>
+          <p class="hero-sub">{{ 'search.sub' | transloco }}</p>
           <div class="search-box">
-            <div class="search-box-label">IČO nebo název firmy</div>
+            <div class="search-box-label">{{ 'search.input_label' | transloco }}</div>
             <div class="search-row">
               <input
                 class="search-input-field"
                 [(ngModel)]="query"
                 (keyup.enter)="search()"
-                placeholder="Např. 27082440 nebo Avast"
+                [placeholder]="'search.placeholder' | transloco"
                 [disabled]="loading"
               >
-              <button class="pub-btn pub-btn-primary" (click)="search()" [disabled]="loading">Hledat</button>
+              <button class="pub-btn pub-btn-primary" (click)="search()" [disabled]="loading">{{ 'search.btn' | transloco }}</button>
             </div>
           </div>
         </div>
@@ -52,29 +54,29 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
         <div *ngIf="limitReached" class="limit-banner">
           <mat-icon class="limit-icon">hourglass_top</mat-icon>
           <div class="limit-text">
-            <strong>Dosáhli jste limitu {{ freeCap }} bezplatných vyhledávání za {{ windowMinutes }} minut.</strong>
-            <span *ngIf="remainingSeconds > 0"> Zkuste to znovu za {{ countdownDisplay }}.</span>
+            <strong>{{ 'search.limit_msg' | transloco : { freeCap: freeCap, windowMinutes: windowMinutes } }}</strong>
+            <span *ngIf="remainingSeconds > 0"> {{ 'search.limit_retry' | transloco : { countdown: countdownDisplay } }}</span>
           </div>
-          <a routerLink="/login" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">Přihlásit se</a>
+          <a [routerLink]="ls.p('/login')" class="pub-btn pub-btn-ghost pub-btn-sm limit-login-btn">{{ 'search.login_cta' | transloco }}</a>
         </div>
 
         <div *ngIf="results.length > 0" class="results">
-          <p class="result-count">Nalezeno: {{ total }} subjektů</p>
+          <p class="result-count">{{ 'search.result_count' | transloco : { total: total } }}</p>
           <table mat-table [dataSource]="results" class="results-table">
             <ng-container matColumnDef="ico">
-              <th mat-header-cell *matHeaderCellDef>IČO</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'search.col_ico' | transloco }}</th>
               <td mat-cell *matCellDef="let r">{{ r.ico }}</td>
             </ng-container>
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Název</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'search.col_name' | transloco }}</th>
               <td mat-cell *matCellDef="let r">{{ r.obchodniFirma }}</td>
             </ng-container>
             <ng-container matColumnDef="address">
-              <th mat-header-cell *matHeaderCellDef>Sídlo</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'search.col_address' | transloco }}</th>
               <td mat-cell *matCellDef="let r">{{ r.sidloText }}</td>
             </ng-container>
             <ng-container matColumnDef="status">
-              <th mat-header-cell *matHeaderCellDef>Stav</th>
+              <th mat-header-cell *matHeaderCellDef>{{ 'search.col_status' | transloco }}</th>
               <td mat-cell *matCellDef="let r">
                 <span [class]="'status-badge ' + (r.stavNazev === 'Aktivní' ? 'badge-active' : 'badge-inactive')">
                   {{ r.stavNazev }}
@@ -101,12 +103,12 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
 
         <div *ngIf="!loading && !searched" class="zero-state">
           <mat-icon>manage_search</mat-icon>
-          <p>Zadejte IČO nebo název firmy a stiskněte Enter.</p>
+          <p>{{ 'search.input_label' | transloco }}</p>
         </div>
 
         <div *ngIf="!loading && searched && results.length === 0 && !error" class="empty-state">
           <mat-icon>search_off</mat-icon>
-          <p>Žádné výsledky pro „{{ query }}"</p>
+          <p>{{ 'search.no_results' | transloco }}</p>
         </div>
       </div>
 
@@ -166,6 +168,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  ls = inject(LangService);
 
   readonly freeCap = SEARCH_FREE_CAP;
   readonly windowMinutes = SEARCH_WINDOW_MINUTES;
@@ -201,7 +204,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   private fetchPage(start: number) {
     const isIco = /^\d{8}$/.test(this.query.trim());
     if (isIco) {
-      this.router.navigate(['/search', this.query.trim()]);
+      this.router.navigate([this.ls.p('/search'), this.query.trim()]);
       return;
     }
 
@@ -232,7 +235,7 @@ export class SearchComponent implements OnInit, OnDestroy {
   }
 
   goToDetail(ico: string) {
-    this.router.navigate(['/search', ico]);
+    this.router.navigate([this.ls.p('/search'), ico]);
   }
 
   get countdownDisplay(): string {

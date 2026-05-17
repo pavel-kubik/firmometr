@@ -6,7 +6,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { AuthService } from '../../core/services/auth.service';
+import { LangService } from '../../core/services/lang.service';
 import { PublicNavComponent } from '../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../public/public-footer/public-footer.component';
 
@@ -21,6 +23,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     MatIconModule,
     MatInputModule,
     MatTabsModule,
+    TranslocoPipe,
     PublicNavComponent,
     PublicFooterComponent,
   ],
@@ -29,28 +32,28 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
-          <mat-card-title>Přihlásit se</mat-card-title>
+          <mat-card-title>{{ 'login.title' | transloco }}</mat-card-title>
         </mat-card-header>
         <mat-card-content>
           <mat-tab-group>
 
-            <mat-tab label="Email a heslo">
+            <mat-tab [label]="'login.tab_password' | transloco">
               <form [formGroup]="passwordForm" (ngSubmit)="loginWithPassword()" class="tab-form">
                 <mat-form-field appearance="outline">
-                  <mat-label>E-mail</mat-label>
+                  <mat-label>{{ 'common.email_label' | transloco }}</mat-label>
                   <input matInput type="email" formControlName="email" autocomplete="email">
                   @if (passwordForm.get('email')?.hasError('required') && passwordForm.get('email')?.touched) {
-                    <mat-error>E-mail je povinný</mat-error>
+                    <mat-error>{{ 'common.email_required' | transloco }}</mat-error>
                   } @else if (passwordForm.get('email')?.hasError('email') && passwordForm.get('email')?.touched) {
-                    <mat-error>Zadejte platný e-mail</mat-error>
+                    <mat-error>{{ 'common.email_invalid' | transloco }}</mat-error>
                   }
                 </mat-form-field>
 
                 <mat-form-field appearance="outline">
-                  <mat-label>Heslo</mat-label>
+                  <mat-label>{{ 'common.password_label' | transloco }}</mat-label>
                   <input matInput type="password" formControlName="password" autocomplete="current-password">
                   @if (passwordForm.get('password')?.hasError('required') && passwordForm.get('password')?.touched) {
-                    <mat-error>Heslo je povinné</mat-error>
+                    <mat-error>{{ 'common.password_required' | transloco }}</mat-error>
                   }
                 </mat-form-field>
 
@@ -59,27 +62,27 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                 }
 
                 <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
-                  {{ loading ? 'Přihlašuji…' : 'Přihlásit se' }}
+                  {{ (loading ? 'login.btn_loading' : 'login.btn') | transloco }}
                 </button>
 
                 <p class="link-hint">
-                  Nemáte účet? <a routerLink="/register">Zaregistrujte se</a>
+                  {{ 'login.no_account' | transloco }} <a [routerLink]="ls.p('/register')">{{ 'login.register_link' | transloco }}</a>
                 </p>
               </form>
             </mat-tab>
 
-            <mat-tab label="Magic link">
+            <mat-tab [label]="'login.tab_magic' | transloco">
               @if (!magicLinkSent) {
                 <form [formGroup]="magicForm" (ngSubmit)="loginWithMagicLink()" class="tab-form">
-                  <p class="hint">Zadejte svůj e-mail a pošleme vám přihlašovací odkaz.</p>
+                  <p class="hint">{{ 'login.magic_hint' | transloco }}</p>
 
                   <mat-form-field appearance="outline">
-                    <mat-label>E-mail</mat-label>
+                    <mat-label>{{ 'common.email_label' | transloco }}</mat-label>
                     <input matInput type="email" formControlName="email" autocomplete="email">
                     @if (magicForm.get('email')?.hasError('required') && magicForm.get('email')?.touched) {
-                      <mat-error>E-mail je povinný</mat-error>
+                      <mat-error>{{ 'common.email_required' | transloco }}</mat-error>
                     } @else if (magicForm.get('email')?.hasError('email') && magicForm.get('email')?.touched) {
-                      <mat-error>Zadejte platný e-mail</mat-error>
+                      <mat-error>{{ 'common.email_invalid' | transloco }}</mat-error>
                     }
                   </mat-form-field>
 
@@ -88,14 +91,14 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                   }
 
                   <button class="pub-btn pub-btn-primary" type="submit" [disabled]="loading">
-                    {{ loading ? 'Odesílám…' : 'Odeslat odkaz' }}
+                    {{ (loading ? 'login.magic_btn_loading' : 'login.magic_btn') | transloco }}
                   </button>
                 </form>
               } @else {
                 <div class="confirmation tab-form">
                   <mat-icon class="confirm-icon">mark_email_read</mat-icon>
-                  <h3>Odkaz odeslán!</h3>
-                  <p>Zkontrolujte svůj e-mail a klikněte na přihlašovací odkaz.</p>
+                  <h3>{{ 'login.magic_sent_title' | transloco }}</h3>
+                  <p>{{ 'login.magic_sent_msg' | transloco }}</p>
                 </div>
               }
             </mat-tab>
@@ -144,6 +147,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  ls = inject(LangService);
 
   passwordForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -171,7 +175,7 @@ export class LoginComponent {
     if (error) {
       this.passwordError = error.message;
     } else {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate([this.ls.p('/dashboard')]);
     }
     this.loading = false;
   }

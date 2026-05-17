@@ -1,19 +1,20 @@
 import { Component } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 
 @Component({
   selector: 'app-legal-gdpr',
   standalone: true,
-  imports: [PublicNavComponent, PublicFooterComponent],
+  imports: [TranslocoPipe, PublicNavComponent, PublicFooterComponent],
   template: `
     <app-public-nav />
 
     <main class="legal-page">
       <div class="legal-inner">
-        <div class="section-label">Právní dokumenty</div>
-        <h1>Zásady ochrany osobních údajů</h1>
-        <p class="effective">Účinné od 16. 5. 2026</p>
+        <div class="section-label">{{ 'gdpr.label' | transloco }}</div>
+        <h1>{{ 'gdpr.title' | transloco }}</h1>
+        <p class="effective">{{ 'gdpr.effective' | transloco }}</p>
 
         <div class="legal-body">
 
