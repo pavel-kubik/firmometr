@@ -1,0 +1,10 @@
+/
+/ceny
+/kontakt
+/gdpr
+/obchodni-podminky
+/en
+/en/ceny
+/en/kontakt
+/en/gdpr
+/en/obchodni-podminky

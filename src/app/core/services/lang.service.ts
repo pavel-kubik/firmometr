@@ -1,4 +1,5 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { NavigationEnd, Router } from '@angular/router';
 import { TranslocoService } from '@jsverse/transloco';
 import { filter } from 'rxjs/operators';
@@ -10,10 +11,15 @@ export class LangService {
 
   readonly lang = signal<string>('cs');
 
+  private platformId = inject(PLATFORM_ID);
+
   init() {
-    this.updateFromUrl(location.pathname);
-    this.router.events.pipe(filter(e => e instanceof NavigationEnd))
-      .subscribe((e: NavigationEnd) => this.updateFromUrl(e.urlAfterRedirects));
+    const initialUrl = typeof location !== 'undefined' ? location.pathname : this.router.url;
+    this.updateFromUrl(initialUrl);
+    if (isPlatformBrowser(this.platformId)) {
+      this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+        .subscribe((e: NavigationEnd) => this.updateFromUrl(e.urlAfterRedirects));
+    }
   }
 
   private updateFromUrl(url: string) {

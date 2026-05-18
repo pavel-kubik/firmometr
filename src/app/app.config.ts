@@ -1,6 +1,6 @@
 import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, inject, isDevMode, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, Router } from '@angular/router';
-import { provideHttpClient, HttpClient, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, HttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideTransloco, TranslocoLoader, Translation } from '@jsverse/transloco';
@@ -19,7 +19,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
     provideTransloco({
       config: {
@@ -30,9 +30,11 @@ export const appConfig: ApplicationConfig = {
       },
       loader: AppTranslocoLoader,
     }),
-    { provide: ErrorHandler, useValue: Sentry.createErrorHandler() },
-    { provide: Sentry.TraceService, deps: [Router] },
-    { provide: APP_INITIALIZER, useFactory: () => () => {}, deps: [Sentry.TraceService], multi: true },
+    ...(typeof location !== 'undefined' && location.hostname !== 'localhost' ? [
+      { provide: ErrorHandler, useValue: Sentry.createErrorHandler() },
+      { provide: Sentry.TraceService, deps: [Router] },
+      { provide: APP_INITIALIZER, useFactory: () => () => {}, deps: [Sentry.TraceService], multi: true },
+    ] : []),
     { provide: APP_INITIALIZER, useFactory: () => { const ls = inject(LangService); return () => ls.init(); }, multi: true },
   ]
 };

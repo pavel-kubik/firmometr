@@ -20,6 +20,11 @@
             "outputPath": "dist/firmometr-ui",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "server": "src/main.server.ts",
+            "prerender": {
+              "routesFile": "prerender-routes.txt"
+            },
+            "ssr": false,
             "polyfills": [
               "zone.js"
             ],
