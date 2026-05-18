@@ -1,3 +1,17 @@
 name = "firmometr"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist/firmometr-ui/browser"
+
+# KV namespace for registry response cache.
+# To create: run these two commands and paste the returned IDs below:
+#   npx wrangler kv namespace create REGISTRY_CACHE
+#   npx wrangler kv namespace create REGISTRY_CACHE --preview
+[[kv_namespaces]]
+binding = "REGISTRY_CACHE"
+id = "99b3ef1d9ada4ae28df31fc7434a4f77"
+preview_id = "612f3e9f430f4b84ba6a37d6ec5ce7aa"
+
+[vars]
+SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
+# SUPABASE_SERVICE_KEY is a secret — set it with:
+#   npx wrangler secret put SUPABASE_SERVICE_KEY
