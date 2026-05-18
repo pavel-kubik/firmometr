@@ -4,3 +4,4 @@ dist/
 .netlify/
 .playwright-mcp
 .superpowers
+.wrangler
