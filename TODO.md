@@ -166,3 +166,13 @@ Search _____
 - [ ] Distinquish access from localhost - block, netlify, prod at Google Analytics
 - [ ] Get VAT registration date from registry, it should be 01.08.2024 for ICO 71379487
 - [ ] Angular SSG (Static Site Generation) for sattic pages
+- [ ] Přihlaste se pro správu vlastního portfolia sledovaných subjektů. => + a notifikaci zmen
+
+
+TOP PRIO
+- [ ] SSG from previous repo lustrate
+- [ ] caching latest search at open registry
+- [ ] Get latest changes on insolvency (like hlidac statu), ...
+- [ ] SSG for ALL / important? / some companies
+- [ ] Monitoring of companies and notify by email
+- [ ] 
