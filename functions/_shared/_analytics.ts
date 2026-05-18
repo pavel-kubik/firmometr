@@ -14,9 +14,10 @@ export function logApiCall(
   supabaseUrl: string,
   supabaseServiceKey: string,
   log: ApiCallLog,
-): void {
-  // fire-and-forget — never awaited, never blocks the response
-  fetch(`${supabaseUrl}/rest/v1/api_calls`, {
+): Promise<void> {
+  // Returns a promise so callers can pass it to waitUntil() — required in
+  // Cloudflare Workers to keep background fetches alive after response is sent.
+  return fetch(`${supabaseUrl}/rest/v1/api_calls`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -25,5 +26,5 @@ export function logApiCall(
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify(log),
-  }).catch(() => { /* intentionally swallowed */ });
+  }).then(() => {}).catch(() => {});
 }

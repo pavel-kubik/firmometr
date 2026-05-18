@@ -20,10 +20,12 @@ interface RequestCtx {
   sourceIp: string | null;
   userAgent: string | null;
   userId: string | null;
+  waitUntil: (p: Promise<unknown>) => void;
 }
 
 function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: boolean, durationMs?: number, error?: string) {
-  logApiCall(ctx.env.SUPABASE_URL, ctx.env.SUPABASE_SERVICE_KEY, {
+  if (error) console.error(`[${registry}] ico=${ctx.ico} url=${url} error=${error}`);
+  ctx.waitUntil(logApiCall(ctx.env.SUPABASE_URL, ctx.env.SUPABASE_SERVICE_KEY, {
     registry,
     url,
     ico: ctx.ico,
@@ -33,7 +35,7 @@ function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: b
     cache_hit: cacheHit,
     duration_ms: durationMs,
     error,
-  });
+  }));
 }
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
@@ -462,10 +464,12 @@ export const onRequest = async ({
   request,
   params,
   env,
+  waitUntil,
 }: {
   request: Request;
   params: Record<string, string>;
   env: Env;
+  waitUntil: (p: Promise<unknown>) => void;
 }) => {
   const ico = params['ico'];
   if (!ico || !/^\d{1,8}$/.test(ico)) {
@@ -484,6 +488,7 @@ export const onRequest = async ({
     sourceIp: request.headers.get('CF-Connecting-IP'),
     userAgent: request.headers.get('User-Agent'),
     userId,
+    waitUntil,
   };
 
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
