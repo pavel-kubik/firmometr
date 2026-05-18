@@ -1,73 +1,87 @@
-# Firmometr — Netlify edition
+# Firmometr
 
-Czech business verification tool that aggregates data from public registries, deployed as a fully serverless stack on Netlify. No database, no server to maintain.
+Czech business verification tool that aggregates data from public registries, deployed as a fully serverless stack on Cloudflare Pages.
 
 - **ARES** — company details, legal form, registered address, status
 - **ISIR** — insolvency proceedings (Insolvenční rejstřík)
 - **ČÚZK** — address enrichment via RUIAN
+- **DPH** — VAT payer reliability check
 
 ## Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | Angular 18 + Angular Material |
-| Backend | Netlify Functions (Node.js 18+) |
-| Persistence | Browser localStorage (watch list only) |
+| Backend | Cloudflare Pages Functions (Node.js-compatible) |
+| Persistence | Supabase (watch list, auth) |
 
 ## Running locally
 
 ### Prerequisites
 
-- Node.js 20+
-- [Netlify CLI](https://docs.netlify.com/cli/get-started/) — `npm install -g netlify-cli`
+- Node.js 26
+- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/install-and-update/) — `npm install -g wrangler`
 
 ### Start
 
 ```bash
 # Install dependencies
 npm install
-cd frontend && npm install && cd ..
 
-# Start Netlify Dev (functions + Angular on port 8888)
-netlify dev
+# Terminal 1 — Angular dev server on port 4201
+npm start
+
+# Terminal 2 — Wrangler Pages dev (proxies Angular, routes /api/* to functions)
+npm run dev:cf
 ```
 
-Open [http://localhost:8888](http://localhost:8888).
+Open [http://localhost:8788](http://localhost:8788).
 
-Netlify Dev runs Angular on port 4200 internally and proxies everything through 8888, routing `/api/*` to the functions automatically.
+`dev:cf` runs `wrangler pages dev --proxy 4201`, which proxies the Angular dev server and routes all `/api/*` requests to the `functions/` directory automatically.
 
-## Deploying to Netlify
+### Supabase setup
 
-Connect this repo in the Netlify dashboard. The `netlify.toml` handles everything — no additional configuration needed.
+Supabase is used only on the frontend (auth + watch list). The anon key is safe to commit.
 
-Build settings (already in `netlify.toml`):
+Update `src/environments/environment.ts` and `src/environments/environment.production.ts` with your project credentials:
+
+```ts
+export const environment = {
+  supabaseUrl: 'https://<ref>.supabase.co',
+  supabaseAnonKey: '<anon-key>',
+};
+```
+
+Find these values in Supabase → Project Settings → API.
+
+In Supabase → Authentication → URL Configuration, add Redirect URLs:
+- `http://localhost:8788` (local dev)
+- your production domain
+
+## Deploying to Cloudflare Pages
+
+Connect this repo in the [Cloudflare Pages dashboard](https://dash.cloudflare.com/). Build settings:
 
 | Setting | Value |
 |---|---|
-| Build command | `cd frontend && npm ci && npm run build` |
-| Publish directory | `frontend/dist/firmometr-ui/browser` |
-| Functions directory | `netlify/functions` |
+| Build command | `npm run build` |
+| Build output directory | `dist/firmometr-ui/browser` |
+| Functions directory | `functions/` (auto-detected) |
 
-## Features
-
-- **Search by IČO** — instant company detail: ARES data, ISIR insolvency status, ČÚZK-enriched address
-- **Search by name** — paginated full-text search via ARES
-- **Watch list** — save companies to a local dashboard; stored in localStorage, persists across sessions in the same browser
+Set environment variables in the Cloudflare dashboard under Pages → Settings → Environment variables.
 
 ## Architecture
 
-Every search request is a direct chain: browser → Netlify Function → external API. There is no database and no background sync.
-
 ```
 Browser
-  ├── GET /api/v1/search/ico/:ico  →  search-ico function
+  ├── GET /api/v1/search/ico/:ico  →  functions/api/v1/search/ico/[ico].ts
   │     ├── ARES REST   (company details)
   │     ├── ISIR SOAP   (insolvency records)
   │     └── ČÚZK REST   (address enrichment)
-  └── GET /api/v1/search?q=        →  search-name function
+  └── GET /api/v1/search?q=        →  functions/api/v1/search/index.ts
         └── ARES REST   (name search)
 
-Watch list → localStorage (no backend)
+Watch list → Supabase (requires login)
 ```
 
 ## Test cases
@@ -86,23 +100,17 @@ Watch list → localStorage (no backend)
 | ARES | https://ares.gov.cz/stranky/vyvojar-info | https://ares.gov.cz/swagger-ui/ |
 | ISIR WS2 | https://isir.justice.cz/isir/help/Popis_WS_2_v1_13.pdf | |
 | ČÚZK RUIAN | https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN | |
-| VAT | https://adisspr.mfcr.cz/pmd/dokumentace/ |webove-sluzby-spolehlivost-platcu | |
+| VAT | https://adisspr.mfcr.cz/pmd/dokumentace/webove-sluzby-spolehlivost-platcu | |
 
 ## External tools
 
-### Netlify
+### Cloudflare
 
-https://netlify.net github account
+https://dash.cloudflare.com — Cloudflare account
 
 ### Supabase
 
-https://supabase.com/ github account
-
-#### Before testing, you need to:
-
-- Go to your Supabase dashboard → Project Settings → API → copy Project URL and anon public key
-- Paste them into both environment files
-- In Supabase → Authentication → URL Configuration, set Redirect URLs to http://localhost:4201 (dev) and your production URL
+https://supabase.com — GitHub account
 
 ### Brevo
 
