@@ -170,7 +170,8 @@ Search _____
 
 
 TOP PRIO
-- [ ] SSG from previous repo lustrate
+- [x] SSG from previous repo lustrate
+- [x] Remove waitlist form
 - [ ] caching latest search at open registry
 - [ ] Get latest changes on insolvency (like hlidac statu), ...
 - [ ] SSG for ALL / important? / some companies
