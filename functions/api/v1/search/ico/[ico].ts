@@ -1,5 +1,42 @@
 import { XMLParser } from "fast-xml-parser";
 import { checkCap, withCap } from '../../../../_shared/_cap';
+import { getCached, setCached, type RegistrySource } from '../../../../_shared/_cache';
+import { logApiCall } from '../../../../_shared/_analytics';
+
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
+}
+
+interface Env {
+  REGISTRY_CACHE: KVNamespace;
+  SUPABASE_URL: string;
+  SUPABASE_SERVICE_KEY: string;
+}
+
+interface RequestCtx {
+  env: Env;
+  ico: string;
+  sourceIp: string | null;
+  userAgent: string | null;
+  userId: string | null;
+  waitUntil: (p: Promise<unknown>) => void;
+}
+
+function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: boolean, durationMs?: number, error?: string) {
+  if (error) console.error(`[${registry}] ico=${ctx.ico} url=${url} error=${error}`);
+  ctx.waitUntil(logApiCall(ctx.env.SUPABASE_URL, ctx.env.SUPABASE_SERVICE_KEY, {
+    registry,
+    url,
+    ico: ctx.ico,
+    source_ip: ctx.sourceIp ?? undefined,
+    user_agent: ctx.userAgent ?? undefined,
+    user_id: ctx.userId ?? undefined,
+    cache_hit: cacheHit,
+    duration_ms: durationMs,
+    error,
+  }));
+}
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
@@ -63,20 +100,29 @@ function stavNazevFrom(kod: string | null): string | null {
   return kod;
 }
 
-async function fetchAres(ico: string): Promise<any | null> {
+async function fetchAres(ico: string, ctx: RequestCtx): Promise<any | null> {
+  const url = `${ARES_BASE}/ekonomicke-subjekty/${ico}`;
+  const cached = await getCached<any>(ctx.env.REGISTRY_CACHE, 'ares', ico);
+  if (cached) { log(ctx, 'ares', url, true); return cached.data; }
+  const start = Date.now();
   try {
-    const res = await fetch(`${ARES_BASE}/ekonomicke-subjekty/${ico}`, {
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (res.status === 404) return null;
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
+    const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+    const duration_ms = Date.now() - start;
+    if (res.status === 404) { log(ctx, 'ares', url, false, duration_ms); return null; }
+    if (!res.ok) { log(ctx, 'ares', url, false, duration_ms, `HTTP ${res.status}`); return null; }
+    const data = await res.json();
+    await setCached(ctx.env.REGISTRY_CACHE, 'ares', ico, data);
+    log(ctx, 'ares', url, false, duration_ms);
+    return data;
+  } catch (e) {
+    log(ctx, 'ares', url, false, Date.now() - start, String(e));
     return null;
   }
 }
 
-async function fetchIsir(ico: string): Promise<IsirRecord[]> {
+async function fetchIsir(ico: string, ctx: RequestCtx): Promise<IsirRecord[]> {
+  const cached = await getCached<IsirRecord[]>(ctx.env.REGISTRY_CACHE, 'isir', ico);
+  if (cached) { log(ctx, 'isir', ISIR_CUZK, true); return cached.data; }
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:ns1="${CUZK_NS}">
@@ -87,7 +133,7 @@ async function fetchIsir(ico: string): Promise<IsirRecord[]> {
     </ns1:getIsirWsCuzkDataRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
-
+  const start = Date.now();
   try {
     const res = await fetch(ISIR_CUZK, {
       method: "POST",
@@ -96,8 +142,12 @@ async function fetchIsir(ico: string): Promise<IsirRecord[]> {
       signal: AbortSignal.timeout(30_000),
     });
     const xml = await res.text();
-    return parseIsirResponse(xml);
-  } catch {
+    const records = parseIsirResponse(xml);
+    await setCached(ctx.env.REGISTRY_CACHE, 'isir', ico, records);
+    log(ctx, 'isir', ISIR_CUZK, false, Date.now() - start);
+    return records;
+  } catch (e) {
+    log(ctx, 'isir', ISIR_CUZK, false, Date.now() - start, String(e));
     return [];
   }
 }
@@ -139,7 +189,9 @@ interface DphResult {
 const DPH_NOT_PLATCE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [], nedostupne: false };
 const DPH_UNAVAILABLE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [], nedostupne: true };
 
-async function fetchDph(dic: string): Promise<DphResult> {
+async function fetchDph(dic: string, ctx: RequestCtx): Promise<DphResult> {
+  const cached = await getCached<DphResult>(ctx.env.REGISTRY_CACHE, 'dph', dic);
+  if (cached) { log(ctx, 'dph', DPH_SOAP, true); return cached.data; }
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                   xmlns:ns1="${DPH_NS}">
@@ -150,7 +202,7 @@ async function fetchDph(dic: string): Promise<DphResult> {
     </ns1:StatusNespolehlivyPlatceRequest>
   </soapenv:Body>
 </soapenv:Envelope>`;
-
+  const start = Date.now();
   try {
     const res = await fetch(DPH_SOAP, {
       method: "POST",
@@ -159,8 +211,12 @@ async function fetchDph(dic: string): Promise<DphResult> {
       signal: AbortSignal.timeout(15_000),
     });
     const xml = await res.text();
-    return parseDphResponse(xml);
-  } catch {
+    const result = parseDphResponse(xml);
+    await setCached(ctx.env.REGISTRY_CACHE, 'dph', dic, result);
+    log(ctx, 'dph', DPH_SOAP, false, Date.now() - start);
+    return result;
+  } catch (e) {
+    log(ctx, 'dph', DPH_SOAP, false, Date.now() - start, String(e));
     return DPH_UNAVAILABLE;
   }
 }
@@ -214,17 +270,22 @@ interface OrListina {
   datumZalozeni: string | null;
 }
 
-async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; statutari: OrStatutar[] }> {
+async function fetchOrVr(ico: string, ctx: RequestCtx): Promise<{ spisovatel: string | null; statutari: OrStatutar[] }> {
+  const url = `${ARES_VR_BASE}/ekonomicke-subjekty-vr/${ico}`;
+  const cached = await getCached<{ spisovatel: string | null; statutari: OrStatutar[] }>(ctx.env.REGISTRY_CACHE, 'or_vr', ico);
+  if (cached) { log(ctx, 'or_vr', url, true); return cached.data; }
+  const start = Date.now();
   try {
-    const res = await fetch(`${ARES_VR_BASE}/ekonomicke-subjekty-vr/${ico}`, {
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) return { spisovatel: null, statutari: [] };
+    const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) {
+      log(ctx, 'or_vr', url, false, Date.now() - start, `HTTP ${res.status}`);
+      return { spisovatel: null, statutari: [] };
+    }
     const data = await res.json();
 
     const zaznamy: any[] = data?.zaznamy ?? [];
     const primary = zaznamy.find((z: any) => z.primarniZaznam) ?? zaznamy[0];
-    if (!primary) return { spisovatel: null, statutari: [] };
+    if (!primary) { log(ctx, 'or_vr', url, false, Date.now() - start); return { spisovatel: null, statutari: [] }; }
 
     const szArr: any[] = Array.isArray(primary.spisovaZnacka) ? primary.spisovaZnacka : [];
     const sz = szArr[0];
@@ -259,34 +320,56 @@ async function fetchOrVr(ico: string): Promise<{ spisovatel: string | null; stat
     }
 
     const statutari: OrStatutar[] = allMembers.map(memberToStatutar);
-    return { spisovatel, statutari };
-  } catch {
+    const result = { spisovatel, statutari };
+    await setCached(ctx.env.REGISTRY_CACHE, 'or_vr', ico, result);
+    log(ctx, 'or_vr', url, false, Date.now() - start);
+    return result;
+  } catch (e) {
+    log(ctx, 'or_vr', url, false, Date.now() - start, String(e));
     return { spisovatel: null, statutari: [] };
   }
 }
 
-async function fetchOrSubjektId(ico: string): Promise<string | null> {
+async function fetchOrSubjektId(ico: string, ctx: RequestCtx): Promise<string | null> {
+  const url = `${OR_PORTAL}/rejstrik-$firma?ico=${ico}`;
+  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico);
+  if (cached) { log(ctx, 'or_subjekt_id', url, true); return cached.data; }
+  const start = Date.now();
   try {
-    const res = await fetch(`${OR_PORTAL}/rejstrik-$firma?ico=${ico}`, {
+    const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
       headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      log(ctx, 'or_subjekt_id', url, false, Date.now() - start, `HTTP ${res.status}`);
+      return null;
+    }
     const html = await res.text();
     const m = html.match(/subjektId=(\d+)/);
-    return m?.[1] ?? null;
-  } catch {
+    const subjektId = m?.[1] ?? null;
+    await setCached(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico, subjektId);
+    log(ctx, 'or_subjekt_id', url, false, Date.now() - start);
+    return subjektId;
+  } catch (e) {
+    log(ctx, 'or_subjekt_id', url, false, Date.now() - start, String(e));
     return null;
   }
 }
 
-async function fetchSbirkaListin(subjektId: string): Promise<{ listiny: OrListina[]; celkem: number }> {
+async function fetchSbirkaListin(subjektId: string, ctx: RequestCtx): Promise<{ listiny: OrListina[]; celkem: number }> {
+  const url = `${OR_PORTAL}/vypis-sl-firma?subjektId=${subjektId}`;
+  const cached = await getCached<{ listiny: OrListina[]; celkem: number }>(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId);
+  if (cached) { log(ctx, 'sbirka_listin', url, true); return cached.data; }
+  const start = Date.now();
   try {
-    const res = await fetch(`${OR_PORTAL}/vypis-sl-firma?subjektId=${subjektId}`, {
+    const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
       headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
     });
-    if (!res.ok) return { listiny: [], celkem: 0 };
+    if (!res.ok) {
+      log(ctx, 'sbirka_listin', url, false, Date.now() - start, `HTTP ${res.status}`);
+      return { listiny: [], celkem: 0 };
+    }
     const html = await res.text();
 
     const countMatch = html.match(/z\s+(\d+)\s+(?:záznam[ůu]|listiny)/i)
@@ -314,20 +397,34 @@ async function fetchSbirkaListin(subjektId: string): Promise<{ listiny: OrListin
     }
 
     if (!celkem) celkem = listiny.length;
-    return { listiny: listiny.slice(0, 10), celkem };
-  } catch {
+    const result = { listiny: listiny.slice(0, 10), celkem };
+    await setCached(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId, result);
+    log(ctx, 'sbirka_listin', url, false, Date.now() - start);
+    return result;
+  } catch (e) {
+    log(ctx, 'sbirka_listin', url, false, Date.now() - start, String(e));
     return { listiny: [], celkem: 0 };
   }
 }
 
-async function fetchCuzk(addressText: string): Promise<string | null> {
+async function fetchCuzk(addressText: string, ico: string, ctx: RequestCtx): Promise<string | null> {
+  const url = `${CUZK_BASE}?SearchText=${encodeURIComponent(addressText)}&f=json`;
+  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'cuzk', ico);
+  if (cached) { log(ctx, 'cuzk', url, true); return cached.data; }
+  const start = Date.now();
   try {
-    const url = `${CUZK_BASE}?SearchText=${encodeURIComponent(addressText)}&f=json`;
     const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      log(ctx, 'cuzk', url, false, Date.now() - start, `HTTP ${res.status}`);
+      return null;
+    }
     const data = await res.json();
-    return data?.candidates?.[0]?.address ?? null;
-  } catch {
+    const address = data?.candidates?.[0]?.address ?? null;
+    await setCached(ctx.env.REGISTRY_CACHE, 'cuzk', ico, address);
+    log(ctx, 'cuzk', url, false, Date.now() - start);
+    return address;
+  } catch (e) {
+    log(ctx, 'cuzk', url, false, Date.now() - start, String(e));
     return null;
   }
 }
@@ -363,7 +460,17 @@ function str(v: any): string | undefined {
   return s === "" ? undefined : s;
 }
 
-export const onRequest = async ({ request, params }: { request: Request; params: Record<string, string> }) => {
+export const onRequest = async ({
+  request,
+  params,
+  env,
+  waitUntil,
+}: {
+  request: Request;
+  params: Record<string, string>;
+  env: Env;
+  waitUntil: (p: Promise<unknown>) => void;
+}) => {
   const ico = params['ico'];
   if (!ico || !/^\d{1,8}$/.test(ico)) {
     return Response.json({ error: "Invalid IČO" }, { status: 400 });
@@ -372,16 +479,28 @@ export const onRequest = async ({ request, params }: { request: Request; params:
   const cap = checkCap(request);
   if (cap.blocked) return withCap({ error: 'limit_reached' }, cap, 429);
 
+  const authHeader = request.headers.get('authorization') ?? '';
+  const userId = authHeader.startsWith('Bearer ') ? parseUserIdFromJwt(authHeader.slice(7)) : null;
+
+  const ctx: RequestCtx = {
+    env,
+    ico,
+    sourceIp: request.headers.get('CF-Connecting-IP'),
+    userAgent: request.headers.get('User-Agent'),
+    userId,
+    waitUntil,
+  };
+
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
-    fetchAres(ico), fetchIsir(ico), fetchOrVr(ico), fetchOrSubjektId(ico),
+    fetchAres(ico, ctx), fetchIsir(ico, ctx), fetchOrVr(ico, ctx), fetchOrSubjektId(ico, ctx),
   ]);
 
   const dic = aresData?.dic ?? ("CZ" + ico.padStart(8, "0"));
   const sidloText: string | null = aresData?.sidlo?.textovaAdresa ?? null;
   const [dphResult, cuzkAddress, sbirkaListinResult] = await Promise.all([
-    fetchDph(dic),
-    sidloText ? fetchCuzk(sidloText) : Promise.resolve(null),
-    orSubjektId ? fetchSbirkaListin(orSubjektId) : Promise.resolve({ listiny: [], celkem: 0 }),
+    fetchDph(dic, ctx),
+    sidloText ? fetchCuzk(sidloText, ico, ctx) : Promise.resolve(null),
+    orSubjektId ? fetchSbirkaListin(orSubjektId, ctx) : Promise.resolve({ listiny: [], celkem: 0 }),
   ]);
 
   const { clarity, activeSet } = assessClearance(isirRecords);
@@ -426,3 +545,14 @@ export const onRequest = async ({ request, params }: { request: Request; params:
     isWatched: false,
   }, cap);
 };
+
+function parseUserIdFromJwt(token: string): string | null {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return decoded?.sub ?? null;
+  } catch {
+    return null;
+  }
+}

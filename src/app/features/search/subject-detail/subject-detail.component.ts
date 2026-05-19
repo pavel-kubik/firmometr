@@ -8,6 +8,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { QRCodeModule } from 'angularx-qrcode';
+import { of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -410,6 +411,8 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     this.searchService.searchByIco(ico).pipe(
       switchMap(data => {
         this.subject = data;
+        // TODO it looks like it doesn't work
+        if (!this.isLoggedIn) return of(false);
         return this.watchService.isWatchedByIco(ico);
       })
     ).subscribe({
