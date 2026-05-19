@@ -26,5 +26,12 @@ export function logApiCall(
       'Prefer': 'return=minimal',
     },
     body: JSON.stringify(log),
-  }).then(() => {}).catch(() => {});
+  }).then(async (res) => {
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.error(`[analytics] Supabase insert failed ${res.status}: ${body}`);
+    }
+  }).catch((e) => {
+    console.error(`[analytics] Supabase insert error: ${e}`);
+  });
 }
