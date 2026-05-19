@@ -14,8 +14,10 @@ create table public.api_calls (
   error        text                   -- null on success
 );
 
--- Only the service role key can insert (bypasses RLS).
--- No public read policies — use Supabase dashboard or service role to query.
+-- Grant insert to service_role (used by the Cloudflare Worker).
+-- No SELECT policy — data is only readable via the Supabase dashboard or service role.
+grant insert on public.api_calls to service_role;
+
 alter table public.api_calls enable row level security;
 
 create index on public.api_calls (called_at desc);
