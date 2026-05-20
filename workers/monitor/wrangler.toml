@@ -1,0 +1,17 @@
+name = "firmometr-monitor"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["0 * * * *"]
+
+[[send_email]]
+name = "SEND_EMAIL"
+
+[vars]
+SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
+FROM_ADDRESS = "noreply@firmometr.cz"
+API_URL = "https://firmometr.cz"
+MAX_CACHE_AGE_SECS = "86400"
+# Set secrets with:
+#   cd workers/monitor && npx wrangler secret put SUPABASE_SERVICE_KEY

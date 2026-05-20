@@ -32,7 +32,7 @@
 
 ### One-time (outside this plan)
 - Supabase SQL: `ALTER TABLE watchlist ADD COLUMN pending_notification BOOLEAN NOT NULL DEFAULT false;`
-- Cloudflare dashboard: enable Email Routing on domain, verify sender address `noreply@proklepni.cz`
+- Cloudflare dashboard: enable Email Routing on domain, verify sender address `noreply@firmometr.cz`
 
 ---
 
@@ -278,7 +278,7 @@ name = "SEND_EMAIL"
 
 [vars]
 SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
-FROM_ADDRESS = "noreply@proklepni.cz"
+FROM_ADDRESS = "noreply@firmometr.cz"
 # Set secrets with:
 #   cd workers/monitor && npx wrangler secret put SUPABASE_SERVICE_KEY
 ```
@@ -951,7 +951,7 @@ interface EmailInput {
   aresStavKod: string | null;
 }
 
-const SITE = 'https://proklepni.cz';
+const SITE = 'https://firmometr.cz';
 
 function isirLabel(clarity: string | null): string {
   switch (clarity) {
@@ -1222,7 +1222,7 @@ git commit -m "feat: notify.ts sends emails for pending notifications and clears
 **Files:**
 - No code changes — deployment steps.
 
-**Prerequisites:** Cloudflare Email Routing must be enabled on `proklepni.cz` in the Cloudflare dashboard, and `noreply@proklepni.cz` verified as a sender address.
+**Prerequisites:** Cloudflare Email Routing must be enabled on `firmometr.cz` in the Cloudflare dashboard, and `noreply@firmometr.cz` verified as a sender address.
 
 - [ ] **Step 1: Set the SUPABASE_SERVICE_KEY secret**
 

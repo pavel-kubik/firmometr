@@ -73,13 +73,13 @@ name = "SEND_EMAIL"
 
 [vars]
 SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
-FROM_ADDRESS = "noreply@proklepni.cz"
+FROM_ADDRESS = "noreply@firmometr.cz"
 # SUPABASE_SERVICE_KEY set via: npx wrangler secret put SUPABASE_SERVICE_KEY
 ```
 
 ### Cloudflare Email Routing setup (one-time)
 1. Enable Email Routing on the domain in Cloudflare dashboard.
-2. Verify sender address (`noreply@proklepni.cz`) as a destination or use a custom address worker route.
+2. Verify sender address (`noreply@firmometr.cz`) as a destination or use a custom address worker route.
 3. The `send_email` binding allows the Worker to send to any address programmatically.
 
 ### Step 1 — Diff (`diff.ts`)

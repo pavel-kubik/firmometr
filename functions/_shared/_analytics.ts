@@ -8,6 +8,7 @@ export interface ApiCallLog {
   cache_hit: boolean;
   duration_ms?: number;
   error?: string;
+  env: string;
 }
 
 export function logApiCall(

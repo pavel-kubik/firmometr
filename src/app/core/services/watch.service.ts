@@ -53,6 +53,14 @@ export class WatchService {
     );
   }
 
+  setNotification(id: string, email: string | null): Observable<void> {
+    return from(
+      this.db.update({ notify_email: email }).eq('id', id)
+    ).pipe(
+      map(({ error }) => { if (error) throw error; })
+    );
+  }
+
   isWatchedByIco(ico: string): Observable<boolean> {
     return from(this.db.select('id').eq('ico', ico).maybeSingle()).pipe(
       map(({ data }) => data !== null)

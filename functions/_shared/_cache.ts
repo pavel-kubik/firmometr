@@ -40,12 +40,17 @@ export async function getCached<T>(
   kv: KVNamespace,
   source: RegistrySource,
   key: string,
+  maxAgeSecs?: number,
 ): Promise<CacheEntry<T> | null> {
   const raw = await kv.get(`${source}:${key}`);
   if (!raw) return null;
   const entry: CacheEntry<T> = JSON.parse(raw);
   if (entry.cacheVersion !== CACHE_VERSION) return null;
   if (entry.expiresAt && new Date(entry.expiresAt) < new Date()) return null;
+  if (maxAgeSecs !== undefined) {
+    const ageMs = Date.now() - new Date(entry.cachedAt).getTime();
+    if (ageMs > maxAgeSecs * 1000) return null;
+  }
   return entry;
 }
 

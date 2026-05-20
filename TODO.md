@@ -1,4 +1,4 @@
-# Product Plan — Proklepni.cz
+# Product Plan — Frimometr.cz
 
 > Based on market analysis (CZ market, 2026-05-10). Target: micro-SaaS for B2B credit/insolvency monitoring for freelancers, OSVČ, small firms.
 >
@@ -174,12 +174,24 @@ TOP PRIO
 - [x] Remove waitlist form
 - [x] caching latest search at open registry
 - [ ] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
+
+  - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING
+  - [ ] What is reference point? watchlist in DB
+  - [ ] Zmena semaforu => trigger event
+  - [ ] TESTOVAT!
+  - [ ] Full watchdog for any change => another feature
+
 - [ ] [Notifications] Allow custom per-company notification email (notify_email field is ready in DB, needs UI + WatchService.setNotification to accept arbitrary email)
 - [ ] Minimal automated test for deployment
   - [ ] Search company
   - [ ] Login
   - [ ] Watched list
   - [ ] Search company and add to watch list
-- [ ] Update templates
+- [ ] BASIC SUBSCRIPTION
+  - [ ] Allow buy subscription
+- [ ] Update email templates
 - [ ] [SEO] Get latest changes on insolvency (like hlidac statu), ...
 - [ ] [SEO] SSG for ALL / important? / some companies (may be use KV)
+
+ERRORS:
+- [ ] when switch tab and come back, spinner on Watched page is activated even nothing is loading

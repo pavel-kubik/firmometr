@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { WatchService } from '../../core/services/watch.service';
 import { WatchedEntity } from '../../core/models/watch.model';
@@ -30,7 +31,7 @@ function passwordMatchValidator(group: AbstractControl) {
     ReactiveFormsModule,
     MatCardModule, MatIconModule,
     MatProgressBarModule, MatSnackBarModule,
-    MatFormFieldModule, MatInputModule, MatTabsModule,
+    MatFormFieldModule, MatInputModule, MatTabsModule, MatSlideToggleModule,
     TranslocoPipe, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
@@ -79,8 +80,17 @@ function passwordMatchValidator(group: AbstractControl) {
                 {{ entity.notifyEmail }}
               </p>
             </mat-card-content>
-            <mat-card-actions>
+            <mat-card-actions class="card-actions">
               <button class="pub-btn pub-btn-ghost pub-btn-sm" (click)="goDetail(entity.ico)">{{ 'dashboard.btn_detail' | transloco }}</button>
+              <div class="notify-row">
+                <mat-icon class="small-icon">notifications</mat-icon>
+                <mat-slide-toggle
+                  [checked]="entity.notifyEmail !== null"
+                  (change)="toggleNotification(entity, $event.checked)"
+                  [title]="'dashboard.notify_toggle_title' | transloco"
+                  color="primary">
+                </mat-slide-toggle>
+              </div>
               <button class="pub-btn pub-btn-danger pub-btn-sm" (click)="unwatch(entity)">{{ 'dashboard.btn_remove' | transloco }}</button>
             </mat-card-actions>
           </mat-card>
@@ -237,6 +247,8 @@ function passwordMatchValidator(group: AbstractControl) {
     .empty-state mat-icon { font-size: 64px; width: 64px; height: 64px; margin-bottom: 16px; }
     .empty-state h2 { color: #555; }
     .last-checked, .notify-email { display: flex; align-items: center; gap: 4px; color: #666; font-size: 14px; margin: 4px 0; }
+    .card-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
+    .notify-row { display: flex; align-items: center; gap: 6px; color: #555; }
     .small-icon { font-size: 16px; width: 16px; height: 16px; }
     .status-green  { border-left: 4px solid #4caf50; }
     .status-orange { border-left: 4px solid #ff9800; }
@@ -384,6 +396,21 @@ export class DashboardComponent implements OnInit {
     if (error) { this.registerError = error.message; }
     else { this.registered = true; }
     this.authLoading = false;
+  }
+
+  toggleNotification(entity: WatchedEntity, enable: boolean) {
+    const email = enable ? (this.authService.currentUserEmail ?? '') : null;
+    if (enable && !email) return;
+    this.watchService.setNotification(entity.id, email).subscribe({
+      next: () => {
+        entity.notifyEmail = email;
+        const key = enable ? 'dashboard.notify_on' : 'dashboard.notify_off';
+        this.snackBar.open(this.transloco.translate(key), 'OK', { duration: 2500 });
+      },
+      error: () => {
+        this.snackBar.open(this.transloco.translate('dashboard.notify_error'), 'OK', { duration: 3000 });
+      },
+    });
   }
 
   unwatch(entity: WatchedEntity) {
