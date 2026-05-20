@@ -3,7 +3,6 @@ import type { IsirClarity } from './registry';
 interface EmailInput {
   ico: string;
   displayName: string;
-  notifyEmail: string;
   isirClarity: IsirClarity | string | null;
   dphNespolehlivy: boolean | null;
   aresStavKod: string | null;

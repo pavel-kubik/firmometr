@@ -5,7 +5,6 @@ describe('buildEmail', () => {
   const base = {
     ico: '12345678',
     displayName: 'Test s.r.o.',
-    notifyEmail: 'user@test.com',
     isirClarity: 'ACTIVE_DEBTOR' as const,
     dphNespolehlivy: false,
     aresStavKod: 'AKTIVNI',
