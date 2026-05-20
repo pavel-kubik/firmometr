@@ -123,7 +123,7 @@ import { LangService } from '../../core/services/lang.service';
                 <li>{{ 'landing.plan_free_feat2' | transloco }}</li>
                 <li>{{ 'landing.plan_free_feat3' | transloco }}</li>
               </ul>
-              <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
+              <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
             <div class="plan-card plan-featured">
               <div class="plan-badge">{{ 'landing.plan_solo_badge' | transloco }}</div>
@@ -135,7 +135,7 @@ import { LangService } from '../../core/services/lang.service';
                 <li>{{ 'landing.plan_solo_feat3' | transloco }}</li>
                 <li>{{ 'landing.plan_solo_feat4' | transloco }}</li>
               </ul>
-              <a [routerLink]="ls.p('/ceny')" class="pub-btn pub-btn-primary">{{ 'landing.plan_solo_cta' | transloco }}</a>
+              <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'basic'}" class="pub-btn pub-btn-primary">{{ 'landing.plan_solo_cta' | transloco }}</a>
             </div>
             <div class="plan-card">
               <div class="plan-badge plan-badge-gray">{{ 'landing.plan_business_badge' | transloco }}</div>
@@ -147,7 +147,7 @@ import { LangService } from '../../core/services/lang.service';
                 <li>{{ 'landing.plan_business_feat3' | transloco }}</li>
                 <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
               </ul>
-              <a [routerLink]="ls.p('/ceny')" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
+              <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'enterprise'}" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
             </div>
           </div>
         </div>

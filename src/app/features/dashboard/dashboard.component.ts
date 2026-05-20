@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -360,7 +361,9 @@ export class DashboardComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.authService.user$.subscribe(user => {
+    this.authService.user$.pipe(
+      distinctUntilChanged((a, b) => a?.id === b?.id)
+    ).subscribe(user => {
       this.isLoggedIn = !!user;
       if (this.isLoggedIn) this.load();
       else this.loading = false;

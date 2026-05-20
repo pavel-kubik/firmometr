@@ -31,7 +31,7 @@ import { LangService } from '../../core/services/lang.service';
               <li>{{ 'pricing.plan_free_feat2' | transloco }}</li>
               <li>{{ 'pricing.plan_free_feat3' | transloco }}</li>
             </ul>
-            <a [routerLink]="ls.p('/search')" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_free_cta' | transloco }}</a>
+            <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_free_cta' | transloco }}</a>
           </div>
 
           <!-- Solo -->
@@ -45,7 +45,7 @@ import { LangService } from '../../core/services/lang.service';
               <li>{{ 'pricing.plan_solo_feat3' | transloco }}</li>
               <li>{{ 'pricing.plan_solo_feat4' | transloco }}</li>
             </ul>
-            <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-primary plan-btn">{{ 'pricing.plan_solo_cta' | transloco }}</a>
+            <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'basic'}" class="pub-btn pub-btn-primary plan-btn">{{ 'pricing.plan_solo_cta' | transloco }}</a>
           </div>
 
           <!-- Business -->
@@ -60,7 +60,7 @@ import { LangService } from '../../core/services/lang.service';
               <li>{{ 'pricing.plan_business_feat4' | transloco }}</li>
               <li>{{ 'pricing.plan_business_feat5' | transloco }}</li>
             </ul>
-            <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_business_cta' | transloco }}</a>
+            <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'enterprise'}" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_business_cta' | transloco }}</a>
           </div>
 
         </div>

@@ -11,6 +11,7 @@ const childRoutes: Routes = [
   { path: 'search/:ico', loadComponent: () => import('./features/search/subject-detail/subject-detail.component').then(m => m.SubjectDetailComponent) },
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
+  { path: 'objednat', loadComponent: () => import('./public/order/order.component').then(m => m.OrderComponent) },
 ];
 
 export const routes: Routes = [
