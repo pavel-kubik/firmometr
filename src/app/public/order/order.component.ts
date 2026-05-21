@@ -12,7 +12,6 @@ const PLANS = {
   enterprise: { name: 'ENTERPRISE', monthly: 899, annualPerMonth: 799, annual: 799 * 11 },
 } as const;
 
-type PlanKey = keyof typeof PLANS;
 
 @Component({
   selector: 'app-order',
@@ -293,10 +292,9 @@ export class OrderComponent implements OnInit {
   });
 
   ngOnInit() {
-    const plan = this.route.snapshot.queryParams['plan'];
-    if (plan === 'basic' || plan === 'enterprise') {
-      this.form.patchValue({ plan });
-    }
+    const { plan, billing } = this.route.snapshot.queryParams;
+    if (plan === 'basic' || plan === 'enterprise') this.form.patchValue({ plan });
+    if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
   }
 
   get totalPrice(): string {

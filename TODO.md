@@ -194,4 +194,33 @@ TOP PRIO
 - [ ] [SEO] SSG for ALL / important? / some companies (may be use KV)
 
 ERRORS:
-- [ ] when switch tab and come back, spinner on Watched page is activated even nothing is loading
+- [x] when switch tab and come back, spinner on Watched page is activated even nothing is loading
+
+
+1. Enable Email Routing for your domain
+
+Cloudflare Dashboard → your domain (firmometr.cz) → Email → Email Routing → Enable it. Cloudflare will show you MX records to add — they're added automatically if your DNS is on Cloudflare.
+
+2. Verify the destination address
+
+Email Routing → Destination addresses → Add info@firmometr.cz → Cloudflare sends a verification email → click the link.
+
+3. Verify the sender address
+
+For the SEND_EMAIL binding to send from noreply@firmometr.cz, go to Email Routing → Settings → verify that address too (or use a catch-all route on the domain).
+
+4. Connect the binding to your Pages project
+
+Cloudflare Dashboard → Pages → firmometr → Settings → Functions → Email bindings → Add binding:
+
+Variable name: SEND_EMAIL
+Destination: info@firmometr.cz
+This is what wires env.SEND_EMAIL in the function to an actual destination.
+
+5. Deploy
+
+
+npx wrangler pages deploy dist/firmometr-ui/browser
+The [[send_email]] block in wrangler.toml tells Wrangler the binding exists — the actual routing destination is set in the dashboard (step 4).
+
+Test it by submitting the order form once deployed. If the email doesn't arrive, check Pages → Functions → Logs for the [order] email error message.
