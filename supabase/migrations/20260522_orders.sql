@@ -3,7 +3,7 @@ create table if not exists public.orders (
   plan        text        not null,
   billing     text        not null,
   jmeno       text        not null,
-  ico         text        not null,
+  ico         text,
   dic         text,
   adresa      text        not null,
   email       text        not null,

@@ -112,6 +112,15 @@ https://dash.cloudflare.com — Cloudflare account
 
 https://supabase.com — GitHub account
 
+Run migration
+
+```cmd
+supabase init
+supabase login
+supabase link --project-ref lentsvnmpqmrscgfscnc
+supabase db push
+```
+
 ### Brevo
 
 https://brevo.com
