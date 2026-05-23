@@ -126,7 +126,6 @@ import { LangService } from '../../core/services/lang.service';
               <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
             <div class="plan-card plan-featured">
-              <div class="plan-badge">{{ 'landing.plan_solo_badge' | transloco }}</div>
               <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
               <div class="plan-desc">{{ 'landing.plan_solo_price' | transloco }}</div>
               <ul class="plan-features">
@@ -147,7 +146,7 @@ import { LangService } from '../../core/services/lang.service';
                 <li>{{ 'landing.plan_business_feat3' | transloco }}</li>
                 <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
               </ul>
-              <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'enterprise'}" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
+              <a [routerLink]="ls.p('/kontakt')" [queryParams]="{message: 'Mam zájem o enterprise řešení.'}" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
             </div>
           </div>
         </div>

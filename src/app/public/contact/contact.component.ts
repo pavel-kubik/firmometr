@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
@@ -155,9 +156,10 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
     }
   `]
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
 
   submitted = false;
   submitting = false;
@@ -168,6 +170,11 @@ export class ContactComponent {
     email: ['', [Validators.required, Validators.email]],
     message: ['', Validators.required],
   });
+
+  ngOnInit() {
+    const { message } = this.route.snapshot.queryParams;
+    if (message) this.form.patchValue({ message });
+  }
 
   submit() {
     if (this.form.invalid) return;

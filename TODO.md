@@ -179,15 +179,15 @@ TOP PRIO
 - [x] Clean netlify
   - [x] TypeScript check — `npx tsc --noEmit` — confirms no type errors across the codebase
   - [x] Broken /kontakt form - Contact form via Wrangler dev — `npx wrangler pages dev --proxy 4201` --compatibility-date=2024-01-01, then go to /kontakt, submit the form, verify the request goes to /api/v1/contact and triggers an email via Brevo
-  - [ ] Functions unit tests — `npx vitest run functions` — confirms the e2e import from functions/_shared/_cap resolves correctly
-- [ ] Pricing inconsistency
+  - [x] Functions unit tests — `npx vitest run functions` — confirms the e2e import from functions/_shared/_cap resolves correctly
+- [x] Pricing inconsistency
       - homepage - pripravujeme
       - order - selling
-- [ ] GDPR compliance
-   - Cloudflare - ma
-   - Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
+- [x] GDPR compliance
+   - [x] Cloudflare
+   - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
    - Brevo - ???
-   - GTM
+   - [x] GTM
 - [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
 - [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
 

@@ -48,11 +48,11 @@ const PLANS = {
                     </ul>
                   </div>
                 </label>
-                <label class="plan-card" [class.selected]="form.value.plan === 'enterprise'">
-                  <input type="radio" formControlName="plan" value="enterprise" class="sr-only">
+                <div class="plan-card plan-card-disabled">
                   <div class="plan-card-inner">
                     <div class="plan-name">ENTERPRISE</div>
-                    <div class="plan-price">od 799 Kč<span class="plan-per"> / měsíc</span></div>
+                    <div class="plan-coming-badge">PŘIPRAVUJEME</div>
+                    <div class="plan-price plan-price-muted">Brzy dostupné</div>
                     <ul class="plan-features">
                       <li>100 sledovaných IČO</li>
                       <li>Vše z BASIC +</li>
@@ -61,7 +61,7 @@ const PLANS = {
                       <li>Sbírka listin</li>
                     </ul>
                   </div>
-                </label>
+                </div>
               </div>
             </div>
 
@@ -203,6 +203,12 @@ const PLANS = {
     }
     .plan-card:hover { border-color: #86efac; }
     .plan-card.selected { border-color: var(--pub-green); box-shadow: 0 0 0 3px #d1fae5; }
+    .plan-card.plan-card-disabled { cursor: default; opacity: .55; pointer-events: none; }
+    .plan-coming-badge {
+      display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+      background: #f1f5f9; color: #64748b; padding: 3px 10px; border-radius: 20px;
+    }
+    .plan-price-muted { font-size: 15px; font-weight: 500; color: var(--pub-text-muted); }
     .plan-card-inner { display: flex; flex-direction: column; gap: 10px; }
     .plan-name { font-size: 16px; font-weight: 700; color: var(--pub-text); }
     .plan-price { font-size: 24px; font-weight: 700; color: var(--pub-text); }
@@ -293,7 +299,7 @@ export class OrderComponent implements OnInit {
 
   ngOnInit() {
     const { plan, billing } = this.route.snapshot.queryParams;
-    if (plan === 'basic' || plan === 'enterprise') this.form.patchValue({ plan });
+    if (plan === 'basic') this.form.patchValue({ plan });
     if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
   }
 
