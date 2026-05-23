@@ -176,9 +176,9 @@ TOP PRIO
 - [x] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
 
 - [x] Cookies banner
-- [ ] Clean netlify
-  - [ ] TypeScript check — `npx tsc --noEmit` — confirms no type errors across the codebase
-  - [ ] Broken /kontakt form - Contact form via Wrangler dev — `npx wrangler pages dev --proxy 4201` --compatibility-date=2024-01-01, then go to /kontakt, submit the form, verify the request goes to /api/v1/contact and triggers an email via Brevo
+- [x] Clean netlify
+  - [x] TypeScript check — `npx tsc --noEmit` — confirms no type errors across the codebase
+  - [x] Broken /kontakt form - Contact form via Wrangler dev — `npx wrangler pages dev --proxy 4201` --compatibility-date=2024-01-01, then go to /kontakt, submit the form, verify the request goes to /api/v1/contact and triggers an email via Brevo
   - [ ] Functions unit tests — `npx vitest run functions` — confirms the e2e import from functions/_shared/_cap resolves correctly
 - [ ] Pricing inconsistency
       - homepage - pripravujeme
