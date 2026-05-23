@@ -188,6 +188,7 @@ TOP PRIO
    - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
    - Brevo - ???
    - [x] GTM
+- [ ] Show plan after login
 - [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
 - [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
 

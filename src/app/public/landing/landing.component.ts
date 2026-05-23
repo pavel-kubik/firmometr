@@ -5,11 +5,13 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 import { LangService } from '../../core/services/lang.service';
+import { BasicCardComponent } from '../basic-card/basic-card.component';
+import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
+  imports: [FormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent],
   template: `
     <app-public-nav />
 
@@ -125,29 +127,8 @@ import { LangService } from '../../core/services/lang.service';
               </ul>
               <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
-            <div class="plan-card plan-featured">
-              <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
-              <div class="plan-desc">{{ 'landing.plan_solo_price' | transloco }}</div>
-              <ul class="plan-features">
-                <li>{{ 'landing.plan_solo_feat1' | transloco }}</li>
-                <li>{{ 'landing.plan_solo_feat2' | transloco }}</li>
-                <li>{{ 'landing.plan_solo_feat3' | transloco }}</li>
-                <li>{{ 'landing.plan_solo_feat4' | transloco }}</li>
-              </ul>
-              <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'basic'}" class="pub-btn pub-btn-primary">{{ 'landing.plan_solo_cta' | transloco }}</a>
-            </div>
-            <div class="plan-card">
-              <div class="plan-badge plan-badge-gray">{{ 'landing.plan_business_badge' | transloco }}</div>
-              <div class="plan-name">{{ 'landing.plan_business_name' | transloco }}</div>
-              <div class="plan-desc">{{ 'landing.plan_business_price' | transloco }}</div>
-              <ul class="plan-features">
-                <li>{{ 'landing.plan_business_feat1' | transloco }}</li>
-                <li>{{ 'landing.plan_business_feat2' | transloco }}</li>
-                <li>{{ 'landing.plan_business_feat3' | transloco }}</li>
-                <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
-              </ul>
-              <a [routerLink]="ls.p('/kontakt')" [queryParams]="{message: 'Mam zájem o enterprise řešení.'}" class="pub-btn pub-btn-outline">{{ 'landing.plan_business_cta' | transloco }}</a>
-            </div>
+            <app-basic-card />
+            <app-enterprise-card />
           </div>
         </div>
       </section>
@@ -250,13 +231,6 @@ import { LangService } from '../../core/services/lang.service';
       background: #fff; border: 1px solid var(--pub-border); border-radius: 12px;
       padding: 28px 24px; position: relative;
     }
-    .plan-card.plan-featured { border-color: var(--pub-green); border-width: 2px; }
-    .plan-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--pub-green); color: #fff; font-size: 10px; font-weight: 700;
-      padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; white-space: nowrap;
-    }
-    .plan-badge.plan-badge-gray { background: #64748b; }
     .plan-name { font-size: 18px; font-weight: 700; color: var(--pub-text); margin-bottom: 4px; }
     .plan-desc { font-size: 13px; color: var(--pub-text-subtle); padding-bottom: 16px; border-bottom: 1px solid #f1f5f9; margin-bottom: 16px; }
     .plan-features { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-direction: column; gap: 8px; }

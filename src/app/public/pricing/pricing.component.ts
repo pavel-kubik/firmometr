@@ -4,11 +4,13 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 import { LangService } from '../../core/services/lang.service';
+import { BasicCardComponent } from '../basic-card/basic-card.component';
+import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.component';
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent],
+  imports: [RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent],
   template: `
     <app-public-nav />
 
@@ -51,43 +53,10 @@ import { LangService } from '../../core/services/lang.service';
           </div>
 
           <!-- BASIC -->
-          <div class="plan-card plan-featured">
-            <div class="plan-name">{{ 'pricing.plan_solo_name' | transloco }}</div>
-            <div class="plan-price-wrap">
-              <span class="plan-price-amount">{{ billing === 'annual' ? 299 : 349 }} Kč</span>
-              <span class="plan-price-per">/ {{ 'pricing.per_month' | transloco }}</span>
-            </div>
-            @if (billing === 'annual') {
-              <div class="plan-annual-note">{{ 'pricing.annual_note_basic' | transloco }}</div>
-            }
-            <ul class="plan-features">
-              <li>{{ 'pricing.plan_solo_feat1' | transloco }}</li>
-              <li>{{ 'pricing.plan_solo_feat2' | transloco }}</li>
-              <li>{{ 'pricing.plan_solo_feat3' | transloco }}</li>
-              <li>{{ 'pricing.plan_solo_feat4' | transloco }}</li>
-            </ul>
-            <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'basic', billing: billing}" class="pub-btn pub-btn-primary plan-btn">{{ 'pricing.plan_solo_cta' | transloco }}</a>
-          </div>
+          <app-basic-card [billing]="billing" />
 
           <!-- ENTERPRISE -->
-          <div class="plan-card">
-            <div class="plan-name">{{ 'pricing.plan_business_name' | transloco }}</div>
-            <div class="plan-price-wrap">
-              <span class="plan-price-amount">{{ billing === 'annual' ? 799 : 899 }} Kč</span>
-              <span class="plan-price-per">/ {{ 'pricing.per_month' | transloco }}</span>
-            </div>
-            @if (billing === 'annual') {
-              <div class="plan-annual-note">{{ 'pricing.annual_note_enterprise' | transloco }}</div>
-            }
-            <ul class="plan-features">
-              <li>{{ 'pricing.plan_business_feat1' | transloco }}</li>
-              <li>{{ 'pricing.plan_business_feat2' | transloco }}</li>
-              <li>{{ 'pricing.plan_business_feat3' | transloco }}</li>
-              <li>{{ 'pricing.plan_business_feat4' | transloco }}</li>
-              <li>{{ 'pricing.plan_business_feat5' | transloco }}</li>
-            </ul>
-            <a [routerLink]="ls.p('/objednat')" [queryParams]="{plan: 'enterprise', billing: billing}" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_business_cta' | transloco }}</a>
-          </div>
+          <app-enterprise-card />
 
         </div>
       </div>
@@ -131,18 +100,12 @@ import { LangService } from '../../core/services/lang.service';
       background: #fff; border: 1px solid var(--pub-border); border-radius: 14px;
       padding: 32px 24px; display: flex; flex-direction: column;
     }
-    .plan-card.plan-featured { border-color: var(--pub-green); border-width: 2px; }
 
     .plan-name { font-size: 20px; font-weight: 700; color: var(--pub-text); margin-bottom: 12px; }
 
     .plan-price-wrap { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
     .plan-price-amount { font-size: 32px; font-weight: 700; color: var(--pub-text); }
     .plan-price-per { font-size: 13px; color: var(--pub-text-muted); }
-
-    .plan-annual-note {
-      font-size: 12px; color: #065f46; background: #f0fdf4; border-radius: 6px;
-      padding: 4px 8px; margin-bottom: 16px; display: inline-block;
-    }
 
     .plan-features { list-style: none; padding: 0; margin: 16px 0 24px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
     .plan-features li { font-size: 14px; color: var(--pub-text-muted); display: flex; gap: 8px; }
