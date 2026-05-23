@@ -398,7 +398,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
-    this.pageUrl = `https://firmometr.netlify.app/search/${ico}`;
+    this.pageUrl = `https://firmometr.cz/search/${ico}`;
     this.load(ico);
   }
 

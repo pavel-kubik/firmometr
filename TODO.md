@@ -173,9 +173,9 @@ TOP PRIO
 - [x] SSG from previous repo lustrate
 - [x] Remove waitlist form
 - [x] caching latest search at open registry
-- [ ] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
+- [x] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
 
-- [ ] Cookies banner
+- [x] Cookies banner
 - [ ] Pricing inconsistency
       - homepage - pripravujeme
       - order - selling
@@ -185,7 +185,7 @@ TOP PRIO
    - Brevo - ???
    - GTM
 - [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
-- 
+- [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
 
 
   - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING

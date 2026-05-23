@@ -292,5 +292,10 @@
   "order.submitting": "Submitting…",
   "order.success_title": "Order received!",
   "order.success_sub": "We'll contact you within 1 business day with a proforma invoice.",
-  "order.error": "Failed to submit. Please write directly to"
+  "order.error": "Failed to submit. Please write directly to",
+
+  "cookies.text": "We use cookies for traffic analytics (Google Analytics). Necessary cookies are always active.",
+  "cookies.accept": "Accept all",
+  "cookies.reject": "Only necessary",
+  "cookies.more": "More information"
 }
