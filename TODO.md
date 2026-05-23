@@ -175,6 +175,19 @@ TOP PRIO
 - [x] caching latest search at open registry
 - [ ] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
 
+- [ ] Cookies banner
+- [ ] Pricing inconsistency
+      - homepage - pripravujeme
+      - order - selling
+- [ ] GDPR compliance
+   - Cloudflare - ma
+   - Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
+   - Brevo - ???
+   - GTM
+- [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
+- 
+
+
   - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING
   - [ ] What is reference point? watchlist in DB
   - [ ] Zmena semaforu => trigger event
@@ -182,13 +195,16 @@ TOP PRIO
   - [ ] Full watchdog for any change => another feature
 
 - [ ] [Notifications] Allow custom per-company notification email (notify_email field is ready in DB, needs UI + WatchService.setNotification to accept arbitrary email)
-- [ ] Minimal automated test for deployment
+- [ ] E2E - Minimal automated test for deployment
   - [ ] Search company
-  - [ ] Login
-  - [ ] Watched list
-  - [ ] Search company and add to watch list
+  - [ ] Register lifecycle
+  - [ ] Order lifecycle
+  - [ ] Add to watchlist lifecycle
+  - [ ] Notify about changes
 - [ ] BASIC SUBSCRIPTION
   - [ ] Allow buy subscription
+
+FEATURES (deffered after MVP)
 - [ ] Update email templates
 - [ ] [SEO] Get latest changes on insolvency (like hlidac statu), ...
 - [ ] [SEO] SSG for ALL / important? / some companies (may be use KV)

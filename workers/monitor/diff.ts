@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { fetchIcoStatus } from './registry';
+import { buildEmail } from './email-template';
 import type { Env } from './index';
 
 interface WatchlistRow {
@@ -57,9 +58,25 @@ async function diffRow(
     updateData['isir_clarity']     = isirClarity;
     updateData['dph_nespolehlivy'] = dphNespolehlivy;
     updateData['ares_stav_kod']    = aresStavKod;
-    console.log(`[diff] Change detected for ico=${row.ico} user=${row.user_email}`);
-    // TODO: send email notification to row.user_email (separate feature)
+
+    const { subject, html, text } = buildEmail({
+      ico: row.ico,
+      displayName: row.display_name,
+      isirClarity,
+      dphNespolehlivy,
+      aresStavKod,
+    });
+    const recipient = env.TEST_EMAIL ?? row.user_email;
+
+    if (env.DRY_RUN) {
+      console.log(`[diff][dry-run] Would email ${recipient}: ${subject}`);
+    } else {
+      console.log(`[diff] Change detected for ico=${row.ico} user=${row.user_email}`);
+      await env.SEND_EMAIL.send({ from: env.FROM_ADDRESS, to: recipient, subject, html, text });
+    }
   }
 
-  await supabase.from('watchlist').update(updateData).eq('id', row.id);
+  if (!env.DRY_RUN) {
+    await supabase.from('watchlist').update(updateData).eq('id', row.id);
+  }
 }

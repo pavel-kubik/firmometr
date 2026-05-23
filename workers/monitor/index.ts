@@ -8,6 +8,10 @@ export interface Env {
   API_URL: string;
   MAX_CACHE_AGE_SECS: string;
   SEND_EMAIL: { send(message: EmailMessage): Promise<void> };
+  /** Redirect all outgoing emails to this address instead of the real recipient. */
+  TEST_EMAIL?: string;
+  /** When set, skip DB state updates and email sends — only log what would happen. */
+  DRY_RUN?: string;
 }
 
 export interface EmailMessage {
