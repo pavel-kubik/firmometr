@@ -9,7 +9,7 @@
     "test": "ng test",
     "test:functions": "vitest run functions",
     "test:e2e": "playwright test",
-    "dev:cf": "wrangler pages dev --proxy 4201 --compatibility-date=2024-01-01"
+    "dev:cf": "wrangler pages dev --proxy 4201 --port 8889 --compatibility-date=2024-01-01"
   },
   "dependencies": {
     "@angular/animations": "^18.2.0",

@@ -24,6 +24,7 @@
       "dom"
     ]
   },
+  "exclude": ["workers"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

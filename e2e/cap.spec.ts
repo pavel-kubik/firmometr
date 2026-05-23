@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { FREE_CAP, WINDOW_MINUTES } from '../netlify/functions/_cap.mts';
+import { FREE_CAP, WINDOW_MINUTES } from '../functions/_shared/_cap';
 
 const MAX_SECONDS = WINDOW_MINUTES * 60;
 const FUNCTIONS_BASE = 'http://localhost:8889';
@@ -136,7 +136,7 @@ test.describe('Subject detail page — rate cap', () => {
 });
 
 // ---------------------------------------------------------------------------
-// cap-reset endpoint (hits the Netlify dev server directly)
+// cap-reset endpoint (hits the Wrangler dev server directly)
 // ---------------------------------------------------------------------------
 
 test.describe('cap-reset endpoint', () => {
@@ -184,7 +184,7 @@ test.describe('cap-reset endpoint', () => {
 });
 
 // ---------------------------------------------------------------------------
-// search-ico endpoint cap (hits Netlify dev server directly)
+// search-ico endpoint cap (hits Wrangler dev server directly)
 // ---------------------------------------------------------------------------
 
 test.describe('search-ico endpoint — rate cap', () => {
@@ -223,7 +223,7 @@ test.describe('search-ico endpoint — rate cap', () => {
 });
 
 // ---------------------------------------------------------------------------
-// search-name endpoint cap (hits Netlify dev server directly)
+// search-name endpoint cap (hits Wrangler dev server directly)
 // ---------------------------------------------------------------------------
 
 test.describe('search-name endpoint — rate cap', () => {

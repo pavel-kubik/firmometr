@@ -84,7 +84,7 @@ Sections top to bottom:
   - **Solo** — "Brzy dostupné", features list, waitlist form inline
   - **Business** — "Brzy dostupné", features list, waitlist form inline
 - Single shared waitlist form below cards (alternative): email input + plan selector + submit
-- Form submits via **Netlify Forms** (attribute `netlify` on `<form>`, no backend required)
+- Form submits via POST to `/api/v1/contact` (Cloudflare Pages Function, sends email via Brevo)
 - Success state: inline thank-you message
 
 ### 3. Contact page (`/kontakt`)
@@ -95,7 +95,7 @@ Sections top to bottom:
   - Email: info@firmometr.cz
   - Company: Butterfly Flowers s.r.o., IČO 07102127
   - Address: Srbínská 867/4, Strašnice, 10000 Praha 10
-- Contact form: jméno, e-mail, zpráva, submit via Netlify Forms
+- Contact form: jméno, e-mail, zpráva, submit via POST `/api/v1/contact`
 - Mobile: stacked, form below info
 
 ### 4. Obchodní podmínky (`/obchodni-podminky`)
@@ -132,10 +132,9 @@ Mobile nav: hide nav links on `< 768px`, show hamburger `☰` button. `PublicNav
 
 ## Waitlist Form
 
-- Netlify Forms: add `netlify` attribute and `netlify-honeypot` for spam protection
+- Submit via POST `/api/v1/contact` (Cloudflare Pages Function)
 - Fields: email (required), plan selection (Free / Solo / Business radio or dropdown), optional message
 - On submit: show inline success message, no page navigation
-- Form name: `waitlist` (Netlify dashboard will show submissions under this name)
 
 ---
 

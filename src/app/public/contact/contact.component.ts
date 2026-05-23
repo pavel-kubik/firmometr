@@ -174,17 +174,13 @@ export class ContactComponent {
     this.submitting = true;
     this.error = false;
 
-    const body = new URLSearchParams({
-      'form-name': 'contact',
+    const body = {
       name: this.form.value.name ?? '',
       email: this.form.value.email ?? '',
       message: this.form.value.message ?? '',
-    });
+    };
 
-    this.http.post('/', body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      responseType: 'text',
-    }).subscribe({
+    this.http.post('/api/v1/contact', body).subscribe({
       next: () => { this.submitted = true; this.submitting = false; },
       error: () => { this.error = true; this.submitting = false; },
     });

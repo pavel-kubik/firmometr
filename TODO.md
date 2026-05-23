@@ -163,9 +163,9 @@ Sledované subjekty
 
 Search _____ 
 
-- [ ] Distinquish access from localhost - block, netlify, prod at Google Analytics
+- [ ] Distinquish access from localhost - block, cloudflare preview, prod at Google Analytics
 - [ ] Get VAT registration date from registry, it should be 01.08.2024 for ICO 71379487
-- [ ] Angular SSG (Static Site Generation) for sattic pages
+- [x] Angular SSG (Static Site Generation) for sattic pages
 - [ ] Přihlaste se pro správu vlastního portfolia sledovaných subjektů. => + a notifikaci zmen
 
 
@@ -176,6 +176,10 @@ TOP PRIO
 - [x] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
 
 - [x] Cookies banner
+- [ ] Clean netlify
+  - [ ] TypeScript check — `npx tsc --noEmit` — confirms no type errors across the codebase
+  - [ ] Broken /kontakt form - Contact form via Wrangler dev — `npx wrangler pages dev --proxy 4201` --compatibility-date=2024-01-01, then go to /kontakt, submit the form, verify the request goes to /api/v1/contact and triggers an email via Brevo
+  - [ ] Functions unit tests — `npx vitest run functions` — confirms the e2e import from functions/_shared/_cap resolves correctly
 - [ ] Pricing inconsistency
       - homepage - pripravujeme
       - order - selling
