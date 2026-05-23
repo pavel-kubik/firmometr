@@ -292,6 +292,8 @@
   "order.success_title": "Objednávka přijata!",
   "order.success_sub": "Ozveme se vám do 1 pracovního dne s proforma fakturou.",
   "order.error": "Nepodařilo se odeslat. Napište přímo na",
+  "order.field_required": "Povinné pole",
+  "order.field_email_invalid": "Zadejte platný e-mail",
 
   "cookies.text": "Používáme cookies pro analýzu návštěvnosti (Google Analytics). Nezbytné cookies jsou vždy aktivní.",
   "cookies.accept": "Přijmout vše",

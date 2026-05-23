@@ -1,3 +1,7 @@
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 interface Env {
   BREVO_API_KEY: string;
   ORDER_FROM_NAME: string;
@@ -30,7 +34,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       to:          [{ email: env.ORDER_TO }],
       replyTo:     { name: name || email, email },
       subject:     `Firmometr — kontaktní formulář od ${name || email}`,
-      htmlContent: `<p><strong>Jméno:</strong> ${name || '—'}</p><p><strong>E-mail:</strong> ${email}</p><p><strong>Zpráva:</strong><br>${message.replace(/\n/g, '<br>')}</p>`,
+      htmlContent: `<p><strong>Jméno:</strong> ${escapeHtml(name || '—')}</p><p><strong>E-mail:</strong> ${escapeHtml(email)}</p><p><strong>Zpráva:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`,
     }),
   });
 

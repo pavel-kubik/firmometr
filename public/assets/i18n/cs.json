@@ -100,6 +100,7 @@
   "pricing.per_month": "měsíc",
   "pricing.forever": "navždy",
   "pricing.annual_note_basic": "Fakturováno ročně — 3 289 Kč (1 měsíc zdarma)",
+  "pricing.annual_note_enterprise": "Fakturováno ročně — 8 789 Kč (1 měsíc zdarma)",
   "pricing.waitlist_label": "WAITLIST",
   "pricing.waitlist_title": "Upozorníme vás, jakmile bude plán dostupný",
   "pricing.waitlist_sub": "Vyplňte e-mail a my vás budeme první informovat při spuštění.",
@@ -273,5 +274,7 @@
   "order.submitting": "Odesílám…",
   "order.success_title": "Objednávka přijata!",
   "order.success_sub": "Ozveme se vám do 1 pracovního dne s proforma fakturou.",
-  "order.error": "Nepodařilo se odeslat. Napište přímo na"
+  "order.error": "Nepodařilo se odeslat. Napište přímo na",
+  "order.field_required": "Povinné pole",
+  "order.field_email_invalid": "Zadejte platný e-mail"
 }

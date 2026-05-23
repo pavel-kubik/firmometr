@@ -100,6 +100,7 @@
   "pricing.per_month": "month",
   "pricing.forever": "forever",
   "pricing.annual_note_basic": "Billed annually — 3,289 CZK (1 month free)",
+  "pricing.annual_note_enterprise": "Billed annually — 8,789 CZK (1 month free)",
   "pricing.waitlist_label": "WAITLIST",
   "pricing.waitlist_title": "We'll notify you as soon as the plan is available",
   "pricing.waitlist_sub": "Enter your email and we'll be the first to let you know at launch.",
@@ -273,5 +274,7 @@
   "order.submitting": "Submitting…",
   "order.success_title": "Order received!",
   "order.success_sub": "We'll contact you within 1 business day with a proforma invoice.",
-  "order.error": "Failed to submit. Please write directly to"
+  "order.error": "Failed to submit. Please write directly to",
+  "order.field_required": "Required field",
+  "order.field_email_invalid": "Enter a valid email"
 }

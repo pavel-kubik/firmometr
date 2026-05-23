@@ -38,27 +38,27 @@ const PLANS = {
                 <label class="plan-card" [class.selected]="form.value.plan === 'basic'">
                   <input type="radio" formControlName="plan" value="basic" class="sr-only">
                   <div class="plan-card-inner">
-                    <div class="plan-name">BASIC</div>
-                    <div class="plan-price">od 299 Kč<span class="plan-per"> / měsíc</span></div>
+                    <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
+                    <div class="plan-price">od 299 Kč<span class="plan-per"> / {{ 'pricing.per_month' | transloco }}</span></div>
                     <ul class="plan-features">
-                      <li>50 sledovaných firem</li>
-                      <li>ISIR + DPH + OR alerty</li>
-                      <li>E-mailová upozornění</li>
-                      <li>CSV import</li>
+                      <li>{{ 'landing.plan_solo_feat1' | transloco }}</li>
+                      <li>{{ 'landing.plan_solo_feat2' | transloco }}</li>
+                      <li>{{ 'landing.plan_solo_feat3' | transloco }}</li>
+                      <li>{{ 'landing.plan_solo_feat4' | transloco }}</li>
                     </ul>
                   </div>
                 </label>
                 <div class="plan-card plan-card-disabled">
                   <div class="plan-card-inner">
-                    <div class="plan-name">ENTERPRISE</div>
-                    <div class="plan-coming-badge">PŘIPRAVUJEME</div>
-                    <div class="plan-price plan-price-muted">Brzy dostupné</div>
+                    <div class="plan-name">{{ 'landing.plan_business_name' | transloco }}</div>
+                    <div class="plan-coming-badge">{{ 'landing.plan_business_badge' | transloco }}</div>
+                    <div class="plan-price plan-price-muted">{{ 'landing.plan_business_price' | transloco }}</div>
                     <ul class="plan-features">
-                      <li>100 sledovaných IČO</li>
-                      <li>Vše z BASIC +</li>
-                      <li>Export Excel / PDF</li>
-                      <li>Multi-user a role</li>
-                      <li>Sbírka listin</li>
+                      <li>{{ 'landing.plan_business_feat1' | transloco }}</li>
+                      <li>{{ 'landing.plan_business_feat2' | transloco }}</li>
+                      <li>{{ 'landing.plan_business_feat3' | transloco }}</li>
+                      <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
+                      <li>{{ 'landing.plan_business_feat5' | transloco }}</li>
                     </ul>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ const PLANS = {
                     [class.invalid]="form.get('jmeno')?.invalid && form.get('jmeno')?.touched"
                     placeholder="Firma s.r.o.">
                   @if (form.get('jmeno')?.invalid && form.get('jmeno')?.touched) {
-                    <span class="form-error">Povinné pole</span>
+                    <span class="form-error">{{ 'order.field_required' | transloco }}</span>
                   }
                 </div>
                 <div class="fields-row">
@@ -101,7 +101,7 @@ const PLANS = {
                       [class.invalid]="form.get('ico')?.invalid && form.get('ico')?.touched"
                       placeholder="12345678">
                     @if (form.get('ico')?.invalid && form.get('ico')?.touched) {
-                      <span class="form-error">Povinné pole</span>
+                      <span class="form-error">{{ 'order.field_required' | transloco }}</span>
                     }
                   </div>
                   <div class="form-group">
@@ -115,7 +115,7 @@ const PLANS = {
                     [class.invalid]="form.get('adresa')?.invalid && form.get('adresa')?.touched"
                     placeholder="Ulice 1, 110 00 Praha 1">
                   @if (form.get('adresa')?.invalid && form.get('adresa')?.touched) {
-                    <span class="form-error">Povinné pole</span>
+                    <span class="form-error">{{ 'order.field_required' | transloco }}</span>
                   }
                 </div>
                 <div class="fields-row">
@@ -125,7 +125,7 @@ const PLANS = {
                       [class.invalid]="form.get('email')?.invalid && form.get('email')?.touched"
                       placeholder="jan@firma.cz">
                     @if (form.get('email')?.invalid && form.get('email')?.touched) {
-                      <span class="form-error">Zadejte platný e-mail</span>
+                      <span class="form-error">{{ 'order.field_email_invalid' | transloco }}</span>
                     }
                   </div>
                   <div class="form-group">
@@ -134,7 +134,7 @@ const PLANS = {
                       [class.invalid]="form.get('telefon')?.invalid && form.get('telefon')?.touched"
                       placeholder="+420 600 000 000">
                     @if (form.get('telefon')?.invalid && form.get('telefon')?.touched) {
-                      <span class="form-error">Povinné pole</span>
+                      <span class="form-error">{{ 'order.field_required' | transloco }}</span>
                     }
                   </div>
                 </div>
@@ -145,10 +145,10 @@ const PLANS = {
             <div class="price-summary">
               <div class="price-row">
                 <span class="price-label">{{ 'order.price_label' | transloco }}</span>
-                <span class="price-value">{{ totalPrice }}</span>
+                <span class="price-value">{{ price }} Kč / {{ 'pricing.per_month' | transloco }}</span>
               </div>
               @if (form.value.billing === 'annual') {
-                <div class="price-note">{{ annualNote }}</div>
+                <div class="price-note">{{ (form.value.plan === 'enterprise' ? 'pricing.annual_note_enterprise' : 'pricing.annual_note_basic') | transloco }}</div>
               }
             </div>
 
@@ -303,17 +303,10 @@ export class OrderComponent implements OnInit {
     if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
   }
 
-  get totalPrice(): string {
+  get price(): number {
     const key = this.form.value.plan as 'basic' | 'enterprise';
     const p = PLANS[key] ?? PLANS.basic;
-    const price = this.form.value.billing === 'annual' ? p.annualPerMonth : p.monthly;
-    return `${price.toLocaleString('cs-CZ')} Kč / měsíc`;
-  }
-
-  get annualNote(): string {
-    const key = this.form.value.plan as 'basic' | 'enterprise';
-    const p = PLANS[key] ?? PLANS.basic;
-    return `Fakturováno ročně — 11 × ${p.annualPerMonth} Kč = ${p.annual.toLocaleString('cs-CZ')} Kč (1 měsíc zdarma)`;
+    return this.form.value.billing === 'annual' ? p.annualPerMonth : p.monthly;
   }
 
   submit() {

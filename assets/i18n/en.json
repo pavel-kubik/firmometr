@@ -292,6 +292,8 @@
   "order.success_title": "Order received!",
   "order.success_sub": "We'll contact you within 1 business day with a proforma invoice.",
   "order.error": "Failed to submit. Please write directly to",
+  "order.field_required": "Required field",
+  "order.field_email_invalid": "Enter a valid email",
 
   "cookies.text": "We use cookies for traffic analytics (Google Analytics). Necessary cookies are always active.",
   "cookies.accept": "Accept all",

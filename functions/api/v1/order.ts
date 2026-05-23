@@ -20,6 +20,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   if (!plan || !billing || !jmeno || !ico || !adresa || !email || !telefon) {
     return Response.json({ error: 'missing_fields' }, { status: 400 });
   }
+  if (!/^\d{8}$/.test(ico)) {
+    return Response.json({ error: 'invalid_ico' }, { status: 400 });
+  }
 
   // Store in Supabase
   const supaRes = await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
