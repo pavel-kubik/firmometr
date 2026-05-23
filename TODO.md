@@ -188,10 +188,12 @@ TOP PRIO
    - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
    - Brevo - ???
    - [x] GTM
+- [ ] Cap usage without login
+- [ ] Cap usage for free plan - ? 3x per day ?
 - [ ] Show plan after login
 - [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
 - [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
-
+- [ ] Order form - ico not mandatory
 
   - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING
   - [ ] What is reference point? watchlist in DB
