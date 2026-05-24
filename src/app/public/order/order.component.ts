@@ -39,7 +39,7 @@ const PLANS = {
                   <input type="radio" formControlName="plan" value="basic" class="sr-only">
                   <div class="plan-card-inner">
                     <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
-                    <div class="plan-price">od 299 Kč<span class="plan-per"> / {{ 'pricing.per_month' | transloco }}</span></div>
+                    <div class="plan-price">{{ form.value.billing === 'annual' ? 299 : 349 }} Kč<span class="plan-per"> / {{ 'pricing.per_month' | transloco }}</span></div>
                     <ul class="plan-features">
                       <li>{{ 'landing.plan_solo_feat1' | transloco }}</li>
                       <li>{{ 'landing.plan_solo_feat2' | transloco }}</li>
