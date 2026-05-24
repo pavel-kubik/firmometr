@@ -97,13 +97,10 @@ const PLANS = {
                 </div>
                 <div class="fields-row">
                   <div class="form-group">
-                    <label>{{ 'order.field_ico' | transloco }} *</label>
+                    <label>{{ 'order.field_ico' | transloco }}</label>
                     <input formControlName="ico" type="text" class="form-input"
                       [class.invalid]="form.get('ico')?.invalid && form.get('ico')?.touched"
                       placeholder="12345678">
-                                    @if (form.get('ico')?.errors?.['required'] && form.get('ico')?.touched) {
-                      <span class="form-error">{{ 'order.field_required' | transloco }}</span>
-                    }
                     @if (form.get('ico')?.errors?.['invalidIco']) {
                       <span class="form-error">{{ 'order.field_ico_invalid' | transloco }}</span>
                     }
@@ -295,7 +292,7 @@ export class OrderComponent implements OnInit {
     plan:     ['basic',   Validators.required],
     billing:  ['monthly', Validators.required],
     jmeno:    ['', Validators.required],
-    ico:      ['', Validators.required],
+    ico:      [''],
     dic:      [''],
     adresa:   ['', Validators.required],
     email:    ['', [Validators.required, Validators.email]],

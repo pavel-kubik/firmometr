@@ -9,13 +9,17 @@ interface Env {
 }
 
 async function getUserId(env: Env, authHeader: string | null): Promise<string | null> {
-  if (!authHeader?.startsWith('Bearer ')) return null;
-  const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
-    headers: { 'Authorization': authHeader, 'apikey': env.SUPABASE_ANON_KEY },
-  });
-  if (!res.ok) return null;
-  const data = await res.json() as { id?: string };
-  return data.id ?? null;
+  if (!authHeader?.startsWith('Bearer ') || !env.SUPABASE_URL) return null;
+  try {
+    const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      headers: { 'Authorization': authHeader, 'apikey': env.SUPABASE_ANON_KEY },
+    });
+    if (!res.ok) return null;
+    const data = await res.json() as { id?: string };
+    return data.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
@@ -31,10 +35,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 
   const { plan, billing, jmeno, ico, dic, adresa, email, telefon } = body;
-  if (!plan || !billing || !jmeno || !ico || !adresa || !email || !telefon) {
+  if (!plan || !billing || !jmeno || !adresa || !email || !telefon) {
     return Response.json({ error: 'missing_fields' }, { status: 400 });
   }
-  if (!/^\d{8}$/.test(ico)) {
+  if (ico && !/^\d{8}$/.test(ico)) {
     return Response.json({ error: 'invalid_ico' }, { status: 400 });
   }
 

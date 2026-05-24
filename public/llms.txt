@@ -1,0 +1,21 @@
+# Firmometr
+
+> Firmometr is a Czech B2B company intelligence tool that aggregates data from public registries
+> (ISIR insolvency register, DPH unreliable VAT payers, ARES, commercial register) into one profile.
+
+## What it does
+- Instant risk check for any Czech company by IČO or name
+- Insolvency status (ISIR): clear / past debtor / active proceedings
+- VAT reliability check (Ministry of Finance database)
+- Company profile: directors, address, legal form, founding date (ARES + OR)
+- Watchlist: monitor companies and receive email alerts on status changes
+
+## Pricing
+- Free: 5 searches per session, ISIR + VAT traffic light
+- Solo (349 Kč/month): 50 watched companies, full alerts
+- Enterprise: unlimited
+
+## Key pages
+- https://firmometr.cz — homepage and live search
+- https://firmometr.cz/ceny — pricing
+- https://firmometr.cz/search/{ico} — company profile (public)
