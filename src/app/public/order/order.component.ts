@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
@@ -100,8 +100,11 @@ const PLANS = {
                     <input formControlName="ico" type="text" class="form-input"
                       [class.invalid]="form.get('ico')?.invalid && form.get('ico')?.touched"
                       placeholder="12345678">
-                    @if (form.get('ico')?.invalid && form.get('ico')?.touched) {
+                                    @if (form.get('ico')?.errors?.['required'] && form.get('ico')?.touched) {
                       <span class="form-error">{{ 'order.field_required' | transloco }}</span>
+                    }
+                    @if (form.get('ico')?.errors?.['invalidIco']) {
+                      <span class="form-error">{{ 'order.field_ico_invalid' | transloco }}</span>
                     }
                   </div>
                   <div class="form-group">
@@ -328,7 +331,15 @@ export class OrderComponent implements OnInit {
 
     this.http.post('/api/v1/order', body).subscribe({
       next: () => { this.submitted = true; this.submitting = false; },
-      error: () => { this.error = true; this.submitting = false; },
+      error: (err: HttpErrorResponse) => {
+        this.submitting = false;
+        if (err.status === 400 && err.error?.error === 'invalid_ico') {
+          this.form.get('ico')?.setErrors({ invalidIco: true });
+          this.form.get('ico')?.markAsTouched();
+        } else {
+          this.error = true;
+        }
+      },
     });
   }
 }

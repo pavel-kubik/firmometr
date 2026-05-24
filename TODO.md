@@ -186,8 +186,13 @@ TOP PRIO
 - [x] GDPR compliance
    - [x] Cloudflare
    - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
-   - Brevo - ???
+   - [X] Brevo
    - [x] GTM
+- [ ] Vypnpit sledovani pro neregistrovane => lock icon a registrovat?
+- [ ] ICO optional in order
+- [ ] Change angular default app icon
+- [ ] Errors are not propagated to forms
+
 - [ ] Cap usage without login
 - [ ] Cap usage for free plan - ? 3x per day ?
 - [ ] Show plan after login

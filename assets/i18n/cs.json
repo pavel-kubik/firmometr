@@ -294,6 +294,7 @@
   "order.error": "Nepodařilo se odeslat. Napište přímo na",
   "order.field_required": "Povinné pole",
   "order.field_email_invalid": "Zadejte platný e-mail",
+  "order.field_ico_invalid": "IČO musí mít přesně 8 číslic",
 
   "cookies.text": "Používáme cookies pro analýzu návštěvnosti (Google Analytics). Nezbytné cookies jsou vždy aktivní.",
   "cookies.accept": "Přijmout vše",

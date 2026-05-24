@@ -294,6 +294,7 @@
   "order.error": "Failed to submit. Please write directly to",
   "order.field_required": "Required field",
   "order.field_email_invalid": "Enter a valid email",
+  "order.field_ico_invalid": "IČO must be exactly 8 digits",
 
   "cookies.text": "We use cookies for traffic analytics (Google Analytics). Necessary cookies are always active.",
   "cookies.accept": "Accept all",

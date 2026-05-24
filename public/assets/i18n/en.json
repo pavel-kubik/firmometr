@@ -276,5 +276,6 @@
   "order.success_sub": "We'll contact you within 1 business day with a proforma invoice.",
   "order.error": "Failed to submit. Please write directly to",
   "order.field_required": "Required field",
-  "order.field_email_invalid": "Enter a valid email"
+  "order.field_email_invalid": "Enter a valid email",
+  "order.field_ico_invalid": "IČO must be exactly 8 digits"
 }
