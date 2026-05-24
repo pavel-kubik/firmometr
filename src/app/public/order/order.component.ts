@@ -6,6 +6,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { AuthService } from '../../core/services/auth.service';
 
 const PLANS = {
   basic:      { name: 'BASIC',      monthly: 349, annualPerMonth: 299, annual: 299 * 11 },
@@ -284,6 +285,7 @@ export class OrderComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   submitted = false;
   submitting = false;
@@ -304,6 +306,8 @@ export class OrderComponent implements OnInit {
     const { plan, billing } = this.route.snapshot.queryParams;
     if (plan === 'basic') this.form.patchValue({ plan });
     if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
+    const email = this.auth.currentUserEmail;
+    if (email) this.form.patchValue({ email });
   }
 
   get price(): number {

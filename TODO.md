@@ -188,7 +188,6 @@ TOP PRIO
    - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
    - [X] Brevo
    - [x] GTM
-- [ ] Vypnout sledovani pro neregistrovane => lock icon a registrovat?
 - [ ] ICO optional in order
 - [ ] Change angular default app icon
 - [x] Errors are not propagated to forms

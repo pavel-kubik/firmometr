@@ -41,18 +41,24 @@ export class AuthService {
     this.profileSubject.next(data as UserProfile | null);
   }
 
-  signUp(email: string, password: string) {
-    return this.supabase.auth.signUp({ email, password });
+  signUp(email: string, password: string, returnUrl?: string) {
+    const options = returnUrl
+      ? { emailRedirectTo: `${window.location.origin}${returnUrl}` }
+      : undefined;
+    return this.supabase.auth.signUp({ email, password, options });
   }
 
   signInWithPassword(email: string, password: string) {
     return this.supabase.auth.signInWithPassword({ email, password });
   }
 
-  signInWithOtp(email: string) {
+  signInWithOtp(email: string, returnUrl?: string) {
+    const redirectTo = returnUrl
+      ? `${window.location.origin}${returnUrl}`
+      : window.location.origin;
     return this.supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: redirectTo },
     });
   }
 

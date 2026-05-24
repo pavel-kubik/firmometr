@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard } from './core/guards/auth.guard';
 
 const childRoutes: Routes = [
   { path: '', pathMatch: 'full', loadComponent: () => import('./public/landing/landing.component').then(m => m.LandingComponent) },
@@ -11,7 +12,7 @@ const childRoutes: Routes = [
   { path: 'search/:ico', loadComponent: () => import('./features/search/subject-detail/subject-detail.component').then(m => m.SubjectDetailComponent) },
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
-  { path: 'objednat', loadComponent: () => import('./public/order/order.component').then(m => m.OrderComponent) },
+  { path: 'objednat', canActivate: [authGuard], loadComponent: () => import('./public/order/order.component').then(m => m.OrderComponent) },
 ];
 
 export const routes: Routes = [

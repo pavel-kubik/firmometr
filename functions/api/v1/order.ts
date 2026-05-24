@@ -1,5 +1,6 @@
 interface Env {
   SUPABASE_URL: string;
+  SUPABASE_ANON_KEY: string;
   SUPABASE_SERVICE_KEY: string;
   BREVO_API_KEY: string;
   ORDER_FROM_NAME: string;
@@ -7,7 +8,20 @@ interface Env {
   ORDER_TO: string;
 }
 
+async function getUserId(env: Env, authHeader: string | null): Promise<string | null> {
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  const res = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+    headers: { 'Authorization': authHeader, 'apikey': env.SUPABASE_ANON_KEY },
+  });
+  if (!res.ok) return null;
+  const data = await res.json() as { id?: string };
+  return data.id ?? null;
+}
+
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {
+  const userId = await getUserId(env, request.headers.get('authorization'));
+  if (!userId) return Response.json({ error: 'unauthorized' }, { status: 401 });
+
   let body: Record<string, string>;
   const ct = request.headers.get('content-type') ?? '';
   if (ct.includes('application/json')) {
@@ -33,7 +47,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
       'Prefer': 'return=minimal',
     },
-    body: JSON.stringify({ plan, billing, jmeno, ico, dic: dic || null, adresa, email, telefon }),
+    body: JSON.stringify({ user_id: userId, plan, billing, jmeno, ico, dic: dic || null, adresa, email, telefon }),
   });
 
   if (!supaRes.ok) {
