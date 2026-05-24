@@ -276,5 +276,6 @@
   "order.success_sub": "Ozveme se vám do 1 pracovního dne s proforma fakturou.",
   "order.error": "Nepodařilo se odeslat. Napište přímo na",
   "order.field_required": "Povinné pole",
-  "order.field_email_invalid": "Zadejte platný e-mail"
+  "order.field_email_invalid": "Zadejte platný e-mail",
+  "order.field_ico_invalid": "IČO musí mít přesně 8 číslic"
 }
