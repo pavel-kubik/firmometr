@@ -1,10 +1,12 @@
 /
 /ceny
+/objednat
 /kontakt
 /gdpr
 /obchodni-podminky
 /en
 /en/ceny
+/en/objednat
 /en/kontakt
 /en/gdpr
 /en/obchodni-podminky

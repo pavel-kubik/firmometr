@@ -21,6 +21,8 @@ interface RequestCtx {
   userAgent: string | null;
   userId: string | null;
   waitUntil: (p: Promise<unknown>) => void;
+  maxCacheAgeSecs: number | undefined;
+  deployEnv: string;
 }
 
 function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: boolean, durationMs?: number, error?: string) {
@@ -35,6 +37,7 @@ function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: b
     cache_hit: cacheHit,
     duration_ms: durationMs,
     error,
+    env: ctx.deployEnv,
   }));
 }
 
@@ -102,7 +105,7 @@ function stavNazevFrom(kod: string | null): string | null {
 
 async function fetchAres(ico: string, ctx: RequestCtx): Promise<any | null> {
   const url = `${ARES_BASE}/ekonomicke-subjekty/${ico}`;
-  const cached = await getCached<any>(ctx.env.REGISTRY_CACHE, 'ares', ico);
+  const cached = await getCached<any>(ctx.env.REGISTRY_CACHE, 'ares', ico, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'ares', url, true); return cached.data; }
   const start = Date.now();
   try {
@@ -121,7 +124,7 @@ async function fetchAres(ico: string, ctx: RequestCtx): Promise<any | null> {
 }
 
 async function fetchIsir(ico: string, ctx: RequestCtx): Promise<IsirRecord[]> {
-  const cached = await getCached<IsirRecord[]>(ctx.env.REGISTRY_CACHE, 'isir', ico);
+  const cached = await getCached<IsirRecord[]>(ctx.env.REGISTRY_CACHE, 'isir', ico, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'isir', ISIR_CUZK, true); return cached.data; }
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -190,7 +193,7 @@ const DPH_NOT_PLATCE: DphResult = { isPlatce: false, nespolehlivy: null, datumNe
 const DPH_UNAVAILABLE: DphResult = { isPlatce: false, nespolehlivy: null, datumNespolehlivosti: null, ucty: [], nedostupne: true };
 
 async function fetchDph(dic: string, ctx: RequestCtx): Promise<DphResult> {
-  const cached = await getCached<DphResult>(ctx.env.REGISTRY_CACHE, 'dph', dic);
+  const cached = await getCached<DphResult>(ctx.env.REGISTRY_CACHE, 'dph', dic, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'dph', DPH_SOAP, true); return cached.data; }
   const body = `<?xml version="1.0" encoding="UTF-8"?>
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
@@ -272,7 +275,7 @@ interface OrListina {
 
 async function fetchOrVr(ico: string, ctx: RequestCtx): Promise<{ spisovatel: string | null; statutari: OrStatutar[] }> {
   const url = `${ARES_VR_BASE}/ekonomicke-subjekty-vr/${ico}`;
-  const cached = await getCached<{ spisovatel: string | null; statutari: OrStatutar[] }>(ctx.env.REGISTRY_CACHE, 'or_vr', ico);
+  const cached = await getCached<{ spisovatel: string | null; statutari: OrStatutar[] }>(ctx.env.REGISTRY_CACHE, 'or_vr', ico, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'or_vr', url, true); return cached.data; }
   const start = Date.now();
   try {
@@ -332,13 +335,13 @@ async function fetchOrVr(ico: string, ctx: RequestCtx): Promise<{ spisovatel: st
 
 async function fetchOrSubjektId(ico: string, ctx: RequestCtx): Promise<string | null> {
   const url = `${OR_PORTAL}/rejstrik-$firma?ico=${ico}`;
-  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico);
+  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'or_subjekt_id', url, true); return cached.data; }
   const start = Date.now();
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
-      headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
+      headers: { "Accept": "text/html,*/*", "User-Agent": "firmometr.cz/1.0" },
     });
     if (!res.ok) {
       log(ctx, 'or_subjekt_id', url, false, Date.now() - start, `HTTP ${res.status}`);
@@ -358,13 +361,13 @@ async function fetchOrSubjektId(ico: string, ctx: RequestCtx): Promise<string | 
 
 async function fetchSbirkaListin(subjektId: string, ctx: RequestCtx): Promise<{ listiny: OrListina[]; celkem: number }> {
   const url = `${OR_PORTAL}/vypis-sl-firma?subjektId=${subjektId}`;
-  const cached = await getCached<{ listiny: OrListina[]; celkem: number }>(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId);
+  const cached = await getCached<{ listiny: OrListina[]; celkem: number }>(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'sbirka_listin', url, true); return cached.data; }
   const start = Date.now();
   try {
     const res = await fetch(url, {
       signal: AbortSignal.timeout(10_000),
-      headers: { "Accept": "text/html,*/*", "User-Agent": "Proklepni.cz/1.0" },
+      headers: { "Accept": "text/html,*/*", "User-Agent": "firmometr.cz/1.0" },
     });
     if (!res.ok) {
       log(ctx, 'sbirka_listin', url, false, Date.now() - start, `HTTP ${res.status}`);
@@ -409,7 +412,7 @@ async function fetchSbirkaListin(subjektId: string, ctx: RequestCtx): Promise<{ 
 
 async function fetchCuzk(addressText: string, ico: string, ctx: RequestCtx): Promise<string | null> {
   const url = `${CUZK_BASE}?SearchText=${encodeURIComponent(addressText)}&f=json`;
-  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'cuzk', ico);
+  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'cuzk', ico, ctx.maxCacheAgeSecs);
   if (cached) { log(ctx, 'cuzk', url, true); return cached.data; }
   const start = Date.now();
   try {
@@ -482,6 +485,12 @@ export const onRequest = async ({
   const authHeader = request.headers.get('authorization') ?? '';
   const userId = authHeader.startsWith('Bearer ') ? parseUserIdFromJwt(authHeader.slice(7)) : null;
 
+  const maxCacheAgeParam = new URL(request.url).searchParams.get('max_cache_age');
+  const maxCacheAgeSecs = maxCacheAgeParam !== null ? parseInt(maxCacheAgeParam, 10) : undefined;
+
+  const hostname = new URL(request.url).hostname;
+  const deployEnv = hostname === 'localhost' || hostname === '127.0.0.1' ? 'local' : 'prod';
+
   const ctx: RequestCtx = {
     env,
     ico,
@@ -489,6 +498,8 @@ export const onRequest = async ({
     userAgent: request.headers.get('User-Agent'),
     userId,
     waitUntil,
+    maxCacheAgeSecs,
+    deployEnv,
   };
 
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([

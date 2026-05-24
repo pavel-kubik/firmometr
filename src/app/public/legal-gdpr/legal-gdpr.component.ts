@@ -77,8 +77,9 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
           <h2>6. Předávání třetím stranám</h2>
           <p>Vaše osobní údaje jsou zpracovávány prostřednictvím těchto poskytovatelů:</p>
           <ul>
+            <li><strong>Cloudflare</strong> (Cloudflare, Inc., USA) — hostingové a provozní služby; certifikován v rámci EU-US Data Privacy Framework</li>
             <li><strong>Supabase</strong> (Supabase Inc., USA) — autentizace a databáze; certifikován v rámci EU-US Data Privacy Framework</li>
-            <li><strong>Netlify</strong> (Netlify Inc., USA) — hostingové a provozní služby</li>
+            <li><strong>Brevo</strong> (Sendinblue SAS, Francie) — zasílání transakčních e-mailů (objednávky, notifikace); zpracování probíhá na serverech v EU</li>
             <li><strong>Google</strong> — anonymizovaná analytika prostřednictvím Google Tag Manager</li>
           </ul>
           <p>Žádné osobní údaje nejsou předávány dalším třetím stranám za účelem marketingu nebo profilování.</p>

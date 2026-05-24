@@ -108,10 +108,60 @@ Watch list → Supabase (requires login)
 
 https://dash.cloudflare.com — Cloudflare account
 
+#### Cloudflare Pages logs — see if Brevo returned an error:
+
+Cloudflare Dashboard → Pages → firmometr → your deployment → Functions → View logs
+
 ### Supabase
 
 https://supabase.com — GitHub account
 
+Run migration
+
+```cmd
+supabase init
+supabase login
+supabase link --project-ref lentsvnmpqmrscgfscnc
+supabase db push
+```
+
 ### Brevo
 
 https://brevo.com
+
+#### Brevo email logs — see if the email was received and what happened to it:
+
+Brevo → Transactional → Email → Log
+
+## Testing the monitor worker locally
+
+The monitor worker runs hourly on Cloudflare, checks watchlist entries for changes, and emails affected users. Two env vars control dev-safe testing:
+
+| Var | Effect |
+|---|---|
+| `TEST_EMAIL` | Redirects all outgoing emails to this address instead of real users |
+| `DRY_RUN` | Skips DB state updates and email sends entirely — only logs what would happen |
+
+### Dry run (no emails, no state changes)
+
+```bash
+cd workers/monitor
+npx wrangler dev --var DRY_RUN:true
+```
+
+Then trigger the cron via the Wrangler dev UI at `http://localhost:8787/__scheduled`.
+
+### Redirect emails to yourself
+
+```bash
+cd workers/monitor
+npx wrangler dev --var TEST_EMAIL:you@example.com
+```
+
+All emails go to `you@example.com`. State is updated normally (use against a dev Supabase project to avoid touching production).
+
+### Both together
+
+```bash
+npx wrangler dev --var DRY_RUN:true --var TEST_EMAIL:you@example.com
+```

@@ -14,7 +14,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { SearchService } from '../../../core/services/search.service';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rate-limit';
-import { WatchService } from '../../../core/services/watch.service';
+import { WatchService, WatchLimitError } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LangService } from '../../../core/services/lang.service';
 import { SubjectDetail } from '../../../core/models/subject.model';
@@ -398,7 +398,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
-    this.pageUrl = `https://firmometr.netlify.app/search/${ico}`;
+    this.pageUrl = `https://firmometr.cz/search/${ico}`;
     this.load(ico);
   }
 
@@ -509,8 +509,9 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
             'OK', { duration: 3000 }
           );
         },
-        error: () => {
-          this.snackBar.open(this.transloco.translate('detail.watch_error'), 'OK', { duration: 3000 });
+        error: (err: unknown) => {
+          const key = err instanceof WatchLimitError ? 'dashboard.watch_limit_tooltip' : 'detail.watch_error';
+          this.snackBar.open(this.transloco.translate(key), 'OK', { duration: 3000 });
         }
       });
     }

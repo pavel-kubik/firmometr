@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
@@ -155,9 +156,10 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
     }
   `]
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private route = inject(ActivatedRoute);
 
   submitted = false;
   submitting = false;
@@ -169,22 +171,23 @@ export class ContactComponent {
     message: ['', Validators.required],
   });
 
+  ngOnInit() {
+    const { message } = this.route.snapshot.queryParams;
+    if (message) this.form.patchValue({ message });
+  }
+
   submit() {
     if (this.form.invalid) return;
     this.submitting = true;
     this.error = false;
 
-    const body = new URLSearchParams({
-      'form-name': 'contact',
+    const body = {
       name: this.form.value.name ?? '',
       email: this.form.value.email ?? '',
       message: this.form.value.message ?? '',
-    });
+    };
 
-    this.http.post('/', body.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      responseType: 'text',
-    }).subscribe({
+    this.http.post('/api/v1/contact', body).subscribe({
       next: () => { this.submitted = true; this.submitting = false; },
       error: () => { this.error = true; this.submitting = false; },
     });

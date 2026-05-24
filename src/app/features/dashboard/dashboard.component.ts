@@ -1,7 +1,8 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,7 +31,7 @@ function passwordMatchValidator(group: AbstractControl) {
     ReactiveFormsModule,
     MatCardModule, MatIconModule,
     MatProgressBarModule, MatSnackBarModule,
-    MatFormFieldModule, MatInputModule, MatTabsModule,
+    MatFormFieldModule, MatInputModule, MatTabsModule, RouterLink,
     TranslocoPipe, PublicNavComponent, PublicFooterComponent,
   ],
   template: `
@@ -40,7 +41,17 @@ function passwordMatchValidator(group: AbstractControl) {
       <section class="dashboard-hero">
         <div class="hero-inner">
           <h1>{{ 'dashboard.title' | transloco }}</h1>
-          <button class="pub-btn pub-btn-primary" (click)="goSearch()">{{ 'dashboard.add_btn' | transloco }}</button>
+          <div *ngIf="isLoggedIn" class="watch-counter" [class.at-limit]="atLimit">
+            <span>{{ 'dashboard.watch_counter' | transloco: { count: entities.length, limit: tierLimit } }}</span>
+            <a *ngIf="atLimit" class="upgrade-link" routerLink="/ceny">{{ 'dashboard.upgrade_cta' | transloco }}</a>
+          </div>
+          <button
+            class="pub-btn pub-btn-primary"
+            (click)="goSearch()"
+            [disabled]="atLimit"
+            [title]="atLimit ? ('dashboard.watch_limit_tooltip' | transloco) : ''">
+            {{ 'dashboard.add_btn' | transloco }}
+          </button>
         </div>
       </section>
 
@@ -74,12 +85,8 @@ function passwordMatchValidator(group: AbstractControl) {
                 <mat-icon class="small-icon">schedule</mat-icon>
                 {{ 'dashboard.last_checked' | transloco }} {{ entity.lastCheckedAt ? formatDate(entity.lastCheckedAt) : ('dashboard.not_checked' | transloco) }}
               </p>
-              <p *ngIf="entity.notifyEmail" class="notify-email">
-                <mat-icon class="small-icon">email</mat-icon>
-                {{ entity.notifyEmail }}
-              </p>
             </mat-card-content>
-            <mat-card-actions>
+            <mat-card-actions class="card-actions">
               <button class="pub-btn pub-btn-ghost pub-btn-sm" (click)="goDetail(entity.ico)">{{ 'dashboard.btn_detail' | transloco }}</button>
               <button class="pub-btn pub-btn-danger pub-btn-sm" (click)="unwatch(entity)">{{ 'dashboard.btn_remove' | transloco }}</button>
             </mat-card-actions>
@@ -236,7 +243,12 @@ function passwordMatchValidator(group: AbstractControl) {
     .empty-state { text-align: center; padding: 80px 24px; color: #999; }
     .empty-state mat-icon { font-size: 64px; width: 64px; height: 64px; margin-bottom: 16px; }
     .empty-state h2 { color: #555; }
-    .last-checked, .notify-email { display: flex; align-items: center; gap: 4px; color: #666; font-size: 14px; margin: 4px 0; }
+    .last-checked { display: flex; align-items: center; gap: 4px; color: #666; font-size: 14px; margin: 4px 0; }
+    .card-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; }
+    .watch-counter { font-size: 13px; color: #666; display: flex; align-items: center; gap: 12px; margin: 4px 0 8px; }
+    .watch-counter.at-limit { color: #e65100; font-weight: 500; }
+    .upgrade-link { color: #1976d2; text-decoration: none; font-size: 13px; }
+    .upgrade-link:hover { text-decoration: underline; }
     .small-icon { font-size: 16px; width: 16px; height: 16px; }
     .status-green  { border-left: 4px solid #4caf50; }
     .status-orange { border-left: 4px solid #ff9800; }
@@ -334,22 +346,24 @@ export class DashboardComponent implements OnInit {
     {
       id: 'demo-1', ico: '12345678', displayName: 'Spolehlivý řemeslník s.r.o.',
       addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
-      notifyEmail: null, isirClarity: 'CLEAR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
+      isirClarity: 'CLEAR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
     },
     {
       id: 'demo-2', ico: '87654321', displayName: 'Podezřelá a.s.',
       addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
-      notifyEmail: null, isirClarity: 'PAST_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
+      isirClarity: 'PAST_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: false,
     },
     {
       id: 'demo-3', ico: '11223344', displayName: 'Nespolehlivá s.r.o.',
       addedAt: new Date().toISOString(), lastCheckedAt: new Date().toISOString(),
-      notifyEmail: null, isirClarity: 'ACTIVE_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: true,
+      isirClarity: 'ACTIVE_DEBTOR', aresStavKod: 'AKTIVNI', dphNespolehlivy: true,
     },
   ];
 
   ngOnInit() {
-    this.authService.user$.subscribe(user => {
+    this.authService.user$.pipe(
+      distinctUntilChanged((a, b) => a?.id === b?.id)
+    ).subscribe(user => {
       this.isLoggedIn = !!user;
       if (this.isLoggedIn) this.load();
       else this.loading = false;
@@ -384,6 +398,14 @@ export class DashboardComponent implements OnInit {
     if (error) { this.registerError = error.message; }
     else { this.registered = true; }
     this.authLoading = false;
+  }
+
+  get tierLimit(): number {
+    return this.authService.currentTierLimit;
+  }
+
+  get atLimit(): boolean {
+    return this.entities.length >= this.tierLimit;
   }
 
   unwatch(entity: WatchedEntity) {

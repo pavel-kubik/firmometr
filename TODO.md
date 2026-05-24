@@ -1,4 +1,4 @@
-# Product Plan — Proklepni.cz
+# Product Plan — Frimometr.cz
 
 > Based on market analysis (CZ market, 2026-05-10). Target: micro-SaaS for B2B credit/insolvency monitoring for freelancers, OSVČ, small firms.
 >
@@ -163,9 +163,9 @@ Sledované subjekty
 
 Search _____ 
 
-- [ ] Distinquish access from localhost - block, netlify, prod at Google Analytics
+- [ ] Distinquish access from localhost - block, cloudflare preview, prod at Google Analytics
 - [ ] Get VAT registration date from registry, it should be 01.08.2024 for ICO 71379487
-- [ ] Angular SSG (Static Site Generation) for sattic pages
+- [x] Angular SSG (Static Site Generation) for sattic pages
 - [ ] Přihlaste se pro správu vlastního portfolia sledovaných subjektů. => + a notifikaci zmen
 
 
@@ -173,7 +173,77 @@ TOP PRIO
 - [x] SSG from previous repo lustrate
 - [x] Remove waitlist form
 - [x] caching latest search at open registry
-- [ ] Get latest changes on insolvency (like hlidac statu), ...
-- [ ] SSG for ALL / important? / some companies
-- [ ] Monitoring of companies and notify by email
-- [ ] 
+- [x] Monitoring of companies and notify by email — see docs/superpowers/specs/2026-05-19-company-monitoring-email-design.md
+
+- [x] Cookies banner
+- [x] Clean netlify
+  - [x] TypeScript check — `npx tsc --noEmit` — confirms no type errors across the codebase
+  - [x] Broken /kontakt form - Contact form via Wrangler dev — `npx wrangler pages dev --proxy 4201` --compatibility-date=2024-01-01, then go to /kontakt, submit the form, verify the request goes to /api/v1/contact and triggers an email via Brevo
+  - [x] Functions unit tests — `npx vitest run functions` — confirms the e2e import from functions/_shared/_cap resolves correctly
+- [x] Pricing inconsistency
+      - homepage - pripravujeme
+      - order - selling
+- [x] GDPR compliance
+   - [x] Cloudflare
+   - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
+   - Brevo - ???
+   - [x] GTM
+- [ ] Cap usage without login
+- [ ] Cap usage for free plan - ? 3x per day ?
+- [ ] Show plan after login
+- [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
+- [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
+- [ ] Order form - ico not mandatory
+
+  - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING
+  - [ ] What is reference point? watchlist in DB
+  - [ ] Zmena semaforu => trigger event
+  - [ ] TESTOVAT!
+  - [ ] Full watchdog for any change => another feature
+
+- [ ] [Notifications] Allow custom per-company notification email (notify_email field is ready in DB, needs UI + WatchService.setNotification to accept arbitrary email)
+- [ ] E2E - Minimal automated test for deployment
+  - [ ] Search company
+  - [ ] Register lifecycle
+  - [ ] Order lifecycle
+  - [ ] Add to watchlist lifecycle
+  - [ ] Notify about changes
+- [ ] BASIC SUBSCRIPTION
+  - [ ] Allow buy subscription
+
+FEATURES (deffered after MVP)
+- [ ] Update email templates
+- [ ] [SEO] Get latest changes on insolvency (like hlidac statu), ...
+- [ ] [SEO] SSG for ALL / important? / some companies (may be use KV)
+
+ERRORS:
+- [x] when switch tab and come back, spinner on Watched page is activated even nothing is loading
+
+
+1. Enable Email Routing for your domain
+
+Cloudflare Dashboard → your domain (firmometr.cz) → Email → Email Routing → Enable it. Cloudflare will show you MX records to add — they're added automatically if your DNS is on Cloudflare.
+
+2. Verify the destination address
+
+Email Routing → Destination addresses → Add info@firmometr.cz → Cloudflare sends a verification email → click the link.
+
+3. Verify the sender address
+
+For the SEND_EMAIL binding to send from noreply@firmometr.cz, go to Email Routing → Settings → verify that address too (or use a catch-all route on the domain).
+
+4. Connect the binding to your Pages project
+
+Cloudflare Dashboard → Pages → firmometr → Settings → Functions → Email bindings → Add binding:
+
+Variable name: SEND_EMAIL
+Destination: info@firmometr.cz
+This is what wires env.SEND_EMAIL in the function to an actual destination.
+
+5. Deploy
+
+
+npx wrangler pages deploy dist/firmometr-ui/browser
+The [[send_email]] block in wrangler.toml tells Wrangler the binding exists — the actual routing destination is set in the dashboard (step 4).
+
+Test it by submitting the order form once deployed. If the email doesn't arrive, check Pages → Functions → Logs for the [order] email error message.

@@ -13,5 +13,9 @@ preview_id = "612f3e9f430f4b84ba6a37d6ec5ce7aa"
 
 [vars]
 SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
-# SUPABASE_SERVICE_KEY is a secret — set it with:
+ORDER_FROM_NAME = "Firmometr"
+ORDER_FROM_EMAIL = "noreply@firmometr.cz"
+ORDER_TO = "info@firmometr.cz"
+# Secrets — set with:
 #   npx wrangler secret put SUPABASE_SERVICE_KEY
+#   npx wrangler secret put BREVO_API_KEY
