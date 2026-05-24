@@ -10,7 +10,7 @@ import { LangService } from '../../core/services/lang.service';
   template: `
     <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
     <div class="plan-price-wrap">
-      <span class="plan-price-amount">{{ billing() === 'annual' ? 299 : 349 }} Kč</span>
+      <span class="plan-price-amount">{{ showFrom() ? 'od ' : '' }}{{ billing() === 'annual' ? 299 : 349 }} Kč</span>
       <span class="plan-price-per">/ {{ 'pricing.per_month' | transloco }}</span>
     </div>
     @if (billing() === 'annual') {
@@ -51,4 +51,5 @@ import { LangService } from '../../core/services/lang.service';
 export class BasicCardComponent {
   ls = inject(LangService);
   billing = input<'monthly' | 'annual'>('annual');
+  showFrom = input<boolean>(false);
 }

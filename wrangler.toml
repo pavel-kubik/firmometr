@@ -13,6 +13,7 @@ preview_id = "612f3e9f430f4b84ba6a37d6ec5ce7aa"
 
 [vars]
 SUPABASE_URL = "https://lentsvnmpqmrscgfscnc.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlbnRzdm5tcHFtcnNjZ2ZzY25jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODk1MjEsImV4cCI6MjA5NDM2NTUyMX0.Qq30-f9UemGt0Xvr_gKH7C69eq0ZuTcE4OhhsG8mbR0"
 ORDER_FROM_NAME = "Firmometr"
 ORDER_FROM_EMAIL = "noreply@firmometr.cz"
 ORDER_TO = "info@firmometr.cz"

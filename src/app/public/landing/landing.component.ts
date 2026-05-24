@@ -127,7 +127,7 @@ import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.comp
               </ul>
               <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
-            <app-basic-card />
+            <app-basic-card [showFrom]="true" />
             <app-enterprise-card />
           </div>
         </div>

@@ -270,6 +270,11 @@
   "register.confirm_title": "Confirm your email",
   "register.confirm_msg": "We sent you a confirmation link. Check your email and click the link to complete registration.",
   "register.back_to_login": "Back to login",
+  "register.title_order": "Create an account to complete your order",
+  "register.hint_order": "A free account is needed to activate your subscription and manage watched companies.",
+  "register.confirm_msg_order": "Confirmation link sent. After clicking it you'll be redirected back to complete your order.",
+  "login.title_order": "Log in to complete your order",
+  "login.hint_order": "After logging in you'll be redirected back to the order form.",
 
   "order.label": "Order",
   "order.title": "Choose your plan and fill in billing details",

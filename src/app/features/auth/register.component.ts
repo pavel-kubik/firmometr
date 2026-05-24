@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -36,7 +36,10 @@ function passwordMatchValidator(group: AbstractControl) {
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
-          <mat-card-title>{{ 'register.title' | transloco }}</mat-card-title>
+          <mat-card-title>{{ (isOrderFlow ? 'register.title_order' : 'register.title') | transloco }}</mat-card-title>
+          @if (isOrderFlow) {
+            <p class="order-hint">{{ 'register.hint_order' | transloco }}</p>
+          }
         </mat-card-header>
         <mat-card-content>
           @if (!registered) {
@@ -79,7 +82,7 @@ function passwordMatchValidator(group: AbstractControl) {
               </button>
 
               <p class="link-hint">
-                {{ 'register.has_account' | transloco }} <a [routerLink]="ls.p('/login')">{{ 'register.login_link' | transloco }}</a>
+                {{ 'register.has_account' | transloco }} <a [routerLink]="ls.p('/login')" [queryParams]="{ returnUrl: returnUrl }">{{ 'register.login_link' | transloco }}</a>
               </p>
 
             </form>
@@ -87,8 +90,8 @@ function passwordMatchValidator(group: AbstractControl) {
             <div class="confirmation">
               <mat-icon class="confirm-icon">mark_email_read</mat-icon>
               <h3>{{ 'register.confirm_title' | transloco }}</h3>
-              <p>{{ 'register.confirm_msg' | transloco }}</p>
-              <a [routerLink]="ls.p('/login')" class="pub-btn pub-btn-ghost pub-btn-sm">{{ 'register.back_to_login' | transloco }}</a>
+              <p>{{ (isOrderFlow ? 'register.confirm_msg_order' : 'register.confirm_msg') | transloco }}</p>
+              <a [routerLink]="ls.p('/login')" [queryParams]="{ returnUrl: returnUrl }" class="pub-btn pub-btn-ghost pub-btn-sm">{{ 'register.back_to_login' | transloco }}</a>
             </div>
           }
         </mat-card-content>
@@ -117,6 +120,7 @@ function passwordMatchValidator(group: AbstractControl) {
     mat-form-field { width: 100%; }
     .error { color: #f44336; margin: 0; font-size: 14px; }
     .link-hint { text-align: center; margin: 0; font-size: 14px; }
+    .order-hint { font-size: 14px; color: rgba(0,0,0,.6); margin: 4px 0 0; }
     .confirmation {
       display: flex;
       flex-direction: column;
@@ -136,7 +140,11 @@ function passwordMatchValidator(group: AbstractControl) {
 export class RegisterComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  private route = inject(ActivatedRoute);
   ls = inject(LangService);
+
+  get returnUrl(): string | null { return this.route.snapshot.queryParams['returnUrl'] ?? null; }
+  get isOrderFlow(): boolean { return this.returnUrl?.includes('/objednat') ?? false; }
 
   registerForm = this.fb.group(
     {
@@ -159,7 +167,7 @@ export class RegisterComponent {
     this.loading = true;
     this.error = '';
     const { email, password } = this.registerForm.value;
-    const { error } = await this.auth.signUp(email!, password!);
+    const { error } = await this.auth.signUp(email!, password!, this.returnUrl ?? undefined);
     if (error) {
       this.error = error.message;
     } else {

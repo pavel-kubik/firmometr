@@ -270,6 +270,11 @@
   "register.confirm_title": "Potvrďte e-mail",
   "register.confirm_msg": "Zaslali jsme vám potvrzovací odkaz. Zkontrolujte svůj e-mail a klikněte na odkaz pro dokončení registrace.",
   "register.back_to_login": "Zpět na přihlášení",
+  "register.title_order": "Vytvořte účet pro dokončení objednávky",
+  "register.hint_order": "Bezplatný účet potřebujete k aktivaci předplatného a správě sledovaných firem.",
+  "register.confirm_msg_order": "Potvrzovací odkaz odeslán. Po kliknutí budete přesměrováni zpět na objednávku.",
+  "login.title_order": "Přihlaste se pro dokončení objednávky",
+  "login.hint_order": "Po přihlášení budete přesměrováni zpět na objednávku.",
 
   "order.label": "Objednávka",
   "order.title": "Vyberte plán a vyplňte fakturační údaje",

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,7 +32,10 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     <div class="page">
       <mat-card class="auth-card">
         <mat-card-header>
-          <mat-card-title>{{ 'login.title' | transloco }}</mat-card-title>
+          <mat-card-title>{{ (isOrderFlow ? 'login.title_order' : 'login.title') | transloco }}</mat-card-title>
+          @if (isOrderFlow) {
+            <p class="order-hint">{{ 'login.hint_order' | transloco }}</p>
+          }
         </mat-card-header>
         <mat-card-content>
           <mat-tab-group>
@@ -66,7 +69,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                 </button>
 
                 <p class="link-hint">
-                  {{ 'login.no_account' | transloco }} <a [routerLink]="ls.p('/register')">{{ 'login.register_link' | transloco }}</a>
+                  {{ 'login.no_account' | transloco }} <a [routerLink]="ls.p('/register')" [queryParams]="{ returnUrl: returnUrl }">{{ 'login.register_link' | transloco }}</a>
                 </p>
               </form>
             </mat-tab>
@@ -131,6 +134,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     .error { color: #f44336; margin: 0; font-size: 14px; }
     .hint { color: rgba(0,0,0,.6); margin: 0; font-size: 14px; }
     .link-hint { text-align: center; margin: 0; font-size: 14px; }
+    .order-hint { font-size: 14px; color: rgba(0,0,0,.6); margin: 4px 0 0; }
     .confirmation {
       align-items: center;
       text-align: center;
@@ -147,6 +151,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   ls = inject(LangService);
 
   passwordForm = this.fb.group({
@@ -157,6 +162,9 @@ export class LoginComponent {
   magicForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
   });
+
+  get returnUrl(): string | null { return this.route.snapshot.queryParams['returnUrl'] ?? null; }
+  get isOrderFlow(): boolean { return this.returnUrl?.includes('/objednat') ?? false; }
 
   loading = false;
   passwordError = '';
@@ -175,7 +183,8 @@ export class LoginComponent {
     if (error) {
       this.passwordError = error.message;
     } else {
-      this.router.navigate([this.ls.p('/dashboard')]);
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+      returnUrl ? this.router.navigateByUrl(returnUrl) : this.router.navigate([this.ls.p('/dashboard')]);
     }
     this.loading = false;
   }
@@ -187,7 +196,8 @@ export class LoginComponent {
     }
     this.loading = true;
     this.magicError = '';
-    const { error } = await this.auth.signInWithOtp(this.magicForm.value.email!);
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    const { error } = await this.auth.signInWithOtp(this.magicForm.value.email!, returnUrl);
     if (error) {
       this.magicError = error.message;
     } else {

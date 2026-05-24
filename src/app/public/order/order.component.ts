@@ -6,6 +6,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { AuthService } from '../../core/services/auth.service';
 
 const PLANS = {
   basic:      { name: 'BASIC',      monthly: 349, annualPerMonth: 299, annual: 299 * 11 },
@@ -39,7 +40,7 @@ const PLANS = {
                   <input type="radio" formControlName="plan" value="basic" class="sr-only">
                   <div class="plan-card-inner">
                     <div class="plan-name">{{ 'landing.plan_solo_name' | transloco }}</div>
-                    <div class="plan-price">od 299 Kč<span class="plan-per"> / {{ 'pricing.per_month' | transloco }}</span></div>
+                    <div class="plan-price">{{ form.value.billing === 'annual' ? 299 : 349 }} Kč<span class="plan-per"> / {{ 'pricing.per_month' | transloco }}</span></div>
                     <ul class="plan-features">
                       <li>{{ 'landing.plan_solo_feat1' | transloco }}</li>
                       <li>{{ 'landing.plan_solo_feat2' | transloco }}</li>
@@ -284,6 +285,7 @@ export class OrderComponent implements OnInit {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
   submitted = false;
   submitting = false;
@@ -304,6 +306,8 @@ export class OrderComponent implements OnInit {
     const { plan, billing } = this.route.snapshot.queryParams;
     if (plan === 'basic') this.form.patchValue({ plan });
     if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
+    const email = this.auth.currentUserEmail;
+    if (email) this.form.patchValue({ email });
   }
 
   get price(): number {
