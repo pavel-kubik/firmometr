@@ -165,3 +165,9 @@ All emails go to `you@example.com`. State is updated normally (use against a dev
 ```bash
 npx wrangler dev --var DRY_RUN:true --var TEST_EMAIL:you@example.com
 ```
+
+### LLMS.txt
+
+Added for LLM to serve the webpages
+
+https://firmometr.cz/llms-logs?secret=g25sgyd1ugwuagdadjcwi
