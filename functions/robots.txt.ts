@@ -14,7 +14,7 @@ interface Env {
 export const onRequest = async ({ request, env }: { request: Request; env: Env }) => {
   const entry = {
     timestamp: new Date().toISOString(),
-    file: 'llms.txt',
+    file: 'robots.txt',
     userAgent: request.headers.get('User-Agent') || 'unknown',
     ip: request.headers.get('CF-Connecting-IP') || 'unknown',
     country: request.headers.get('CF-IPCountry') || 'unknown',

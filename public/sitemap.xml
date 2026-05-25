@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://firmometr.cz/</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/en/</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/ceny</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/ceny"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/ceny"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/en/ceny</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/ceny"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/ceny"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/kontakt</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/kontakt"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/kontakt"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/en/kontakt</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/kontakt"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/kontakt"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/obchodni-podminky</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/obchodni-podminky"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/obchodni-podminky"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/en/obchodni-podminky</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/obchodni-podminky"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/obchodni-podminky"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/gdpr</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/gdpr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/gdpr"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/en/gdpr</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/gdpr"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/gdpr"/>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>

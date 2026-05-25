@@ -1,3 +1,8 @@
+interface KVNamespace {
+  get(key: string): Promise<string | null>;
+  list(options?: { prefix?: string }): Promise<{ keys: { name: string }[] }>;
+}
+
 interface Env {
   LLMS_LOGS: KVNamespace;
   LLMS_LOGS_SECRET: string;
