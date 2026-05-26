@@ -1,7 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostBinding, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LangService } from '../../core/services/lang.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-enterprise-card',
@@ -18,8 +19,14 @@ import { LangService } from '../../core/services/lang.service';
       <li>{{ 'landing.plan_business_feat4' | transloco }}</li>
       <li>{{ 'landing.plan_business_feat5' | transloco }}</li>
     </ul>
-    <a [routerLink]="ls.p('/kontakt')" [queryParams]="{message: 'Mam zájem o enterprise řešení.'}"
-       class="pub-btn pub-btn-outline plan-btn">{{ 'landing.plan_business_cta' | transloco }}</a>
+    @if (subscriptionsEnabled) {
+      <a [routerLink]="ls.p('/kontakt')" [queryParams]="{message: 'Mam zájem o enterprise řešení.'}"
+         class="pub-btn pub-btn-outline plan-btn">{{ 'landing.plan_business_cta' | transloco }}</a>
+    } @else {
+      <a href="#waitlist" (click)="scrollToWaitlist($event)" class="pub-btn pub-btn-outline plan-btn">
+        {{ 'pricing.waitlist_btn' | transloco }}
+      </a>
+    }
   `,
   styles: [`
     :host {
@@ -27,6 +34,7 @@ import { LangService } from '../../core/services/lang.service';
       background: #fff; border: 1px solid var(--pub-border); border-radius: 12px;
       padding: 28px 24px; position: relative;
     }
+    :host.coming-soon { opacity: .8; }
     .plan-badge {
       display: inline-block; align-self: flex-start;
       font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
@@ -49,4 +57,12 @@ import { LangService } from '../../core/services/lang.service';
 })
 export class EnterpriseCardComponent {
   ls = inject(LangService);
+  subscriptionsEnabled = environment.subscriptionsEnabled;
+
+  @HostBinding('class.coming-soon') get comingSoon() { return !this.subscriptionsEnabled; }
+
+  scrollToWaitlist(event: Event) {
+    event.preventDefault();
+    document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' });
+  }
 }

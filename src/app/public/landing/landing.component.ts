@@ -1,17 +1,20 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 import { LangService } from '../../core/services/lang.service';
 import { BasicCardComponent } from '../basic-card/basic-card.component';
 import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.component';
+import { WaitlistComponent } from '../waitlist/waitlist.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent],
+  imports: [FormsModule, RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent, WaitlistComponent],
   template: `
     <app-public-nav />
 
@@ -132,6 +135,11 @@ import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.comp
           </div>
         </div>
       </section>
+
+      <!-- Waitlist (visible when subscriptions not yet enabled) -->
+      @if (!subscriptionsEnabled) {
+        <app-waitlist id="waitlist" />
+      }
 
       <!-- Dark CTA -->
       <section class="cta-dark">
@@ -259,10 +267,26 @@ import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.comp
     }
   `]
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
   private router = inject(Router);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
   ls = inject(LangService);
   searchQuery = '';
+  subscriptionsEnabled = environment.subscriptionsEnabled;
+
+  ngOnInit() {
+    this.titleService.setTitle('Firmometr – Prověřte firmu snadno | ISIR, DPH, OR');
+    const desc = 'Sledujte insolvenci, DPH rejstřík a obchodní rejstřík. E-mailová upozornění na změny firem. Zdarma pro 3 firmy.';
+    this.metaService.updateTag({ name: 'description', content: desc });
+    this.metaService.updateTag({ property: 'og:title', content: 'Firmometr – Prověřte firmu snadno' });
+    this.metaService.updateTag({ property: 'og:description', content: desc });
+    this.metaService.updateTag({ property: 'og:url', content: 'https://firmometr.cz' });
+    this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.metaService.updateTag({ name: 'twitter:title', content: 'Firmometr – Prověřte firmu snadno' });
+    this.metaService.updateTag({ name: 'twitter:description', content: desc });
+  }
 
   goSearch() {
     const q = this.searchQuery.trim();
