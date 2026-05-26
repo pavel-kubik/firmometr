@@ -112,6 +112,18 @@ https://dash.cloudflare.com — Cloudflare account
 
 Cloudflare Dashboard → Pages → firmometr → your deployment → Functions → View logs
 
+#### Manual test wrangler functions locally
+
+```bash
+npx wrangler dev --test-scheduled --var DRY_RUN:1
+```
+
+and in second command line
+
+```bash
+curl "http://localhost:8787/__scheduled?cron=0+*+*+*+*"
+```
+
 ### Supabase
 
 https://supabase.com — GitHub account
