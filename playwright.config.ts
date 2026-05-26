@@ -22,7 +22,7 @@ export default defineConfig({
       command: 'wrangler pages dev --proxy 4201 --port 8889 --compatibility-date=2024-01-01 --log-level=warn',
       url: 'http://localhost:8889',
       reuseExistingServer: !process.env['CI'],
-      timeout: 60_000,
+      timeout: 180_000,
     },
   ],
 });
