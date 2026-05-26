@@ -27,6 +27,19 @@ async function mock429(page: Page, retryAfter = MAX_SECONDS) {
   );
 }
 
+/**
+ * Navigate to a subject detail URL client-side to avoid Angular SSR.
+ * SSR calls real gov APIs (not intercepted by page.route), so we bootstrap
+ * on /search first then let Angular Router handle the rest in-browser.
+ */
+async function gotoClientSide(page: Page, path: string) {
+  await page.goto('/search');
+  await page.evaluate((targetPath: string) => {
+    history.pushState({}, '', targetPath);
+    window.dispatchEvent(new PopStateEvent('popstate', { state: window.history.state }));
+  }, path);
+}
+
 // ---------------------------------------------------------------------------
 // Search page — rate cap UI
 // ---------------------------------------------------------------------------
@@ -49,7 +62,7 @@ test.describe('Search page — rate cap', () => {
     await page.getByRole('textbox').fill('avast');
     await page.getByRole('button', { name: 'Hledat', exact: true }).click();
 
-    const limitMsg = page.locator('.limit-msg');
+    const limitMsg = page.locator('.limit-text');
     await expect(limitMsg).toContainText(/Zkuste to znovu za \d+:\d{2}/, { timeout: 5000 });
 
     const seconds = parseCountdown(await limitMsg.textContent() ?? '');
@@ -64,7 +77,7 @@ test.describe('Search page — rate cap', () => {
     await page.getByRole('textbox').fill('avast');
     await page.getByRole('button', { name: 'Hledat', exact: true }).click();
 
-    const limitMsg = page.locator('.limit-msg');
+    const limitMsg = page.locator('.limit-text');
     await expect(limitMsg).toContainText(/Zkuste to znovu za \d+:\d{2}/, { timeout: 5000 });
 
     const first = parseCountdown(await limitMsg.textContent() ?? '');
@@ -81,7 +94,7 @@ test.describe('Search page — rate cap', () => {
     await page.getByRole('textbox').fill('avast');
     await page.getByRole('button', { name: 'Hledat', exact: true }).click();
 
-    await expect(page.getByRole('link', { name: /Přihlaste se/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Přihlásit se/ })).toBeVisible();
   });
 
   test('no limit message when not rate-limited', async ({ page }) => {
@@ -110,16 +123,16 @@ test.describe('Search page — rate cap', () => {
 test.describe('Subject detail page — rate cap', () => {
   test('shows limit message when ICO detail returns 429', async ({ page }) => {
     await mock429(page);
-    await page.goto('/search/27082440');
+    await gotoClientSide(page, '/search/27082440');
 
     await expect(page.getByText(`limitu ${FREE_CAP} bezplatných`)).toBeVisible({ timeout: 8000 });
   });
 
   test('countdown appears on detail page', async ({ page }) => {
     await mock429(page, MAX_SECONDS);
-    await page.goto('/search/27082440');
+    await gotoClientSide(page, '/search/27082440');
 
-    const countdownSpan = page.locator('.limit-msg span', { hasText: /Zkuste to znovu za/ });
+    const countdownSpan = page.locator('.limit-text span', { hasText: /Zkuste to znovu za/ });
     await expect(countdownSpan).toBeVisible({ timeout: 8000 });
 
     const seconds = parseCountdown(await countdownSpan.textContent() ?? '');
@@ -129,9 +142,9 @@ test.describe('Subject detail page — rate cap', () => {
 
   test('login link shown on detail page limit message', async ({ page }) => {
     await mock429(page);
-    await page.goto('/search/27082440');
+    await gotoClientSide(page, '/search/27082440');
 
-    await expect(page.getByRole('link', { name: /Přihlaste se/ })).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('link', { name: /Přihlásit se/ })).toBeVisible({ timeout: 8000 });
   });
 });
 
