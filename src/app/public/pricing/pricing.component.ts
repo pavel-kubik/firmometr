@@ -6,11 +6,13 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
 import { LangService } from '../../core/services/lang.service';
 import { BasicCardComponent } from '../basic-card/basic-card.component';
 import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.component';
+import { WaitlistComponent } from '../waitlist/waitlist.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-pricing',
   standalone: true,
-  imports: [RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent],
+  imports: [RouterLink, TranslocoPipe, PublicNavComponent, PublicFooterComponent, BasicCardComponent, EnterpriseCardComponent, WaitlistComponent],
   template: `
     <app-public-nav />
 
@@ -60,6 +62,10 @@ import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.comp
 
         </div>
       </div>
+
+      @if (!subscriptionsEnabled) {
+        <app-waitlist id="waitlist" />
+      }
 
     </main>
 
@@ -120,4 +126,5 @@ import { EnterpriseCardComponent } from '../enterprise-card/enterprise-card.comp
 export class PricingComponent {
   ls = inject(LangService);
   billing: 'monthly' | 'annual' = 'annual';
+  subscriptionsEnabled = environment.subscriptionsEnabled;
 }

@@ -69,7 +69,7 @@ async function diffRow(
     const recipient = env.TEST_EMAIL ?? row.user_email;
 
     if (env.DRY_RUN) {
-      console.log(`[diff][dry-run] Would email ${recipient}: ${subject}`);
+      console.log(`[diff][dry-run] Would email ${recipient}: ${subject} - ${html}`);
     } else {
       console.log(`[diff] Change detected for ico=${row.ico} user=${row.user_email}`);
       await env.SEND_EMAIL.send({ from: env.FROM_ADDRESS, to: recipient, subject, html, text });

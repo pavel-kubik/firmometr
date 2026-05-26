@@ -16,9 +16,20 @@ describe('buildEmail', () => {
     expect(email.subject).toContain('12345678');
   });
 
-  it('html body mentions ISIR status', () => {
+  it('html body shows Czech ISIR label for ACTIVE_DEBTOR', () => {
     const email = buildEmail(base);
-    expect(email.html).toContain('ACTIVE_DEBTOR');
+    expect(email.html).toContain('Aktivní insolvenční řízení (dlužník)');
+  });
+
+  it('html ISIR row label changes per clarity value', () => {
+    const clear = buildEmail({ ...base, isirClarity: 'CLEAR' });
+    expect(clear.html).toContain('Bez insolvencí');
+
+    const coDeb = buildEmail({ ...base, isirClarity: 'ACTIVE_CO_DEBTOR' });
+    expect(coDeb.html).toContain('Aktivní insolvenční řízení (spoludlužník)');
+
+    const past = buildEmail({ ...base, isirClarity: 'PAST_DEBTOR' });
+    expect(past.html).toContain('Minulé insolvenční řízení');
   });
 
   it('html body includes link to company detail', () => {

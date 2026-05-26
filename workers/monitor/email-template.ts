@@ -43,7 +43,7 @@ export function buildEmail(input: EmailInput): { subject: string; html: string; 
       <th style="text-align:left;padding:8px;background:#f3f4f6;border:1px solid #e5e7eb">Aktuální stav</th>
     </tr>
     <tr>
-      <td style="padding:8px;border:1px solid #e5e7eb">ISIR (ACTIVE_DEBTOR)</td>
+      <td style="padding:8px;border:1px solid #e5e7eb">ISIR</td>
       <td style="padding:8px;border:1px solid #e5e7eb">${isirLabel(isirClarity as string | null)}</td>
     </tr>
     <tr>

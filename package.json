@@ -8,7 +8,11 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "test:functions": "vitest run functions",
+    "test:unit": "vitest run",
+    "test:angular": "ng test --watch=false",
     "test:e2e": "playwright test",
+    "test:workers": "cd workers/monitor && vitest run",
+    "test:all": "npm run test:unit && npm run test:e2e",
     "dev:cf": "wrangler pages dev --proxy 4201 --port 8889 --compatibility-date=2024-01-01"
   },
   "dependencies": {

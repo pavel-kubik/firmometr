@@ -188,19 +188,18 @@ TOP PRIO
    - [x] Supabase - https://supabase.com/legal/dpa - registrovat - https://supabase.com/downloads/docs/Supabase+DPA+260317.pdf
    - [X] Brevo
    - [x] GTM
-- [ ] ICO optional in order
-- [ ] Change angular default app icon
+- [x] ICO optional in order
+- [x] Change angular default app icon
 - [x] Errors are not propagated to forms
 - [x] Inconsistency in price - "Od " / fix price
-- [ ] llms.txt
+- [x] llms.txt
 - [ ] zapomenute heslo
 
 - [ ] Cap usage without login
 - [ ] Cap usage for free plan - ? 3x per day ?
 - [ ] Show plan after login
 - [ ] Set up SPF/DKIM/DMARC on firmometr.cz before any transactional email goes out.
-- [ ] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
-- [ ] Order form - ico not mandatory
+- [x] X-Robots-Tag: noindex for non prod (firmometr.pages.dev)
 
   - [ ] DOBRE NAVRHNOUT ARCHITEKTURU A MIT STEJNY KOD NE SEARCH A BATCH PROCESSING
   - [ ] What is reference point? watchlist in DB

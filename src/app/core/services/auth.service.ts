@@ -8,7 +8,8 @@ import { UserProfile, UserTier, TIER_LIMITS } from '../models/profile.model';
 export class AuthService {
   private supabase: SupabaseClient = createClient(
     environment.supabaseUrl,
-    environment.supabaseAnonKey
+    environment.supabaseAnonKey,
+    { auth: { lock: <R>(_n: string, _t: number, fn: () => Promise<R>) => fn() } }
   );
 
   private userSubject    = new BehaviorSubject<User | null>(null);
