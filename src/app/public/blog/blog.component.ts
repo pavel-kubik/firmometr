@@ -1,4 +1,5 @@
 import { Component, inject, computed, effect } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -83,6 +84,7 @@ import { BLOG_ARTICLES, BlogArticle } from './blog.data';
 export class BlogComponent {
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
 
   articles: BlogArticle[] = BLOG_ARTICLES.filter(a => a.publishedAt <= new Date().toISOString().slice(0, 10));
@@ -97,7 +99,18 @@ export class BlogComponent {
       this.metaService.updateTag({ name: 'description', content: cs
         ? 'Průvodce prověřováním obchodních partnerů, insolvencí a DPH registru. Tipy a návody pro OSVČ a malé firmy.'
         : 'Guide to verifying business partners, insolvency checks, and VAT registry. Tips for freelancers and small businesses.' });
+      this.setCanonical(cs ? 'https://firmometr.cz/blog' : 'https://firmometr.cz/en/blog');
     });
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   formatDate(iso: string): string {

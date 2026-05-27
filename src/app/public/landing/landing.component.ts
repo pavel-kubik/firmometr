@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
@@ -271,6 +272,7 @@ export class LandingComponent implements OnInit {
   private router = inject(Router);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
   searchQuery = '';
   subscriptionsEnabled = environment.subscriptionsEnabled;
@@ -286,6 +288,17 @@ export class LandingComponent implements OnInit {
     this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
     this.metaService.updateTag({ name: 'twitter:title', content: 'Firmometr – Prověřte firmu snadno' });
     this.metaService.updateTag({ name: 'twitter:description', content: desc });
+    this.setCanonical(this.ls.lang() === 'en' ? 'https://firmometr.cz/en' : 'https://firmometr.cz');
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   goSearch() {

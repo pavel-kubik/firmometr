@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
@@ -331,16 +332,31 @@ export class UseCasePageComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
 
   data!: UseCaseData;
 
   ngOnInit() {
     const segment = this.route.snapshot.data['segment'] as string;
+    const path = this.route.snapshot.url[0]?.path ?? '';
     this.data = USE_CASES[segment];
+    const canonicalUrl = `https://firmometr.cz/${path}`;
     this.titleService.setTitle(this.data.metaTitle);
     this.metaService.updateTag({ name: 'description', content: this.data.metaDescription });
     this.metaService.updateTag({ property: 'og:title', content: this.data.metaTitle });
     this.metaService.updateTag({ property: 'og:description', content: this.data.metaDescription });
+    this.metaService.updateTag({ property: 'og:url', content: canonicalUrl });
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.setCanonical(canonicalUrl);
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 }

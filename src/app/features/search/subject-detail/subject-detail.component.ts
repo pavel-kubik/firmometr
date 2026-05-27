@@ -490,6 +490,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
     this.metaService.updateTag({ name: 'twitter:title', content: title });
     this.metaService.updateTag({ name: 'twitter:description', content: desc });
+    this.setCanonical(this.pageUrl);
 
     const ld: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -509,6 +510,16 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
       this.doc.head.appendChild(script);
     }
     script.textContent = JSON.stringify(ld);
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   ngOnDestroy() {

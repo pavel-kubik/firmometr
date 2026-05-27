@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed, effect } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
@@ -124,7 +126,45 @@ import { environment } from '../../../environments/environment';
   `]
 })
 export class PricingComponent {
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
   billing: 'monthly' | 'annual' = 'annual';
   subscriptionsEnabled = environment.subscriptionsEnabled;
+
+  private isCz = computed(() => this.ls.lang() === 'cs');
+
+  constructor() {
+    effect(() => {
+      const cs = this.isCz();
+      const title = cs
+        ? 'Ceník — Firmometr | Monitoring a prověřování firem'
+        : 'Pricing — Firmometr | Czech Company Monitoring';
+      const desc = cs
+        ? 'Sledujte až 3 firmy zdarma. Plán Basic pro neomezený monitoring a e-mailová upozornění na změny v insolvenci a DPH.'
+        : 'Monitor up to 3 companies for free. Basic plan for unlimited monitoring and email alerts on insolvency and VAT changes.';
+      const url = cs ? 'https://firmometr.cz/ceny' : 'https://firmometr.cz/en/ceny';
+      this.titleService.setTitle(title);
+      this.metaService.updateTag({ name: 'description', content: desc });
+      this.metaService.updateTag({ property: 'og:title', content: title });
+      this.metaService.updateTag({ property: 'og:description', content: desc });
+      this.metaService.updateTag({ property: 'og:url', content: url });
+      this.metaService.updateTag({ property: 'og:type', content: 'website' });
+      this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
+      this.metaService.updateTag({ name: 'twitter:title', content: title });
+      this.metaService.updateTag({ name: 'twitter:description', content: desc });
+      this.setCanonical(url);
+    });
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  }
 }

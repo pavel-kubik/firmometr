@@ -1,10 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { LangService } from '../../core/services/lang.service';
 
 @Component({
   selector: 'app-contact',
@@ -160,6 +163,10 @@ export class ContactComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
+  private ls = inject(LangService);
 
   submitted = false;
   submitting = false;
@@ -174,6 +181,30 @@ export class ContactComponent implements OnInit {
   ngOnInit() {
     const { message } = this.route.snapshot.queryParams;
     if (message) this.form.patchValue({ message });
+
+    const cs = this.ls.lang() === 'cs';
+    const title = cs ? 'Kontakt — Firmometr' : 'Contact — Firmometr';
+    const desc = cs
+      ? 'Máte dotaz nebo zpětnou vazbu? Napište nám na info@firmometr.cz nebo použijte kontaktní formulář.'
+      : 'Have a question or feedback? Write to us at info@firmometr.cz or use the contact form.';
+    const url = cs ? 'https://firmometr.cz/kontakt' : 'https://firmometr.cz/en/kontakt';
+    this.titleService.setTitle(title);
+    this.metaService.updateTag({ name: 'description', content: desc });
+    this.metaService.updateTag({ property: 'og:title', content: title });
+    this.metaService.updateTag({ property: 'og:description', content: desc });
+    this.metaService.updateTag({ property: 'og:url', content: url });
+    this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.setCanonical(url);
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   submit() {

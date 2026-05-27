@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, computed, signal, effect } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -110,11 +111,12 @@ import { findArticle, BlogArticle } from '../blog.data';
     }
   `]
 })
-export class BlogArticleComponent implements OnInit {
+export class BlogArticleComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private sanitizer = inject(DomSanitizer);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
 
   article = signal<BlogArticle | undefined>(undefined);
@@ -136,16 +138,54 @@ export class BlogArticleComponent implements OnInit {
       const cs = this.isCz();
       const title = cs ? a.titleCs : a.titleEn;
       const description = cs ? a.descriptionCs : a.descriptionEn;
+      const articleUrl = cs
+        ? `https://firmometr.cz/blog/${a.slug}`
+        : `https://firmometr.cz/en/blog/${a.slug}`;
       this.titleService.setTitle(`${title} — Firmometr`);
       this.metaService.updateTag({ name: 'description', content: description });
       this.metaService.updateTag({ property: 'og:title', content: title });
       this.metaService.updateTag({ property: 'og:description', content: description });
+      this.metaService.updateTag({ property: 'og:url', content: articleUrl });
+      this.setCanonical(articleUrl);
+
+      const ld = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        'headline': title,
+        'description': description,
+        'datePublished': a.publishedAt,
+        'author': { '@type': 'Organization', 'name': 'Firmometr' },
+        'publisher': { '@type': 'Organization', 'name': 'Firmometr' },
+        'url': articleUrl,
+      };
+      let script = this.doc.getElementById('ld-article') as HTMLScriptElement | null;
+      if (!script) {
+        script = this.doc.createElement('script') as HTMLScriptElement;
+        script.id = 'ld-article';
+        script.type = 'application/ld+json';
+        this.doc.head.appendChild(script);
+      }
+      script.textContent = JSON.stringify(ld);
     });
   }
 
   ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
     this.article.set(findArticle(slug));
+  }
+
+  ngOnDestroy() {
+    this.doc.getElementById('ld-article')?.remove();
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   formatDate(iso: string): string {
