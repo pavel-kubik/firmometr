@@ -16,19 +16,19 @@ import { findArticle, BlogArticle } from '../blog.data';
     <app-public-nav />
 
     <main class="article-page">
-      @if (article) {
+      @if (article(); as a) {
         <div class="article-hero">
           <a [routerLink]="ls.p('/blog')" class="back-link">← {{ 'blog.back' | transloco }}</a>
           <div class="article-meta">
-            <span class="article-date">{{ formatDate(article.publishedAt) }}</span>
+            <span class="article-date">{{ formatDate(a.publishedAt) }}</span>
             <span class="article-sep">·</span>
-            <span class="article-read">{{ article.readMinutes }} {{ 'blog.min_read' | transloco }}</span>
+            <span class="article-read">{{ a.readMinutes }} {{ 'blog.min_read' | transloco }}</span>
           </div>
-          <h1>{{ isCz() ? article.titleCs : article.titleEn }}</h1>
-          <p class="article-desc">{{ isCz() ? article.descriptionCs : article.descriptionEn }}</p>
+          <h1>{{ isCz() ? a.titleCs : a.titleEn }}</h1>
+          <p class="article-desc">{{ isCz() ? a.descriptionCs : a.descriptionEn }}</p>
         </div>
 
-        <article class="article-body" [innerHTML]="safeContent"></article>
+        <article class="article-body" [innerHTML]="safeContent()"></article>
 
         <div class="article-cta-box">
           <div class="cta-inner">
