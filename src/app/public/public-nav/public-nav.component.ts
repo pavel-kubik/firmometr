@@ -13,7 +13,7 @@ import { LangService } from '../../core/services/lang.service';
   template: `
     <nav class="pub-nav">
       <div class="pub-nav-inner">
-        <a class="pub-logo" [routerLink]="ls.p('/')">FIRM<span>O</span>METR@if (!isProd) {<sup class="dev-badge">dev</sup>}</a>
+        <a class="pub-logo" [routerLink]="ls.p('/')">FIRM<span>O</span>METR@if (isDev) {<sup class="dev-badge">dev</sup>}</a>
 
         <div class="pub-nav-links">
           <a [routerLink]="ls.p('/search')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
@@ -202,7 +202,7 @@ export class PublicNavComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   ls = inject(LangService);
-  isProd = environment.production;
+  isDev = environment.branch !== 'main';
 
   user$ = this.auth.user$;
   menuOpen = signal(false);
