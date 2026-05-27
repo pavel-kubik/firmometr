@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, inject, computed, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -80,7 +80,7 @@ import { BLOG_ARTICLES, BlogArticle } from './blog.data';
     }
   `]
 })
-export class BlogComponent implements OnInit {
+export class BlogComponent {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   ls = inject(LangService);
@@ -88,14 +88,16 @@ export class BlogComponent implements OnInit {
   articles: BlogArticle[] = BLOG_ARTICLES;
   isCz = computed(() => this.ls.lang() === 'cs');
 
-  ngOnInit() {
-    const cs = this.isCz();
-    this.titleService.setTitle(cs
-      ? 'Blog — Firmometr | Prověřování českých firem'
-      : 'Blog — Firmometr | Czech Company Verification');
-    this.metaService.updateTag({ name: 'description', content: cs
-      ? 'Průvodce prověřováním obchodních partnerů, insolvencí a DPH registru. Tipy a návody pro OSVČ a malé firmy.'
-      : 'Guide to verifying business partners, insolvency checks, and VAT registry. Tips for freelancers and small businesses.' });
+  constructor() {
+    effect(() => {
+      const cs = this.isCz();
+      this.titleService.setTitle(cs
+        ? 'Blog — Firmometr | Prověřování českých firem'
+        : 'Blog — Firmometr | Czech Company Verification');
+      this.metaService.updateTag({ name: 'description', content: cs
+        ? 'Průvodce prověřováním obchodních partnerů, insolvencí a DPH registru. Tipy a návody pro OSVČ a malé firmy.'
+        : 'Guide to verifying business partners, insolvency checks, and VAT registry. Tips for freelancers and small businesses.' });
+    });
   }
 
   formatDate(iso: string): string {

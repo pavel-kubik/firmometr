@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, signal, effect } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -117,26 +117,35 @@ export class BlogArticleComponent implements OnInit {
   private sanitizer = inject(DomSanitizer);
   ls = inject(LangService);
 
-  article: BlogArticle | undefined;
-  safeContent: SafeHtml = '';
+  article = signal<BlogArticle | undefined>(undefined);
   isCz = computed(() => this.ls.lang() === 'cs');
 
-  ngOnInit() {
-    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
-    this.article = findArticle(slug);
+  // Recomputes whenever language or article changes — safe because content is hardcoded TS
+  safeContent = computed<SafeHtml>(() => {
+    const a = this.article();
+    if (!a) return '';
+    return this.sanitizer.bypassSecurityTrustHtml(
+      this.isCz() ? a.contentHtmlCs : a.contentHtmlEn
+    );
+  });
 
-    if (this.article) {
+  constructor() {
+    effect(() => {
+      const a = this.article();
+      if (!a) return;
       const cs = this.isCz();
-      const title = cs ? this.article.titleCs : this.article.titleEn;
-      const description = cs ? this.article.descriptionCs : this.article.descriptionEn;
+      const title = cs ? a.titleCs : a.titleEn;
+      const description = cs ? a.descriptionCs : a.descriptionEn;
       this.titleService.setTitle(`${title} — Firmometr`);
       this.metaService.updateTag({ name: 'description', content: description });
       this.metaService.updateTag({ property: 'og:title', content: title });
       this.metaService.updateTag({ property: 'og:description', content: description });
-      // Content is hardcoded in blog.data.ts — safe to trust
-      const html = cs ? this.article.contentHtmlCs : this.article.contentHtmlEn;
-      this.safeContent = this.sanitizer.bypassSecurityTrustHtml(html);
-    }
+    });
+  }
+
+  ngOnInit() {
+    const slug = this.route.snapshot.paramMap.get('slug') ?? '';
+    this.article.set(findArticle(slug));
   }
 
   formatDate(iso: string): string {
