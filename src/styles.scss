@@ -29,3 +29,16 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .pub-btn-danger { background: transparent; color: #dc2626; border: 1.5px solid #dc2626; padding: 9px 20px; font-size: 14px; }
 .pub-btn-danger:hover { background: #fee2e2; }
 .pub-btn:disabled, .pub-btn[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+/* Page-entry animation used by all public page components */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* View Transitions API — cross-fade between routes */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
+}

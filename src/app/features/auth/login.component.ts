@@ -113,7 +113,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
     .page {
       display: flex;
       justify-content: center;

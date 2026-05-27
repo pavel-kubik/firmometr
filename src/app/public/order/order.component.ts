@@ -178,7 +178,7 @@ const PLANS = {
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
     .order-page { flex: 1; }
 
     .page-hero {

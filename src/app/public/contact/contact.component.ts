@@ -103,7 +103,7 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
     .contact-page { flex: 1; }
 
     .page-hero {

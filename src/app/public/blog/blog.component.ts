@@ -40,7 +40,7 @@ import { BLOG_ARTICLES, BlogArticle } from './blog.data';
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
     .blog-page { flex: 1; }
 
     .page-hero {
