@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -24,8 +24,8 @@ import { findArticle, BlogArticle } from '../blog.data';
             <span class="article-sep">·</span>
             <span class="article-read">{{ article.readMinutes }} {{ 'blog.min_read' | transloco }}</span>
           </div>
-          <h1>{{ article.title }}</h1>
-          <p class="article-desc">{{ article.description }}</p>
+          <h1>{{ isCz() ? article.titleCs : article.titleEn }}</h1>
+          <p class="article-desc">{{ isCz() ? article.descriptionCs : article.descriptionEn }}</p>
         </div>
 
         <article class="article-body" [innerHTML]="safeContent"></article>
@@ -40,8 +40,8 @@ import { findArticle, BlogArticle } from '../blog.data';
       } @else {
         <div class="not-found">
           <h1>404</h1>
-          <p>Článek nebyl nalezen.</p>
-          <a [routerLink]="ls.p('/blog')" class="pub-btn pub-btn-primary">Zpět na blog</a>
+          <p>{{ 'blog.not_found' | transloco }}</p>
+          <a [routerLink]="ls.p('/blog')" class="pub-btn pub-btn-primary">{{ 'blog.back' | transloco }}</a>
         </div>
       }
     </main>
@@ -119,22 +119,28 @@ export class BlogArticleComponent implements OnInit {
 
   article: BlogArticle | undefined;
   safeContent: SafeHtml = '';
+  isCz = computed(() => this.ls.lang() === 'cs');
 
   ngOnInit() {
     const slug = this.route.snapshot.paramMap.get('slug') ?? '';
     this.article = findArticle(slug);
 
     if (this.article) {
-      this.titleService.setTitle(`${this.article.title} — Firmometr`);
-      this.metaService.updateTag({ name: 'description', content: this.article.description });
-      this.metaService.updateTag({ property: 'og:title', content: this.article.title });
-      this.metaService.updateTag({ property: 'og:description', content: this.article.description });
+      const cs = this.isCz();
+      const title = cs ? this.article.titleCs : this.article.titleEn;
+      const description = cs ? this.article.descriptionCs : this.article.descriptionEn;
+      this.titleService.setTitle(`${title} — Firmometr`);
+      this.metaService.updateTag({ name: 'description', content: description });
+      this.metaService.updateTag({ property: 'og:title', content: title });
+      this.metaService.updateTag({ property: 'og:description', content: description });
       // Content is hardcoded in blog.data.ts — safe to trust
-      this.safeContent = this.sanitizer.bypassSecurityTrustHtml(this.article.contentHtml);
+      const html = cs ? this.article.contentHtmlCs : this.article.contentHtmlEn;
+      this.safeContent = this.sanitizer.bypassSecurityTrustHtml(html);
     }
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('cs-CZ', { year: 'numeric', month: 'long', day: 'numeric' });
+    const locale = this.isCz() ? 'cs-CZ' : 'en-GB';
+    return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
 }

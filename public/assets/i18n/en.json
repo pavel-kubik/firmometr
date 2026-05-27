@@ -262,6 +262,7 @@
   "blog.min_read": "min read",
   "blog.read_more": "Read full article",
   "blog.back": "Back to blog",
+  "blog.not_found": "Article not found.",
   "blog.cta_title": "Check a company for free",
   "blog.cta_sub": "Enter the company ID and get a full overview in 10 seconds — insolvency, VAT registry, commercial register.",
   "blog.cta_btn": "Search company for free →",

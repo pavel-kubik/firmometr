@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -29,8 +29,8 @@ import { BLOG_ARTICLES, BlogArticle } from './blog.data';
               <span class="article-sep">·</span>
               <span class="article-read">{{ article.readMinutes }} {{ 'blog.min_read' | transloco }}</span>
             </div>
-            <h2>{{ article.title }}</h2>
-            <p class="article-excerpt">{{ article.excerpt }}</p>
+            <h2>{{ isCz() ? article.titleCs : article.titleEn }}</h2>
+            <p class="article-excerpt">{{ isCz() ? article.excerptCs : article.excerptEn }}</p>
             <span class="article-cta">{{ 'blog.read_more' | transloco }} →</span>
           </a>
         }
@@ -86,13 +86,20 @@ export class BlogComponent implements OnInit {
   ls = inject(LangService);
 
   articles: BlogArticle[] = BLOG_ARTICLES;
+  isCz = computed(() => this.ls.lang() === 'cs');
 
   ngOnInit() {
-    this.titleService.setTitle('Blog — Firmometr | Prověřování českých firem');
-    this.metaService.updateTag({ name: 'description', content: 'Průvodce prověřováním obchodních partnerů, insolvencí a DPH registru. Tipy a návody pro OSVČ a malé firmy.' });
+    const cs = this.isCz();
+    this.titleService.setTitle(cs
+      ? 'Blog — Firmometr | Prověřování českých firem'
+      : 'Blog — Firmometr | Czech Company Verification');
+    this.metaService.updateTag({ name: 'description', content: cs
+      ? 'Průvodce prověřováním obchodních partnerů, insolvencí a DPH registru. Tipy a návody pro OSVČ a malé firmy.'
+      : 'Guide to verifying business partners, insolvency checks, and VAT registry. Tips for freelancers and small businesses.' });
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('cs-CZ', { year: 'numeric', month: 'long', day: 'numeric' });
+    const locale = this.isCz() ? 'cs-CZ' : 'en-GB';
+    return new Date(iso).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
 }
