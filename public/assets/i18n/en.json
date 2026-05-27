@@ -1,4 +1,5 @@
 {
+  "nav.blog": "Blog",
   "nav.search": "Search",
   "nav.watched": "Watched",
   "nav.pricing": "Pricing",
@@ -10,6 +11,7 @@
   "nav.close_menu": "Close menu",
   "nav.lang_switch": "CZ",
 
+  "footer.blog": "Blog",
   "footer.tagline": "Verifying Czech companies from public registries.",
   "footer.company": "Butterfly Flowers s.r.o., ID 07102127",
   "footer.col_product": "Product",
@@ -253,6 +255,16 @@
   "register.confirm_title": "Confirm your email",
   "register.confirm_msg": "We sent you a confirmation link. Check your email and click the link to complete registration.",
   "register.back_to_login": "Back to login",
+
+  "blog.label": "Blog",
+  "blog.title": "Business Verification Guide",
+  "blog.sub": "Practical advice for freelancers and small businesses — how to vet partners, monitor insolvency, and protect your business.",
+  "blog.min_read": "min read",
+  "blog.read_more": "Read full article",
+  "blog.back": "Back to blog",
+  "blog.cta_title": "Check a company for free",
+  "blog.cta_sub": "Enter the company ID and get a full overview in 10 seconds — insolvency, VAT registry, commercial register.",
+  "blog.cta_btn": "Search company for free →",
 
   "order.label": "Order",
   "order.title": "Choose your plan and fill in billing details",

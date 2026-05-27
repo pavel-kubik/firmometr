@@ -19,6 +19,7 @@ import { LangService } from '../../core/services/lang.service';
           <ul>
             <li><a [routerLink]="ls.p('/search')">{{ 'footer.search' | transloco }}</a></li>
             <li><a [routerLink]="ls.p('/ceny')">{{ 'footer.pricing' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/blog')">{{ 'footer.blog' | transloco }}</a></li>
             <li><a [routerLink]="ls.p('/kontakt')">{{ 'footer.contact' | transloco }}</a></li>
           </ul>
         </div>
