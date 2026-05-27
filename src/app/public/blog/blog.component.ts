@@ -85,7 +85,7 @@ export class BlogComponent {
   private metaService = inject(Meta);
   ls = inject(LangService);
 
-  articles: BlogArticle[] = BLOG_ARTICLES;
+  articles: BlogArticle[] = BLOG_ARTICLES.filter(a => a.publishedAt <= new Date().toISOString().slice(0, 10));
   isCz = computed(() => this.ls.lang() === 'cs');
 
   constructor() {
