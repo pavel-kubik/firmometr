@@ -255,7 +255,7 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
     .page-main { flex: 1; display: flex; flex-direction: column; }
 
     .detail-hero {

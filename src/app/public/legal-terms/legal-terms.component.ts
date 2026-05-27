@@ -67,7 +67,7 @@ import { PublicFooterComponent } from '../public-footer/public-footer.component'
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
     .legal-page { flex: 1; padding: 60px 24px; }
     .legal-inner { max-width: 760px; margin: 0 auto; }
     .section-label { font-size: 12px; font-weight: 700; color: var(--pub-green); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }

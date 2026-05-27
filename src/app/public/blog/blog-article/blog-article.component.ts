@@ -49,7 +49,7 @@ import { findArticle, BlogArticle } from '../blog.data';
     <app-public-footer />
   `,
   styles: [`
-    :host { display: flex; flex-direction: column; min-height: 100vh; animation: page-enter .3s ease-out; }
+    :host { display: flex; flex-direction: column; min-height: 100vh; }
     .article-page { flex: 1; }
 
     .article-hero {
