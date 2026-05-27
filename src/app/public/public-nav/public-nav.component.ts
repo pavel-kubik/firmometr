@@ -2,6 +2,7 @@ import { AsyncPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { LangService } from '../../core/services/lang.service';
 
@@ -12,7 +13,7 @@ import { LangService } from '../../core/services/lang.service';
   template: `
     <nav class="pub-nav">
       <div class="pub-nav-inner">
-        <a class="pub-logo" [routerLink]="ls.p('/')">FIRM<span>O</span>METR</a>
+        <a class="pub-logo" [routerLink]="ls.p('/')">FIRM<span>O</span>METR@if (!isProd) {<sup class="dev-badge">dev</sup>}</a>
 
         <div class="pub-nav-links">
           <a [routerLink]="ls.p('/search')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
@@ -110,6 +111,11 @@ import { LangService } from '../../core/services/lang.service';
       color: var(--pub-text); text-decoration: none; flex-shrink: 0;
     }
     .pub-logo span { color: var(--pub-green); }
+    .dev-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      background: #f59e0b; color: #fff; border-radius: 3px;
+      padding: 1px 4px; margin-left: 3px; vertical-align: super;
+    }
     .pub-nav-links { display: flex; gap: 4px; flex: 1; }
     .pub-nav-links a {
       font-size: 14px; font-weight: 500; color: var(--pub-text-muted);
@@ -196,6 +202,7 @@ export class PublicNavComponent {
   private auth = inject(AuthService);
   private router = inject(Router);
   ls = inject(LangService);
+  isProd = environment.production;
 
   user$ = this.auth.user$;
   menuOpen = signal(false);
