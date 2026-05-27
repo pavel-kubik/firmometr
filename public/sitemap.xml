@@ -67,6 +67,36 @@
   </url>
 
   <url>
+    <loc>https://firmometr.cz/pro-uctarny</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/pro-pravniky</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/pro-hr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/monitoring-firem</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/due-diligence</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://firmometr.cz/blog</loc>
     <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/blog"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/blog"/>
@@ -77,6 +107,31 @@
   <url>
     <loc>https://firmometr.cz/blog/jak-proverit-firmu-pred-spolupraci</loc>
     <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/blog/jak-proverit-firmu-pred-spolupraci"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/blog/jak-proverit-firmu-pred-spolupraci"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/blog/jak-cist-insolvencni-rejstrik</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/blog/jak-cist-insolvencni-rejstrik"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/blog/jak-cist-insolvencni-rejstrik"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/blog/nespolehlivy-platce-dph</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/blog/nespolehlivy-platce-dph"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/blog/nespolehlivy-platce-dph"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://firmometr.cz/blog/ares-jak-vyhledat-firmu</loc>
+    <xhtml:link rel="alternate" hreflang="cs" href="https://firmometr.cz/blog/ares-jak-vyhledat-firmu"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://firmometr.cz/en/blog/ares-jak-vyhledat-firmu"/>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>

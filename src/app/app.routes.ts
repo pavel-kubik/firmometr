@@ -16,6 +16,11 @@ const childRoutes: Routes = [
   { path: 'objednat', canActivate: [authGuard, subscriptionsGuard], loadComponent: () => import('./public/order/order.component').then(m => m.OrderComponent) },
   { path: 'blog', loadComponent: () => import('./public/blog/blog.component').then(m => m.BlogComponent) },
   { path: 'blog/:slug', loadComponent: () => import('./public/blog/blog-article/blog-article.component').then(m => m.BlogArticleComponent) },
+  { path: 'pro-uctarny', data: { segment: 'accountants' }, loadComponent: () => import('./public/use-case-page/use-case-page.component').then(m => m.UseCasePageComponent) },
+  { path: 'pro-pravniky', data: { segment: 'lawyers' }, loadComponent: () => import('./public/use-case-page/use-case-page.component').then(m => m.UseCasePageComponent) },
+  { path: 'pro-hr', data: { segment: 'hr' }, loadComponent: () => import('./public/use-case-page/use-case-page.component').then(m => m.UseCasePageComponent) },
+  { path: 'monitoring-firem', data: { segment: 'monitoring' }, loadComponent: () => import('./public/use-case-page/use-case-page.component').then(m => m.UseCasePageComponent) },
+  { path: 'due-diligence', data: { segment: 'duediligence' }, loadComponent: () => import('./public/use-case-page/use-case-page.component').then(m => m.UseCasePageComponent) },
 ];
 
 export const routes: Routes = [

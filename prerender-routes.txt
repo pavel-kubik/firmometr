@@ -6,6 +6,14 @@
 /obchodni-podminky
 /blog
 /blog/jak-proverit-firmu-pred-spolupraci
+/pro-uctarny
+/pro-pravniky
+/pro-hr
+/monitoring-firem
+/due-diligence
+/blog/jak-cist-insolvencni-rejstrik
+/blog/nespolehlivy-platce-dph
+/blog/ares-jak-vyhledat-firmu
 /en
 /en/ceny
 /en/objednat
@@ -14,3 +22,6 @@
 /en/obchodni-podminky
 /en/blog
 /en/blog/jak-proverit-firmu-pred-spolupraci
+/en/blog/jak-cist-insolvencni-rejstrik
+/en/blog/nespolehlivy-platce-dph
+/en/blog/ares-jak-vyhledat-firmu

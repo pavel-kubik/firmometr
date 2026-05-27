@@ -25,6 +25,16 @@ import { LangService } from '../../core/services/lang.service';
           </ul>
         </div>
         <div class="pub-footer-col">
+          <h4>{{ 'footer.col_usecases' | transloco }}</h4>
+          <ul>
+            <li><a [routerLink]="ls.p('/pro-uctarny')">{{ 'footer.for_accountants' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/pro-pravniky')">{{ 'footer.for_lawyers' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/pro-hr')">{{ 'footer.for_hr' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/monitoring-firem')">{{ 'footer.for_monitoring' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/due-diligence')">{{ 'footer.for_due_diligence' | transloco }}</a></li>
+          </ul>
+        </div>
+        <div class="pub-footer-col">
           <h4>{{ 'footer.col_legal' | transloco }}</h4>
           <ul>
             <li><a [routerLink]="ls.p('/obchodni-podminky')">{{ 'footer.terms' | transloco }}</a></li>
