@@ -1,4 +1,5 @@
 {
+  "nav.blog": "Blog",
   "nav.search": "Vyhledat",
   "nav.watched": "Sledované",
   "nav.pricing": "Ceny",
@@ -10,6 +11,7 @@
   "nav.close_menu": "Zavřít menu",
   "nav.lang_switch": "EN",
 
+  "footer.blog": "Blog",
   "footer.tagline": "Prověřování českých firem z veřejných rejstříků.",
   "footer.company": "Butterfly Flowers s.r.o., IČO 07102127",
   "footer.col_product": "Produkt",
@@ -253,6 +255,17 @@
   "register.confirm_title": "Potvrďte e-mail",
   "register.confirm_msg": "Zaslali jsme vám potvrzovací odkaz. Zkontrolujte svůj e-mail a klikněte na odkaz pro dokončení registrace.",
   "register.back_to_login": "Zpět na přihlášení",
+
+  "blog.label": "Blog",
+  "blog.title": "Průvodce prověřováním firem",
+  "blog.sub": "Praktické rady pro OSVČ, freelancery a malé firmy — jak prověřit partnery, hlídat insolvence a chránit svůj byznys.",
+  "blog.min_read": "min čtení",
+  "blog.read_more": "Číst celý článek",
+  "blog.back": "Zpět na blog",
+  "blog.not_found": "Článek nebyl nalezen.",
+  "blog.cta_title": "Prověřte firmu zdarma",
+  "blog.cta_sub": "Zadejte IČO a za 10 sekund víte vše podstatné — insolvence, DPH registr, obchodní rejstřík.",
+  "blog.cta_btn": "Vyhledat firmu zdarma →",
 
   "order.label": "Objednávka",
   "order.title": "Vyberte plán a vyplňte fakturační údaje",

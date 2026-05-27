@@ -14,6 +14,8 @@ const childRoutes: Routes = [
   { path: 'login', loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent) },
   { path: 'register', loadComponent: () => import('./features/auth/register.component').then(m => m.RegisterComponent) },
   { path: 'objednat', canActivate: [authGuard, subscriptionsGuard], loadComponent: () => import('./public/order/order.component').then(m => m.OrderComponent) },
+  { path: 'blog', loadComponent: () => import('./public/blog/blog.component').then(m => m.BlogComponent) },
+  { path: 'blog/:slug', loadComponent: () => import('./public/blog/blog-article/blog-article.component').then(m => m.BlogArticleComponent) },
 ];
 
 export const routes: Routes = [

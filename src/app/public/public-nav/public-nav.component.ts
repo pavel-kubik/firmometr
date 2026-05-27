@@ -19,6 +19,7 @@ import { LangService } from '../../core/services/lang.service';
           <a [routerLink]="ls.p('/search')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
           <a [routerLink]="ls.p('/dashboard')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.watched' | transloco }}</a>
           <a [routerLink]="ls.p('/ceny')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.pricing' | transloco }}</a>
+          <a [routerLink]="ls.p('/blog')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.blog' | transloco }}</a>
           <a [routerLink]="ls.p('/kontakt')" routerLinkActive="nav-active" (click)="menuOpen.set(false)">{{ 'nav.contact' | transloco }}</a>
         </div>
 
@@ -77,6 +78,7 @@ import { LangService } from '../../core/services/lang.service';
           <a [routerLink]="ls.p('/search')" (click)="menuOpen.set(false)">{{ 'nav.search' | transloco }}</a>
           <a [routerLink]="ls.p('/dashboard')" (click)="menuOpen.set(false)">{{ 'nav.watched' | transloco }}</a>
           <a [routerLink]="ls.p('/ceny')" (click)="menuOpen.set(false)">{{ 'nav.pricing' | transloco }}</a>
+          <a [routerLink]="ls.p('/blog')" (click)="menuOpen.set(false)">{{ 'nav.blog' | transloco }}</a>
           <a [routerLink]="ls.p('/kontakt')" (click)="menuOpen.set(false)">{{ 'nav.contact' | transloco }}</a>
           @if (user$ | async) {
             <button class="mobile-action-btn" (click)="logout()">{{ 'nav.logout' | transloco }}</button>
