@@ -3,7 +3,7 @@ import { provideRouter, Router, withViewTransitions } from '@angular/router';
 import { provideHttpClient, HttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideTransloco, TranslocoLoader, Translation } from '@jsverse/transloco';
+import { provideTransloco, TranslocoLoader, TranslocoService, Translation } from '@jsverse/transloco';
 import * as Sentry from '@sentry/angular';
 import { routes } from './app.routes';
 import { LangService } from './core/services/lang.service';
@@ -35,6 +35,17 @@ export const appConfig: ApplicationConfig = {
       { provide: Sentry.TraceService, deps: [Router] },
       { provide: APP_INITIALIZER, useFactory: () => () => {}, deps: [Sentry.TraceService], multi: true },
     ] : []),
-    { provide: APP_INITIALIZER, useFactory: () => { const ls = inject(LangService); return () => ls.init(); }, multi: true },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => {
+        const ls = inject(LangService);
+        const transloco = inject(TranslocoService);
+        return () => new Promise<void>(resolve => {
+          ls.init();
+          transloco.load(ls.lang()).subscribe({ next: () => resolve(), error: () => resolve() });
+        });
+      },
+      multi: true,
+    },
   ]
 };
