@@ -27,14 +27,12 @@ Both search endpoints are publicly accessible without credentials:
 ## Public Access (No Auth Required)
 
 Both search endpoints are publicly accessible without authentication:
->>>>>>> origin/main
 
 | Endpoint | Description |
 |---|---|
 | `GET /api/v1/search?q={name}` | Search Czech companies by name |
 | `GET /api/v1/search/ico/{ico}` | Get full company profile by IČO |
 
-<<<<<<< HEAD
 **Rate limit:** 20 requests per 5-minute window. Registered agents are exempt.
 
 ## Step 2 — Pick a Method
