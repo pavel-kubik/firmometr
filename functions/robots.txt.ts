@@ -22,5 +22,11 @@ export const onRequest = async ({ request, env }: { request: Request; env: Env }
   const key = `log:${entry.timestamp}:${Math.random().toString(36).slice(2, 7)}`;
   await env.LLMS_LOGS.put(key, JSON.stringify(entry), { expirationTtl: 60 * 60 * 24 * 30 });
 
+  if (new URL(request.url).hostname !== 'firmometr.cz') {
+    return new Response('User-agent: *\nDisallow: /\n', {
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
+
   return env.ASSETS.fetch(request);
 };
