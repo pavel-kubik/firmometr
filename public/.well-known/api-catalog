@@ -1,0 +1,18 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://firmometr.cz",
+      "service-desc": [
+        {
+          "href": "https://firmometr.cz/openapi.json",
+          "type": "application/openapi+json"
+        }
+      ],
+      "service-doc": [
+        {
+          "href": "https://firmometr.cz/llms.txt"
+        }
+      ]
+    }
+  ]
+}
