@@ -23,10 +23,6 @@ Read the `agent_auth` block in full — it contains `register_uri`, `claim_uri`,
 ## Public Access (No Auth Required)
 
 Both search endpoints are publicly accessible without credentials:
-=======
-## Public Access (No Auth Required)
-
-Both search endpoints are publicly accessible without authentication:
 
 | Endpoint | Description |
 |---|---|
