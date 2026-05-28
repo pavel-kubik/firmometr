@@ -19,7 +19,7 @@ The site has solid bot-access foundations (robots.txt, sitemap, AI bot rules, co
 
 ### Medium effort
 
-- [ ] **Markdown Negotiation** — in `_middleware.ts`, detect `Accept: text/markdown` and return a stripped markdown version of key pages (homepage, company detail); respond with `Content-Type: text/markdown`
+- [x] **Markdown Negotiation** — in `_middleware.ts`, detect `Accept: text/markdown` and return a stripped markdown version of key pages (homepage, company detail); respond with `Content-Type: text/markdown`
 - [ ] **MCP Server Card** — serve `/.well-known/mcp/server-card.json` describing server name, version, transport, and capabilities (SEP-1649); implement an actual MCP endpoint exposing company lookup and watchlist tools
 - [ ] **Agent Skills index** — serve `/.well-known/agent-skills/index.json` listing skills (company search, ICO lookup, watchlist) per the Agent Skills Discovery RFC v0.2.0
 
