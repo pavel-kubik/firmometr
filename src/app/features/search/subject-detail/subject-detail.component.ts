@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { Title, Meta } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -356,6 +357,9 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
   private transloco = inject(TranslocoService);
+  private titleService = inject(Title);
+  private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
 
   readonly freeCap = SEARCH_FREE_CAP;
@@ -411,6 +415,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     this.searchService.searchByIco(ico).pipe(
       switchMap(data => {
         this.subject = data;
+        this.setMetaTags(data);
         // TODO it looks like it doesn't work
         if (!this.isLoggedIn) return of(false);
         return this.watchService.isWatchedByIco(ico);
@@ -463,8 +468,63 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     }, 1000);
   }
 
+  private setMetaTags(s: SubjectDetail): void {
+    const name = s.obchodniFirma || `IČO ${s.ico}`;
+    const addr = s.sidloEnriched || s.sidloText || '';
+    const isirText = s.isir.clarity === 'CLEAR' ? 'Bez záznamu v insolvenčním rejstříku.'
+      : s.isir.clarity === 'PAST_DEBTOR' ? 'Dříve v insolvenci.'
+      : 'AKTIVNÍ INSOLVENČNÍ ŘÍZENÍ.';
+    const dphText = s.dph.nespolehlivy ? 'NESPOLEHLIVÝ PLÁTCE DPH.'
+      : s.dph.isPlatce ? 'Spolehlivý plátce DPH.'
+      : 'Neplátce DPH.';
+    const title = `${name} (IČO ${s.ico}) — Firmometr`;
+    const desc = [name, addr ? `Sídlo: ${addr}.` : '', `IČO: ${s.ico}.`, isirText, dphText]
+      .filter(Boolean).join(' ');
+
+    this.titleService.setTitle(title);
+    this.metaService.updateTag({ name: 'description', content: desc });
+    this.metaService.updateTag({ property: 'og:title', content: title });
+    this.metaService.updateTag({ property: 'og:description', content: desc });
+    this.metaService.updateTag({ property: 'og:url', content: this.pageUrl });
+    this.metaService.updateTag({ property: 'og:type', content: 'website' });
+    this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.metaService.updateTag({ name: 'twitter:title', content: title });
+    this.metaService.updateTag({ name: 'twitter:description', content: desc });
+    this.setCanonical(this.pageUrl);
+
+    const ld: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': name,
+      'identifier': s.ico,
+      'url': this.pageUrl,
+    };
+    if (addr) ld['address'] = { '@type': 'PostalAddress', 'streetAddress': addr, 'addressCountry': 'CZ' };
+    if (s.dic) ld['vatID'] = s.dic;
+
+    let script = this.doc.getElementById('ld-company') as HTMLScriptElement | null;
+    if (!script) {
+      script = this.doc.createElement('script') as HTMLScriptElement;
+      script.id = 'ld-company';
+      script.type = 'application/ld+json';
+      this.doc.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(ld);
+  }
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.doc.getElementById('ld-company')?.remove();
   }
 
   formatCzechDate(iso: string | null | undefined): string {

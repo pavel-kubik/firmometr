@@ -1,4 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed, effect } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
@@ -271,21 +272,46 @@ export class LandingComponent implements OnInit {
   private router = inject(Router);
   private titleService = inject(Title);
   private metaService = inject(Meta);
+  private doc = inject(DOCUMENT);
   ls = inject(LangService);
   searchQuery = '';
   subscriptionsEnabled = environment.subscriptionsEnabled;
 
-  ngOnInit() {
-    this.titleService.setTitle('Firmometr – Prověřte firmu snadno | ISIR, DPH, OR');
-    const desc = 'Sledujte insolvenci, DPH rejstřík a obchodní rejstřík. E-mailová upozornění na změny firem. Zdarma pro 3 firmy.';
-    this.metaService.updateTag({ name: 'description', content: desc });
-    this.metaService.updateTag({ property: 'og:title', content: 'Firmometr – Prověřte firmu snadno' });
-    this.metaService.updateTag({ property: 'og:description', content: desc });
-    this.metaService.updateTag({ property: 'og:url', content: 'https://firmometr.cz' });
-    this.metaService.updateTag({ property: 'og:type', content: 'website' });
-    this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
-    this.metaService.updateTag({ name: 'twitter:title', content: 'Firmometr – Prověřte firmu snadno' });
-    this.metaService.updateTag({ name: 'twitter:description', content: desc });
+  private isCz = computed(() => this.ls.lang() === 'cs');
+
+  constructor() {
+    effect(() => {
+      const cs = this.isCz();
+      const title = cs
+        ? 'Firmometr – Prověřte firmu snadno | ISIR, DPH, OR'
+        : 'Firmometr – Check Any Czech Company | ISIR, VAT, Register';
+      const desc = cs
+        ? 'Sledujte insolvenci, DPH rejstřík a obchodní rejstřík. E-mailová upozornění na změny firem. Zdarma pro 3 firmy.'
+        : 'Monitor insolvency, VAT registry and commercial register. Email alerts on company changes. Free for 3 companies.';
+      const url = cs ? 'https://firmometr.cz' : 'https://firmometr.cz/en';
+      this.titleService.setTitle(title);
+      this.metaService.updateTag({ name: 'description', content: desc });
+      this.metaService.updateTag({ property: 'og:title', content: title });
+      this.metaService.updateTag({ property: 'og:description', content: desc });
+      this.metaService.updateTag({ property: 'og:url', content: url });
+      this.metaService.updateTag({ property: 'og:type', content: 'website' });
+      this.metaService.updateTag({ name: 'twitter:card', content: 'summary' });
+      this.metaService.updateTag({ name: 'twitter:title', content: title });
+      this.metaService.updateTag({ name: 'twitter:description', content: desc });
+      this.setCanonical(url);
+    });
+  }
+
+  ngOnInit() {}
+
+  private setCanonical(url: string) {
+    let link = this.doc.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+    if (!link) {
+      link = this.doc.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      this.doc.head.appendChild(link);
+    }
+    link.setAttribute('href', url);
   }
 
   goSearch() {

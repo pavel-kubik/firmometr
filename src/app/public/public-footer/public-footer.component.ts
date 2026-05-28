@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { environment } from '../../../environments/environment';
 import { LangService } from '../../core/services/lang.service';
 
 @Component({
@@ -19,7 +20,18 @@ import { LangService } from '../../core/services/lang.service';
           <ul>
             <li><a [routerLink]="ls.p('/search')">{{ 'footer.search' | transloco }}</a></li>
             <li><a [routerLink]="ls.p('/ceny')">{{ 'footer.pricing' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/blog')">{{ 'footer.blog' | transloco }}</a></li>
             <li><a [routerLink]="ls.p('/kontakt')">{{ 'footer.contact' | transloco }}</a></li>
+          </ul>
+        </div>
+        <div class="pub-footer-col">
+          <h4>{{ 'footer.col_usecases' | transloco }}</h4>
+          <ul>
+            <li><a [routerLink]="ls.p('/pro-uctarny')">{{ 'footer.for_accountants' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/pro-pravniky')">{{ 'footer.for_lawyers' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/pro-hr')">{{ 'footer.for_hr' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/monitoring-firem')">{{ 'footer.for_monitoring' | transloco }}</a></li>
+            <li><a [routerLink]="ls.p('/due-diligence')">{{ 'footer.for_due_diligence' | transloco }}</a></li>
           </ul>
         </div>
         <div class="pub-footer-col">
@@ -30,6 +42,11 @@ import { LangService } from '../../core/services/lang.service';
           </ul>
         </div>
       </div>
+      @if (buildTime) {
+        <div class="pub-footer-meta">
+          <span>build: {{ buildTime }}</span>
+        </div>
+      }
       <div class="pub-footer-bottom">
         <span>{{ 'footer.copyright' | transloco }}</span>
         <span>info&#64;firmometr.cz</span>
@@ -61,6 +78,11 @@ import { LangService } from '../../core/services/lang.service';
     .pub-footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
     .pub-footer-col ul li a { font-size: 13px; color: var(--pub-text-subtle); text-decoration: none; }
     .pub-footer-col ul li a:hover { color: var(--pub-green); }
+    .pub-footer-meta {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 0 12px;
+      font-size: 11px; color: #334155;
+    }
     .pub-footer-bottom {
       max-width: 1100px; margin: 0 auto;
       padding: 20px 0;
@@ -76,4 +98,5 @@ import { LangService } from '../../core/services/lang.service';
 })
 export class PublicFooterComponent {
   ls = inject(LangService);
+  buildTime = environment.buildTime;
 }
