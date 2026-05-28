@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, computed, effect } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
+import { LangService } from '../../core/services/lang.service';
 
 interface UseCaseFeature {
   icon: string;
@@ -19,6 +20,8 @@ interface UseCaseStep {
 interface UseCaseData {
   metaTitle: string;
   metaDescription: string;
+  metaTitleEn: string;
+  metaDescriptionEn: string;
   label: string;
   headline: string;
   subheadline: string;
@@ -34,6 +37,8 @@ const USE_CASES: Record<string, UseCaseData> = {
   accountants: {
     metaTitle: 'Firmometr pro účetní — kontrola dodavatele a DPH spolehlivosti',
     metaDescription: 'Ověřte DPH spolehlivost dodavatele, zkontrolujte insolvenci a sledujte změny automaticky. Nástroj pro účetní a daňové poradce — zdarma.',
+    metaTitleEn: 'Firmometr for Accountants — Supplier & VAT Reliability Check',
+    metaDescriptionEn: 'Verify supplier VAT reliability, check insolvency status and monitor changes automatically. Tool for accountants and tax advisors — free.',
     label: 'Pro účetní a daňové poradce',
     headline: 'Kontrola dodavatele a DPH spolehlivosti za 10 sekund',
     subheadline: 'Nespolehlivý plátce DPH může stát vašeho klienta statisíce korun na ručení za cizí DPH. Firmometr ověří každého dodavatele a upozorní vás na každou změnu.',
@@ -72,6 +77,8 @@ const USE_CASES: Record<string, UseCaseData> = {
   lawyers: {
     metaTitle: 'Firmometr pro právníky — prověření protistrany před podpisem smlouvy',
     metaDescription: 'Před podpisem smlouvy ověřte protistranu: insolvence, DPH, obchodní rejstřík, aktuální statutáři. Právní due diligence za 10 sekund — zdarma.',
+    metaTitleEn: 'Firmometr for Lawyers — Counterparty Check Before Signing',
+    metaDescriptionEn: 'Before signing, verify the counterparty: insolvency, VAT, commercial register, current directors. Legal due diligence in 10 seconds — free.',
     label: 'Pro právníky a advokáty',
     headline: 'Prověřte protistranu před podpisem smlouvy',
     subheadline: 'Smlouva s firmou v insolvenci nebo se záměrně vyměněným statutárem může být neplatná nebo nevymahatelná. Ověřte protistranu ještě před podpisem.',
@@ -110,6 +117,8 @@ const USE_CASES: Record<string, UseCaseData> = {
   hr: {
     metaTitle: 'Firmometr pro HR — ověření zaměstnavatele před nástupem',
     metaDescription: 'Zjistěte, zda je zaměstnavatel v insolvenci, zda splácí daně a kdo za něj skutečně jedná. Ověření zaměstnavatele zdarma a za 10 sekund.',
+    metaTitleEn: 'Firmometr for HR — Verify Your Employer Before Starting',
+    metaDescriptionEn: 'Find out if the employer is insolvent, whether they pay taxes and who actually acts on their behalf. Employer verification free in 10 seconds.',
     label: 'Pro uchazeče o zaměstnání a HR',
     headline: 'Ověřte zaměstnavatele před podpisem pracovní smlouvy',
     subheadline: 'Firma v insolvenci může mít problém vyplácet mzdy. Firma na DPH blacklistu má finanční problémy. Zkontrolujte zaměstnavatele dřív, než podepíšete.',
@@ -148,6 +157,8 @@ const USE_CASES: Record<string, UseCaseData> = {
   monitoring: {
     metaTitle: 'Sledování změn ve firmě — automatické upozornění na insolvenci a DPH',
     metaDescription: 'Sledujte změny u svých obchodních partnerů automaticky. E-mail upozornění při změně insolvence, DPH statusu nebo stavu firmy. Firmometr watchlist — zdarma.',
+    metaTitleEn: 'Company Monitoring — Automatic Insolvency & VAT Alerts',
+    metaDescriptionEn: 'Monitor changes at your business partners automatically. Email alerts on insolvency, VAT status or company state changes. Firmometr watchlist — free.',
     label: 'Monitoring firem',
     headline: 'Sledujte změny u obchodních partnerů automaticky',
     subheadline: 'Firma, která je dnes v pořádku, může být zítra v insolvenci. Watchlist v Firmometru vás upozorní e-mailem ihned poté, co se cokoli změní — bez ruční kontroly.',
@@ -186,6 +197,8 @@ const USE_CASES: Record<string, UseCaseData> = {
   duediligence: {
     metaTitle: 'Due diligence české firmy — ověření před akvizicí nebo investicí',
     metaDescription: 'Rychlá due diligence české firmy: insolvence, DPH spolehlivost, statutáři, sbírka listin, adresa sídla. Základ firemního prověření zdarma a za 10 sekund.',
+    metaTitleEn: 'Czech Company Due Diligence — Pre-Acquisition Verification',
+    metaDescriptionEn: 'Quick due diligence on Czech companies: insolvency, VAT reliability, directors, document collection, registered address. Basic verification free in 10 seconds.',
     label: 'Due diligence a investice',
     headline: 'Due diligence české firmy za 10 sekund',
     subheadline: 'Před akvizicí, investicí nebo vstupem do joint venture ověřte základní právní a finanční profil cílové firmy. Firmometr agreguje ARES, ISIR, DPH registr a Obchodní rejstřík do jednoho přehledu.',
@@ -333,21 +346,38 @@ export class UseCasePageComponent implements OnInit {
   private titleService = inject(Title);
   private metaService = inject(Meta);
   private doc = inject(DOCUMENT);
+  private ls = inject(LangService);
 
   data!: UseCaseData;
+  private isCz = computed(() => this.ls.lang() === 'cs');
+
+  constructor() {
+    // Track lang signal before the data guard so language switches always re-run this effect.
+    effect(() => {
+      const cs = this.isCz();
+      if (!this.data) return;
+      this.applyMeta(cs);
+    });
+  }
 
   ngOnInit() {
     const segment = this.route.snapshot.data['segment'] as string;
     const path = this.route.snapshot.url[0]?.path ?? '';
     this.data = USE_CASES[segment];
     const canonicalUrl = `https://firmometr.cz/${path}`;
-    this.titleService.setTitle(this.data.metaTitle);
-    this.metaService.updateTag({ name: 'description', content: this.data.metaDescription });
-    this.metaService.updateTag({ property: 'og:title', content: this.data.metaTitle });
-    this.metaService.updateTag({ property: 'og:description', content: this.data.metaDescription });
+    this.applyMeta(this.isCz());
     this.metaService.updateTag({ property: 'og:url', content: canonicalUrl });
     this.metaService.updateTag({ property: 'og:type', content: 'website' });
     this.setCanonical(canonicalUrl);
+  }
+
+  private applyMeta(cs: boolean) {
+    const title = cs ? this.data.metaTitle : this.data.metaTitleEn;
+    const desc = cs ? this.data.metaDescription : this.data.metaDescriptionEn;
+    this.titleService.setTitle(title);
+    this.metaService.updateTag({ name: 'description', content: desc });
+    this.metaService.updateTag({ property: 'og:title', content: title });
+    this.metaService.updateTag({ property: 'og:description', content: desc });
   }
 
   private setCanonical(url: string) {
