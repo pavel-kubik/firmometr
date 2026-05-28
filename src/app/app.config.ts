@@ -7,6 +7,7 @@ import { provideTransloco, TranslocoLoader, TranslocoService, Translation } from
 import * as Sentry from '@sentry/angular';
 import { routes } from './app.routes';
 import { LangService } from './core/services/lang.service';
+import { WebMcpService } from './core/services/webmcp.service';
 
 class AppTranslocoLoader implements TranslocoLoader {
   private http = inject(HttpClient);
@@ -44,6 +45,14 @@ export const appConfig: ApplicationConfig = {
           ls.init();
           transloco.load(ls.lang()).subscribe({ next: () => resolve(), error: () => resolve() });
         });
+      },
+      multi: true,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => {
+        const webMcp = inject(WebMcpService);
+        return () => webMcp.init();
       },
       multi: true,
     },
