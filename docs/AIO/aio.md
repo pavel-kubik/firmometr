@@ -11,11 +11,11 @@ The site has solid bot-access foundations (robots.txt, sitemap, AI bot rules, co
 
 ### Quick wins (static files, no logic changes)
 
-- [ ] **API Catalog** — serve `/.well-known/api-catalog` as `application/linkset+json` listing the `/api/v1` endpoints with `service-desc` (OpenAPI) and `service-doc` links (RFC 9727)
-- [ ] **OpenAPI spec** — publish `/openapi.json` describing the public search API (needed by API Catalog and MCP)
-- [ ] **Link header** — add `Link: </.well-known/api-catalog>; rel="api-catalog"` to homepage response headers (Cloudflare Pages `_headers` file)
-- [ ] **Auth.md** — serve `/auth.md` describing how agents can register/authenticate (WorkOS auth.md spec)
-- [ ] **OAuth Protected Resource** — serve `/.well-known/oauth-protected-resource` pointing to Supabase as the auth server (RFC 9728)
+- [x] **API Catalog** — serve `/.well-known/api-catalog` as `application/linkset+json` listing the `/api/v1` endpoints with `service-desc` (OpenAPI) and `service-doc` links (RFC 9727)
+- [x] **OpenAPI spec** — publish `/openapi.json` describing the public search API (needed by API Catalog and MCP)
+- [x] **Link header** — add `Link: </.well-known/api-catalog>; rel="api-catalog"` to homepage response headers (Cloudflare Pages `_headers` file)
+- [x] **Auth.md** — serve `/auth.md` describing how agents can register/authenticate (WorkOS auth.md spec)
+- [x] **OAuth Protected Resource** — serve `/.well-known/oauth-protected-resource` pointing to Supabase as the auth server (RFC 9728)
 
 ### Medium effort
 

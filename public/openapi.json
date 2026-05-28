@@ -1,0 +1,239 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Firmometr API",
+    "description": "Czech company intelligence API aggregating data from ARES, ISIR insolvency register, VAT payers database, and the commercial register (OR).",
+    "version": "1",
+    "contact": {
+      "name": "Firmometr",
+      "url": "https://firmometr.cz/kontakt",
+      "email": "info@firmometr.cz"
+    }
+  },
+  "servers": [
+    { "url": "https://firmometr.cz/api/v1", "description": "Production" },
+  ],
+  "paths": {
+    "/search": {
+      "get": {
+        "operationId": "searchCompanies",
+        "summary": "Search companies by name",
+        "description": "Full-text search against the ARES business registry by company name. Returns up to 20 results per page. Unauthenticated requests are rate-limited to 20 calls per 5-minute window.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "Company name or partial name",
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "description": "Pagination offset (default 0)",
+            "schema": { "type": "integer", "minimum": 0, "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchResult" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "schema": { "type": "integer" },
+                "description": "Seconds until the window resets"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string", "example": "limit_reached" } }
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "bearerAuth": [] }, {}]
+      }
+    },
+    "/search/ico/{ico}": {
+      "get": {
+        "operationId": "getCompanyByIco",
+        "summary": "Get company details by IČO",
+        "description": "Returns a full company profile: registration data, address, insolvency status (ISIR), VAT reliability (DPH), statutory officers, and commercial register links. Unauthenticated requests are rate-limited to 20 calls per 5-minute window.",
+        "parameters": [
+          {
+            "name": "ico",
+            "in": "path",
+            "required": true,
+            "description": "Czech company IČO (business ID), 1–8 digits",
+            "schema": { "type": "string", "pattern": "^\\d{1,8}$", "example": "27082440" }
+          },
+          {
+            "name": "max_cache_age",
+            "in": "query",
+            "required": false,
+            "description": "Maximum acceptable cache age in seconds (omit for default TTL)",
+            "schema": { "type": "integer", "minimum": 0 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Company profile",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CompanyDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid IČO format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "error": { "type": "string", "example": "Invalid IČO" } }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        },
+        "security": [{ "bearerAuth": [] }, {}]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SearchResult": {
+        "type": "object",
+        "required": ["total", "items"],
+        "properties": {
+          "total": { "type": "integer", "description": "Total matching companies across all pages" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SearchItem" }
+          }
+        }
+      },
+      "SearchItem": {
+        "type": "object",
+        "properties": {
+          "ico": { "type": "string", "description": "Company IČO" },
+          "obchodniFirma": { "type": ["string", "null"], "description": "Registered company name" },
+          "sidloText": { "type": ["string", "null"], "description": "Registered address (free text)" },
+          "stavNazev": { "type": ["string", "null"], "description": "Status label: Aktivní, Zaniklý, or null" }
+        }
+      },
+      "CompanyDetail": {
+        "type": "object",
+        "properties": {
+          "ico": { "type": "string" },
+          "dic": { "type": ["string", "null"], "description": "VAT number (DIČ)" },
+          "obchodniFirma": { "type": ["string", "null"], "description": "Registered company name" },
+          "pravniForma": { "type": ["string", "null"], "description": "Legal form" },
+          "sidloText": { "type": ["string", "null"], "description": "Registered address" },
+          "sidloEnriched": { "type": ["string", "null"], "description": "Standardised address from ČÚZK geocoder" },
+          "datumVzniku": { "type": ["string", "null"], "description": "Date of incorporation (ISO 8601)" },
+          "stavKod": { "type": ["string", "null"], "description": "Raw registry status code" },
+          "stavNazev": { "type": ["string", "null"], "description": "Status: Aktivní, Zaniklý, or null" },
+          "isir": { "$ref": "#/components/schemas/IsirSummary" },
+          "dph": { "$ref": "#/components/schemas/DphResult" },
+          "or": {
+            "description": "Commercial register data; null if not registered in OR",
+            "oneOf": [{ "$ref": "#/components/schemas/OrData" }, { "type": "null" }]
+          },
+          "isWatched": { "type": "boolean", "description": "True if the authenticated user is monitoring this company" }
+        }
+      },
+      "IsirSummary": {
+        "type": "object",
+        "properties": {
+          "clarity": {
+            "type": "string",
+            "enum": ["clear", "past_debtor", "active_proceedings"],
+            "description": "Aggregated insolvency risk signal"
+          },
+          "proceedings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "senZnacka": { "type": ["string", "null"], "description": "Case reference number" },
+                "stavKonkursu": { "type": ["string", "null"], "description": "Proceeding state" },
+                "datumZahajeni": { "type": ["string", "null"], "description": "Date proceedings started" },
+                "urlDetail": { "type": ["string", "null"], "description": "Link to ISIR detail page" },
+                "jeDalsiDluznik": { "type": "boolean", "description": "Company is a secondary debtor in this proceeding" },
+                "isActive": { "type": "boolean", "description": "Proceeding is currently active" }
+              }
+            }
+          }
+        }
+      },
+      "DphResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["reliable", "unreliable", "not_registered", "unavailable"],
+            "description": "VAT reliability per Ministry of Finance database"
+          }
+        }
+      },
+      "OrData": {
+        "type": "object",
+        "properties": {
+          "spisovatel": { "type": ["string", "null"], "description": "OR file reference (oddíl + vložka)" },
+          "statutari": {
+            "type": "array",
+            "description": "Statutory officers and board members",
+            "items": {
+              "type": "object",
+              "properties": {
+                "jmeno": { "type": ["string", "null"] },
+                "funkce": { "type": ["string", "null"], "description": "Role / function" },
+                "datumNarozeni": { "type": ["string", "null"] },
+                "adresaText": { "type": ["string", "null"] },
+                "datumVzniku": { "type": ["string", "null"], "description": "Start of term" },
+                "datumZaniku": { "type": ["string", "null"], "description": "End of term (null if current)" }
+              }
+            }
+          },
+          "sbirkaListin": {
+            "type": "array",
+            "description": "First 10 documents from the collection of deeds",
+            "items": {
+              "type": "object",
+              "properties": {
+                "typListiny": { "type": "string" },
+                "datumVzniku": { "type": ["string", "null"] },
+                "datumZalozeni": { "type": ["string", "null"] }
+              }
+            }
+          },
+          "sbirkaListinCelkem": { "type": "integer", "description": "Total document count" },
+          "orUrl": { "type": ["string", "null"], "description": "Direct URL to the OR entry" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Supabase JWT obtained via /auth/v1/token. Authenticated requests bypass the rate limit."
+      }
+    }
+  }
+}
