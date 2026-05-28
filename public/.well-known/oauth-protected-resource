@@ -1,8 +1,11 @@
 {
   "resource": "https://firmometr.cz",
+  "resource_name": "Firmometr",
+  "resource_logo_uri": "https://firmometr.cz/firmometr-logo.png",
   "authorization_servers": [
     "https://lentsvnmpqmrscgfscnc.supabase.co/auth/v1"
   ],
+  "scopes_supported": ["api.read", "watchlist.read", "watchlist.write"],
   "bearer_methods_supported": ["header"],
   "resource_documentation": "https://firmometr.cz/openapi.json"
 }

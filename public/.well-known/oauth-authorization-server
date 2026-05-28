@@ -1,0 +1,20 @@
+{
+  "issuer": "https://firmometr.cz",
+  "agent_auth": {
+    "skill": "https://firmometr.cz/auth.md",
+    "register_uri": "https://firmometr.cz/api/v1/agent/auth",
+    "claim_uri": "https://firmometr.cz/api/v1/agent/auth/claim",
+    "revocation_uri": "https://firmometr.cz/api/v1/agent/auth/revoke",
+    "identity_types_supported": ["anonymous", "identity_assertion"],
+    "anonymous": {
+      "credential_types_supported": ["api_key"]
+    },
+    "identity_assertion": {
+      "assertion_types_supported": ["verified_email"],
+      "credential_types_supported": ["api_key"]
+    },
+    "events_supported": [
+      "https://firmometr.cz/events/agent/auth/identity/assertion/revoked"
+    ]
+  }
+}
