@@ -1,3 +1,5 @@
+import { sendEmail } from '../../_shared/_email';
+
 interface Env {
   SUPABASE_URL: string;
   SUPABASE_ANON_KEY: string;
@@ -42,7 +44,6 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return Response.json({ error: 'invalid_ico' }, { status: 400 });
   }
 
-  // Store in Supabase
   const supaRes = await fetch(`${env.SUPABASE_URL}/rest/v1/orders`, {
     method: 'POST',
     headers: {
@@ -59,7 +60,6 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return Response.json({ error: 'db_error' }, { status: 500 });
   }
 
-  // Build email content
   const planLabel    = plan === 'enterprise' ? 'ENTERPRISE' : 'BASIC';
   const billingLabel = billing === 'annual' ? 'Ročně (1 měsíc zdarma)' : 'Měsíčně';
   const monthlyPrice = plan === 'enterprise' ? (billing === 'annual' ? 799 : 899) : (billing === 'annual' ? 299 : 349);
@@ -87,27 +87,18 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   </table>
 </body></html>`;
 
-  // Send via Brevo
-  const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender:      { name: env.ORDER_FROM_NAME, email: env.ORDER_FROM_EMAIL },
-      to:          [{ email: env.ORDER_TO }],
-      replyTo:     { email },
-      subject:     `Nová objednávka: ${planLabel} — ${jmeno}`,
-      htmlContent,
-    }),
+  const emailRes = await sendEmail({
+    env,
+    to: { email: env.ORDER_TO },
+    replyTo: { email },
+    subject: `Nová objednávka: ${planLabel} — ${jmeno}`,
+    htmlContent,
   });
 
   if (!emailRes.ok) {
     console.error('[order] brevo error', await emailRes.text());
   }
 
-  // Send confirmation to customer
   const customerHtmlContent = `<!DOCTYPE html><html lang="cs"><head><meta charset="utf-8"></head>
 <body style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
   <h2 style="color:#059669">Děkujeme za vaši objednávku!</h2>
@@ -126,18 +117,11 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   <p style="margin-top:24px;color:#6b7280;font-size:14px">Firmometr s.r.o.</p>
 </body></html>`;
 
-  const customerEmailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender:      { name: env.ORDER_FROM_NAME, email: env.ORDER_FROM_EMAIL },
-      to:          [{ email }],
-      subject:     `Potvrzení objednávky Firmometr — ${planLabel}`,
-      htmlContent: customerHtmlContent,
-    }),
+  const customerEmailRes = await sendEmail({
+    env,
+    to: { email },
+    subject: `Potvrzení objednávky Firmometr — ${planLabel}`,
+    htmlContent: customerHtmlContent,
   });
 
   if (!customerEmailRes.ok) {

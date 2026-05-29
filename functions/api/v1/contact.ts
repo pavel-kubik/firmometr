@@ -1,3 +1,5 @@
+import { sendEmail } from '../../_shared/_email';
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -23,19 +25,12 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return Response.json({ error: 'missing_fields' }, { status: 400 });
   }
 
-  const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': env.BREVO_API_KEY,
-    },
-    body: JSON.stringify({
-      sender:      { name: env.ORDER_FROM_NAME, email: env.ORDER_FROM_EMAIL },
-      to:          [{ email: env.ORDER_TO }],
-      replyTo:     { name: name || email, email },
-      subject:     `Firmometr — kontaktní formulář od ${name || email}`,
-      htmlContent: `<p><strong>Jméno:</strong> ${escapeHtml(name || '—')}</p><p><strong>E-mail:</strong> ${escapeHtml(email)}</p><p><strong>Zpráva:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`,
-    }),
+  const emailRes = await sendEmail({
+    env,
+    to: { email: env.ORDER_TO },
+    replyTo: { name: name || email, email },
+    subject: `Firmometr — kontaktní formulář od ${name || email}`,
+    htmlContent: `<p><strong>Jméno:</strong> ${escapeHtml(name || '—')}</p><p><strong>E-mail:</strong> ${escapeHtml(email)}</p><p><strong>Zpráva:</strong><br>${escapeHtml(message).replace(/\n/g, '<br>')}</p>`,
   });
 
   if (!emailRes.ok) {

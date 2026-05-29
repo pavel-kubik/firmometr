@@ -83,7 +83,21 @@ Content-Type: application/json
 }
 ```
 
-Response (200): no credential yet — the user receives an email with an OTP. Keep `claim_token` and go to Step 4.
+Response (200):
+
+```json
+{
+  "registration_id": "reg_...",
+  "registration_type": "identity_assertion",
+  "credential_type": "api_key",
+  "claim_url": "https://firmometr.cz/api/v1/agent/auth/claim/complete",
+  "claim_token": "clm_...",
+  "claim_token_expires": "...",
+  "post_claim_scopes": ["api.read", "watchlist.read", "watchlist.write"]
+}
+```
+
+No credential yet — the user receives an email with an OTP. Keep `claim_token` and go to Step 4c (skip 4a; the email is already sent).
 
 ## Step 4 — Claim Ceremony
 
@@ -111,7 +125,21 @@ Content-Type: application/json
 { "claim_token": "clm_...", "otp": "123456" }
 ```
 
-On success, the credential's scopes are upgraded in place. No new credential is issued.
+On success:
+
+- **Anonymous claim**: scopes are upgraded in place on the existing `api_key`. Response is `{ "ok": true, "registration_id": "reg_...", "scopes": [...] }`. No new credential is issued — keep using the `sk_…` from Step 3.
+- **Identity assertion claim**: the credential is *minted now* (it was withheld at registration). Response includes the new `sk_…`:
+
+  ```json
+  {
+    "ok": true,
+    "registration_id": "reg_...",
+    "credential_type": "api_key",
+    "credential": "sk_...",
+    "credential_expires": null,
+    "scopes": ["api.read", "watchlist.read", "watchlist.write"]
+  }
+  ```
 
 ## Step 5 — Use the Credential
 
