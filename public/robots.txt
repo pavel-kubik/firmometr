@@ -1,5 +1,6 @@
 # Open to all crawlers, including AI/LLM bots
 User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
 Allow: /
 
 Sitemap: https://firmometr.cz/sitemap.xml
