@@ -9,6 +9,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { SearchService } from '../../core/services/search.service';
+import { AuthService } from '../../core/services/auth.service';
+import { analytics, nextSearchCount, currentSearchCount } from '../../core/analytics';
 import { SubjectSummary } from '../../core/models/subject.model';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../core/config/rate-limit';
 import { LangService } from '../../core/services/lang.service';
@@ -166,6 +168,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
 })
 export class SearchComponent implements OnInit, OnDestroy {
   private searchService = inject(SearchService);
+  private auth = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   ls = inject(LangService);
@@ -220,11 +223,19 @@ export class SearchComponent implements OnInit, OnDestroy {
         this.total = res.total;
         this.loading = false;
         this.searched = true;
+        analytics.searchPerformed({
+          search_type: 'name',
+          user_status: this.auth.currentUserStatus,
+          search_count: nextSearchCount(),
+        });
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 429) {
           this.limitReached = true;
           this.startCountdown(parseInt(err.headers.get('Retry-After') ?? '0', 10) || 0);
+          if (this.auth.currentUserStatus === 'anonymous') {
+            analytics.searchLimitHit({ search_count: currentSearchCount() });
+          }
         } else {
           this.error = 'Chyba při vyhledávání. Zkuste to prosím znovu.';
         }

@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { analytics, SignupSource } from '../../core/analytics';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -137,11 +138,18 @@ function passwordMatchValidator(group: AbstractControl) {
     }
   `],
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
   ls = inject(LangService);
+
+  ngOnInit(): void {
+    const raw = this.route.snapshot.queryParams['source'];
+    const allowed: SignupSource[] = ['pricing_page', 'landing', 'watch_cta', 'login', 'auth_required'];
+    const source: SignupSource = allowed.includes(raw) ? raw : 'direct';
+    analytics.signupStarted({ source });
+  }
 
   get returnUrl(): string | null { return this.route.snapshot.queryParams['returnUrl'] ?? null; }
   get isOrderFlow(): boolean { return this.returnUrl?.includes('/objednat') ?? false; }
@@ -172,6 +180,7 @@ export class RegisterComponent {
       this.error = error.message;
     } else {
       this.registered = true;
+      analytics.signupCompleted({ plan: 'free' });
     }
     this.loading = false;
   }

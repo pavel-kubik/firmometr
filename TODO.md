@@ -217,6 +217,8 @@ TOP PRIO
 - [ ] BASIC SUBSCRIPTION
   - [ ] Allow buy subscription
 
+- [ ] Add marketing consent during whitelist / registration
+
 FEATURES (deffered after MVP)
 - [ ] Update email templates
 - [ ] [SEO] Get latest changes on insolvency (like hlidac statu), ...

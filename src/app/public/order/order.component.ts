@@ -7,6 +7,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { PublicNavComponent } from '../public-nav/public-nav.component';
 import { PublicFooterComponent } from '../public-footer/public-footer.component';
 import { AuthService } from '../../core/services/auth.service';
+import { analytics, Plan, BillingPeriod } from '../../core/analytics';
 
 const PLANS = {
   basic:      { name: 'BASIC',      monthly: 349, annualPerMonth: 299, annual: 299 * 11 },
@@ -305,6 +306,7 @@ export class OrderComponent implements OnInit {
     if (billing === 'monthly' || billing === 'annual') this.form.patchValue({ billing });
     const email = this.auth.currentUserEmail;
     if (email) this.form.patchValue({ email });
+    analytics.planViewed({ plan: this.form.value.plan as Plan });
   }
 
   get price(): number {
@@ -315,6 +317,10 @@ export class OrderComponent implements OnInit {
 
   submit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    analytics.checkoutStarted({
+      plan: this.form.value.plan as Plan,
+      billing_period: this.form.value.billing as BillingPeriod,
+    });
     this.submitting = true;
     this.error = false;
 

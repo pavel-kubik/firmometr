@@ -14,6 +14,7 @@ import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { SearchService } from '../../../core/services/search.service';
+import { analytics, nextSearchCount, currentSearchCount } from '../../../core/analytics';
 import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rate-limit';
 import { WatchService, WatchLimitError } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -416,6 +417,11 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
       switchMap(data => {
         this.subject = data;
         this.setMetaTags(data);
+        analytics.searchPerformed({
+          search_type: 'ico',
+          user_status: this.authService.currentUserStatus,
+          search_count: nextSearchCount(),
+        });
         // TODO it looks like it doesn't work
         if (!this.isLoggedIn) return of(false);
         return this.watchService.isWatchedByIco(ico);
@@ -429,6 +435,9 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
         if (err.status === 429) {
           this.limitReached = true;
           this.startCountdown(parseInt(err.headers.get('Retry-After') ?? '0', 10) || 0);
+          if (this.authService.currentUserStatus === 'anonymous') {
+            analytics.searchLimitHit({ search_count: currentSearchCount() });
+          }
         } else {
           this.error = this.transloco.translate('detail.load_error');
         }
@@ -543,7 +552,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
   toggleWatch() {
     if (!this.subject) return;
     if (!this.isLoggedIn) {
-      this.router.navigate(['/register']);
+      this.router.navigate(['/register'], { queryParams: { source: 'watch_cta' } });
       return;
     }
     if (this.subject.isWatched) {

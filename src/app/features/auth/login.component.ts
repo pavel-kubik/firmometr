@@ -69,7 +69,7 @@ import { PublicFooterComponent } from '../../public/public-footer/public-footer.
                 </button>
 
                 <p class="link-hint">
-                  {{ 'login.no_account' | transloco }} <a [routerLink]="ls.p('/register')" [queryParams]="{ returnUrl: returnUrl }">{{ 'login.register_link' | transloco }}</a>
+                  {{ 'login.no_account' | transloco }} <a [routerLink]="ls.p('/register')" [queryParams]="{ returnUrl: returnUrl, source: 'login' }">{{ 'login.register_link' | transloco }}</a>
                 </p>
               </form>
             </mat-tab>

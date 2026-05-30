@@ -53,7 +53,7 @@ import { environment } from '../../../environments/environment';
               <li>{{ 'pricing.plan_free_feat2' | transloco }}</li>
               <li>{{ 'pricing.plan_free_feat3' | transloco }}</li>
             </ul>
-            <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_free_cta' | transloco }}</a>
+            <a [routerLink]="ls.p('/register')" [queryParams]="{ source: 'pricing_page' }" class="pub-btn pub-btn-outline plan-btn">{{ 'pricing.plan_free_cta' | transloco }}</a>
           </div>
 
           <!-- BASIC -->

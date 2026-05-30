@@ -9,7 +9,7 @@ export const authGuard: CanActivateFn = (_route, state) => {
   return from(auth.client.auth.getSession()).pipe(
     map(({ data }) => {
       if (data.session?.user) return true;
-      return router.createUrlTree(['/register'], { queryParams: { returnUrl: state.url } });
+      return router.createUrlTree(['/register'], { queryParams: { returnUrl: state.url, source: 'auth_required' } });
     })
   );
 };
