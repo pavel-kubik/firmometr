@@ -3,6 +3,7 @@ import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UserProfile, UserTier, TIER_LIMITS } from '../models/profile.model';
+import { UserStatus } from '../analytics';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -89,5 +90,12 @@ export class AuthService {
 
   get currentTierLimit(): number {
     return TIER_LIMITS[this.currentUserTier];
+  }
+
+  /** Coarse user status for analytics: anonymous / free / paid. */
+  get currentUserStatus(): UserStatus {
+    if (!this.userSubject.value) return 'anonymous';
+    const tier = this.profileSubject.value?.user_tier;
+    return tier && tier !== 'free' ? 'paid' : 'free';
   }
 }

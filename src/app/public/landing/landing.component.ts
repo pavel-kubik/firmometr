@@ -129,7 +129,7 @@ import { environment } from '../../../environments/environment';
                 <li>{{ 'landing.plan_free_feat2' | transloco }}</li>
                 <li>{{ 'landing.plan_free_feat3' | transloco }}</li>
               </ul>
-              <a [routerLink]="ls.p('/register')" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
+              <a [routerLink]="ls.p('/register')" [queryParams]="{ source: 'landing' }" class="pub-btn pub-btn-outline">{{ 'landing.plan_free_cta' | transloco }}</a>
             </div>
             <app-basic-card [showFrom]="true" />
             <app-enterprise-card />
