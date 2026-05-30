@@ -112,6 +112,17 @@ https://dash.cloudflare.com — Cloudflare account
 
 Cloudflare Dashboard → Pages → firmometr → your deployment → Functions → View logs
 
+#### Claude / google can't access web
+
+https://dash.cloudflare.com/584a900cab287c4bc9a4c681a6e808a4/firmometr.cz/ssl-tls
+Set Full (strict)
+
+https://dash.cloudflare.com/584a900cab287c4bc9a4c681a6e808a4/firmometr.cz/security/settings
+Turn off bot fight mode
+
+https://dash.cloudflare.com/584a900cab287c4bc9a4c681a6e808a4/firmometr.cz/security/security-rules
+block AI crowlers
+
 #### Manual test wrangler functions locally
 
 ```bash
