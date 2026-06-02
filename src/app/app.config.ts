@@ -1,5 +1,5 @@
 import { APP_INITIALIZER, ApplicationConfig, ErrorHandler, inject, isDevMode, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter, Router, withViewTransitions } from '@angular/router';
+import { provideRouter, Router, withViewTransitions, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, HttpClient, withInterceptors, withFetch } from '@angular/common/http';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -19,7 +19,11 @@ class AppTranslocoLoader implements TranslocoLoader {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes, withViewTransitions({ skipInitialTransition: true })),
+    provideRouter(
+      routes,
+      withViewTransitions({ skipInitialTransition: true }),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
+    ),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
     provideTransloco({
