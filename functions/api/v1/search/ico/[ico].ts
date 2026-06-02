@@ -1,6 +1,8 @@
 import { checkCap, withCap } from '../../../../_shared/_cap';
 import { getCached, setCached, type RegistrySource } from '../../../../_shared/_cache';
 import { logApiCall } from '../../../../_shared/_analytics';
+import { fetchOrSubjektId, fetchSbirkaListin } from '../../../../_shared/_or';
+import { isAuthenticated } from '../../../../_shared/_auth';
 import {
   type IsirRecord, type DphResult,
   DPH_UNAVAILABLE,
@@ -18,6 +20,7 @@ interface Env {
   REGISTRY_CACHE: KVNamespace;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_KEY: string;
+  SUPABASE_ANON_KEY: string;
 }
 
 interface RequestCtx {
@@ -49,7 +52,6 @@ function log(ctx: RequestCtx, registry: RegistrySource, url: string, cacheHit: b
 
 const ARES_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
 const ARES_VR_BASE = "https://ares.gov.cz/ekonomicke-subjekty-v-be/rest";
-const OR_PORTAL = "https://or.justice.cz/ias/ui";
 const ISIR_CUZK = "https://isir.justice.cz:8443/isir_cuzk_ws/IsirWsCuzkService";
 const CUZK_BASE = "https://ags.cuzk.gov.cz/arcgis/rest/services/RUIAN/Vyhledavac_adres_sluzby/MapServer/exts/VyhledavacAdresRestSoe/FindAddress";
 const CUZK_NS = "http://isirws.cca.cz/types/";
@@ -149,11 +151,6 @@ interface OrStatutar {
   datumZaniku: string | null;
 }
 
-interface OrListina {
-  typListiny: string;
-  datumVzniku: string | null;
-  datumZalozeni: string | null;
-}
 
 async function fetchOrVr(ico: string, ctx: RequestCtx): Promise<{ spisovatel: string | null; statutari: OrStatutar[] }> {
   const url = `${ARES_VR_BASE}/ekonomicke-subjekty-vr/${ico}`;
@@ -212,83 +209,6 @@ async function fetchOrVr(ico: string, ctx: RequestCtx): Promise<{ spisovatel: st
   } catch (e) {
     log(ctx, 'or_vr', url, false, Date.now() - start, String(e));
     return { spisovatel: null, statutari: [] };
-  }
-}
-
-async function fetchOrSubjektId(ico: string, ctx: RequestCtx): Promise<string | null> {
-  const url = `${OR_PORTAL}/rejstrik-$firma?ico=${ico}`;
-  const cached = await getCached<string | null>(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico, ctx.maxCacheAgeSecs);
-  if (cached) { log(ctx, 'or_subjekt_id', url, true); return cached.data; }
-  const start = Date.now();
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(10_000),
-      headers: { "Accept": "text/html,*/*", "User-Agent": "firmometr.cz/1.0" },
-    });
-    if (!res.ok) {
-      log(ctx, 'or_subjekt_id', url, false, Date.now() - start, `HTTP ${res.status}`);
-      return null;
-    }
-    const html = await res.text();
-    const m = html.match(/subjektId=(\d+)/);
-    const subjektId = m?.[1] ?? null;
-    await setCached(ctx.env.REGISTRY_CACHE, 'or_subjekt_id', ico, subjektId);
-    log(ctx, 'or_subjekt_id', url, false, Date.now() - start);
-    return subjektId;
-  } catch (e) {
-    log(ctx, 'or_subjekt_id', url, false, Date.now() - start, String(e));
-    return null;
-  }
-}
-
-async function fetchSbirkaListin(subjektId: string, ctx: RequestCtx): Promise<{ listiny: OrListina[]; celkem: number }> {
-  const url = `${OR_PORTAL}/vypis-sl-firma?subjektId=${subjektId}`;
-  const cached = await getCached<{ listiny: OrListina[]; celkem: number }>(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId, ctx.maxCacheAgeSecs);
-  if (cached) { log(ctx, 'sbirka_listin', url, true); return cached.data; }
-  const start = Date.now();
-  try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(10_000),
-      headers: { "Accept": "text/html,*/*", "User-Agent": "firmometr.cz/1.0" },
-    });
-    if (!res.ok) {
-      log(ctx, 'sbirka_listin', url, false, Date.now() - start, `HTTP ${res.status}`);
-      return { listiny: [], celkem: 0 };
-    }
-    const html = await res.text();
-
-    const countMatch = html.match(/z\s+(\d+)\s+(?:záznam[ůu]|listiny)/i)
-      ?? html.match(/[Cc]elkem[:\s]+(\d+)/);
-    let celkem = countMatch ? parseInt(countMatch[1], 10) : 0;
-
-    const listiny: OrListina[] = [];
-    const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/g;
-    let rowMatch: RegExpExecArray | null;
-    while ((rowMatch = rowRegex.exec(html)) !== null) {
-      const rowHtml = rowMatch[1];
-      const tdContents: string[] = [];
-      const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/g;
-      let tdMatch: RegExpExecArray | null;
-      while ((tdMatch = tdRegex.exec(rowHtml)) !== null) {
-        tdContents.push(tdMatch[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
-      }
-      if (tdContents.length >= 3 && tdContents[1]) {
-        listiny.push({
-          typListiny: tdContents[1],
-          datumVzniku: tdContents[2] || null,
-          datumZalozeni: tdContents[4] || null,
-        });
-      }
-    }
-
-    if (!celkem) celkem = listiny.length;
-    const result = { listiny: listiny.slice(0, 10), celkem };
-    await setCached(ctx.env.REGISTRY_CACHE, 'sbirka_listin', subjektId, result);
-    log(ctx, 'sbirka_listin', url, false, Date.now() - start);
-    return result;
-  } catch (e) {
-    log(ctx, 'sbirka_listin', url, false, Date.now() - start, String(e));
-    return { listiny: [], celkem: 0 };
   }
 }
 
@@ -353,8 +273,15 @@ export const onRequest = async ({
     deployEnv,
   };
 
+  const orOpts = {
+    kv: ctx.env.REGISTRY_CACHE,
+    maxCacheAgeSecs: ctx.maxCacheAgeSecs,
+    log: (source: 'or_subjekt_id' | 'sbirka_listin', url: string, cacheHit: boolean, durationMs?: number, error?: string) =>
+      log(ctx, source, url, cacheHit, durationMs, error),
+  };
+
   const [aresData, isirRecords, orVr, orSubjektId] = await Promise.all([
-    fetchAres(ico, ctx), fetchIsir(ico, ctx), fetchOrVr(ico, ctx), fetchOrSubjektId(ico, ctx),
+    fetchAres(ico, ctx), fetchIsir(ico, ctx), fetchOrVr(ico, ctx), fetchOrSubjektId(ico, orOpts),
   ]);
 
   const dic = aresData?.dic ?? ("CZ" + ico.padStart(8, "0"));
@@ -362,7 +289,7 @@ export const onRequest = async ({
   const [dphResult, cuzkAddress, sbirkaListinResult] = await Promise.all([
     fetchDph(dic, ctx),
     sidloText ? fetchCuzk(sidloText, ico, ctx) : Promise.resolve(null),
-    orSubjektId ? fetchSbirkaListin(orSubjektId, ctx) : Promise.resolve({ listiny: [], celkem: 0 }),
+    orSubjektId ? fetchSbirkaListin(orSubjektId, orOpts) : Promise.resolve({ listiny: [], celkem: 0 }),
   ]);
 
   const { clarity, activeSet } = assessClearance(isirRecords);
@@ -383,6 +310,10 @@ export const onRequest = async ({
 
   const hasOrData = orVr.statutari.length > 0 || orVr.spisovatel || sbirkaListinResult.celkem > 0;
 
+  // Sbírka listin is a registered-user feature: withhold the document rows from anonymous
+  // callers but keep the count (the tease). See feature-flags.ts / statements endpoint.
+  const authed = await isAuthenticated(request, env);
+
   return withCap({
     ico,
     dic: aresData?.dic ?? null,
@@ -398,7 +329,7 @@ export const onRequest = async ({
     or: hasOrData ? {
       spisovatel: orVr.spisovatel,
       statutari: orVr.statutari,
-      sbirkaListin: sbirkaListinResult.listiny,
+      sbirkaListin: authed ? sbirkaListinResult.listiny : [],
       sbirkaListinCelkem: sbirkaListinResult.celkem,
       orUrl: orSubjektId
         ? `https://or.justice.cz/ias/ui/rejstrik-firma.vysledky?subjektId=${orSubjektId}&typ=PLATNY`

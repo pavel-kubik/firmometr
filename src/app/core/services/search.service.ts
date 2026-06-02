@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SearchResult, SubjectDetail } from '../models/subject.model';
+import { CompanyStatements, SearchResult, SubjectDetail } from '../models/subject.model';
 
 @Injectable({ providedIn: 'root' })
 export class SearchService {
@@ -9,6 +9,10 @@ export class SearchService {
 
   searchByIco(ico: string): Observable<SubjectDetail> {
     return this.http.get<SubjectDetail>(`/api/v1/search/ico/${ico}`);
+  }
+
+  getStatements(ico: string): Observable<CompanyStatements> {
+    return this.http.get<CompanyStatements>(`/api/v1/statements/${ico}`);
   }
 
   searchByName(query: string, start = 0): Observable<SearchResult> {

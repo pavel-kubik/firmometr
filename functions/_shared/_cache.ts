@@ -10,6 +10,7 @@ export type RegistrySource =
   | 'or_vr'
   | 'or_subjekt_id'
   | 'sbirka_listin'
+  | 'or_listiny'
   | 'cuzk';
 
 export interface CacheEntry<T> {
@@ -33,6 +34,7 @@ export const TTL: Record<RegistrySource, number> = {
   or_vr:         0,  // TODO: e.g. 86_400 (24h)
   or_subjekt_id: 0,  // TODO: e.g. 604_800 (7d)
   sbirka_listin: 0,  // TODO: e.g. 86_400 (24h)
+  or_listiny:    0,  // TODO: e.g. 86_400 (24h) — Sbírka listin with document links (parser v2)
   cuzk:          0,  // TODO: e.g. 604_800 (7d)
 };
 

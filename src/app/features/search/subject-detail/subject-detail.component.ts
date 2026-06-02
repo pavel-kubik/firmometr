@@ -9,7 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { QRCodeModule } from 'angularx-qrcode';
-import { of } from 'rxjs';
+import { of, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -19,7 +19,8 @@ import { SEARCH_FREE_CAP, SEARCH_WINDOW_MINUTES } from '../../../core/config/rat
 import { WatchService, WatchLimitError } from '../../../core/services/watch.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LangService } from '../../../core/services/lang.service';
-import { SubjectDetail } from '../../../core/models/subject.model';
+import { CompanyStatements, SubjectDetail } from '../../../core/models/subject.model';
+import { FEATURES, meetsAccess, userAccessLevel } from '../../../core/config/feature-flags';
 import { PublicNavComponent } from '../../../public/public-nav/public-nav.component';
 import { PublicFooterComponent } from '../../../public/public-footer/public-footer.component';
 
@@ -221,28 +222,77 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
                   </div>
                 </div>
 
-                <mat-divider *ngIf="subject.or.sbirkaListin.length > 0" class="or-divider"></mat-divider>
+                <!-- Registered-user feature: locked for anonymous visitors; count shown as a tease -->
+                <ng-container *ngIf="!canViewStatements && statements && statements.total > 0">
+                  <mat-divider class="or-divider"></mat-divider>
+                  <div class="or-section">
+                    <p class="or-section-label">
+                      <mat-icon class="zav-icon">insert_chart_outlined</mat-icon>
+                      {{ 'detail.statements_title' | transloco }}
+                      <span class="or-count">({{ 'detail.statements_total' | transloco: { count: statements.total } }})</span>
+                    </p>
+                    <div class="zav-lock">
+                      <mat-icon class="zav-lock-icon">lock</mat-icon>
+                      <p class="zav-lock-text">{{ 'detail.statements_locked' | transloco }}</p>
+                      <a [routerLink]="ls.p('/register')" [queryParams]="{ source: 'statements_lock' }"
+                         class="pub-btn pub-btn-primary pub-btn-sm">{{ 'detail.statements_register_cta' | transloco }}</a>
+                    </div>
+                  </div>
+                </ng-container>
 
-                <div *ngIf="subject.or.sbirkaListin.length > 0" class="or-section">
+                <ng-container *ngIf="canViewStatements">
+                  <mat-divider *ngIf="statementsLoading || (statements && statements.statements.length > 0)" class="or-divider"></mat-divider>
+
+                  <div *ngIf="statementsLoading || (statements && statements.statements.length > 0)" class="or-section">
+                    <p class="or-section-label">
+                      <mat-icon class="zav-icon">insert_chart_outlined</mat-icon>
+                      {{ 'detail.statements_title' | transloco }}
+                      <span *ngIf="statements && statements.total > 0" class="or-count">({{ 'detail.statements_total' | transloco: { count: statements.total } }})</span>
+                    </p>
+                    <div *ngIf="statementsLoading" class="zav-loading">{{ 'detail.statements_loading' | transloco }}</div>
+                    <div *ngIf="!statementsLoading && statements" class="zav-timeline">
+                      <ng-container *ngFor="let s of statements.statements">
+                        <a *ngIf="s.url" [href]="s.url" target="_blank" rel="noopener" class="zav-chip" [title]="'detail.statements_open' | transloco">{{ s.year ?? '—' }}</a>
+                        <span *ngIf="!s.url" class="zav-chip zav-chip--plain">{{ s.year ?? '—' }}</span>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <mat-divider *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-divider"></mat-divider>
+
+                <div *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-section">
                   <p class="or-section-label">
                     {{ 'detail.or_documents' | transloco }}
-                    <span *ngIf="subject.or.sbirkaListinCelkem > 0" class="or-count">({{ 'detail.or_documents_total' | transloco: { count: subject.or.sbirkaListinCelkem } }})</span>
+                    <span class="or-count">({{ 'detail.or_documents_total' | transloco: { count: subject.or.sbirkaListinCelkem } }})</span>
                   </p>
-                  <div *ngFor="let l of pagedListiny" class="listina">
-                    <span class="listina-typ">{{ l.typListiny }}</span>
-                    <span *ngIf="l.datumVzniku" class="listina-date">{{ formatCzechDate(l.datumVzniku) }}</span>
+
+                  <!-- Registered-user feature: rows hidden from anonymous visitors, count kept as a tease -->
+                  <ng-container *ngIf="canViewStatements">
+                    <div *ngFor="let l of pagedListiny" class="listina">
+                      <a *ngIf="l.url; else listinaPlain" [href]="l.url" target="_blank" rel="noopener" class="listina-typ listina-link">{{ l.typListiny }}</a>
+                      <ng-template #listinaPlain><span class="listina-typ">{{ l.typListiny }}</span></ng-template>
+                      <span *ngIf="l.datumVzniku" class="listina-date">{{ l.datumVzniku }}</span>
+                    </div>
+                    <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
+                      [length]="subject.or.sbirkaListin.length"
+                      [pageSize]="listinaPageSize"
+                      [pageIndex]="listinaPage"
+                      [hidePageSize]="true"
+                      (page)="listinaPage = $event.pageIndex"
+                      class="or-paginator">
+                    </mat-paginator>
+                  </ng-container>
+
+                  <div *ngIf="!canViewStatements" class="zav-lock">
+                    <mat-icon class="zav-lock-icon">lock</mat-icon>
+                    <p class="zav-lock-text">{{ 'detail.documents_locked' | transloco }}</p>
+                    <a [routerLink]="ls.p('/register')" [queryParams]="{ source: 'documents_lock' }"
+                       class="pub-btn pub-btn-primary pub-btn-sm">{{ 'detail.statements_register_cta' | transloco }}</a>
                   </div>
-                  <mat-paginator *ngIf="subject.or.sbirkaListin.length > listinaPageSize"
-                    [length]="subject.or.sbirkaListin.length"
-                    [pageSize]="listinaPageSize"
-                    [pageIndex]="listinaPage"
-                    [hidePageSize]="true"
-                    (page)="listinaPage = $event.pageIndex"
-                    class="or-paginator">
-                  </mat-paginator>
                 </div>
 
-                <div *ngIf="subject.or.orUrl" class="or-link-row">
+                <div *ngIf="canViewStatements && subject.or.orUrl" class="or-link-row">
                   <a [href]="subject.or.orUrl" target="_blank" rel="noopener" class="or-link">
                     <mat-icon>open_in_new</mat-icon> {{ 'detail.or_link' | transloco }}
                   </a>
@@ -336,9 +386,20 @@ import { PublicFooterComponent } from '../../../public/public-footer/public-foot
     .statutar-funkce { font-size: 12px; color: #1565c0; background: #e3f2fd; padding: 1px 6px; border-radius: 10px; }
     .statutar-date { font-size: 12px; color: #757575; }
     .or-divider { margin: 12px 0; }
+    .zav-icon { font-size: 18px; width: 18px; height: 18px; vertical-align: text-bottom; color: #3f51b5; }
+    .zav-loading { color: #9e9e9e; font-size: 13px; padding: 6px 0; }
+    .zav-timeline { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0 2px; }
+    .zav-chip { font-size: 13px; font-weight: 600; color: #3f51b5; background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 14px; padding: 3px 12px; text-decoration: none; transition: background .15s ease; }
+    .zav-chip:hover { background: #c5cae9; }
+    .zav-chip--plain { color: #757575; background: #f5f5f5; border-color: #eee; font-weight: 500; }
+    .zav-lock { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 14px 8px 6px; }
+    .zav-lock-icon { color: #9fa8da; font-size: 28px; width: 28px; height: 28px; }
+    .zav-lock-text { color: #616161; font-size: 13px; margin: 0; max-width: 260px; }
     .listina { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
     .listina:last-child { border-bottom: none; }
     .listina-typ { color: #333; flex: 1; }
+    .listina-link { text-decoration: none; }
+    .listina-link:hover { color: #3f51b5; text-decoration: underline; }
     .listina-date { color: #9e9e9e; font-size: 12px; white-space: nowrap; margin-left: 8px; }
     .or-link-row { margin-top: 12px; }
     .or-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: #1565c0; text-decoration: none; }
@@ -376,11 +437,23 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
   pageUrl = '';
   listinaPage = 0;
   readonly listinaPageSize = 5;
+  statements: CompanyStatements | null = null;
+  statementsLoading = false;
+  private statementsLoadedIco: string | null = null;
+  private authSub?: Subscription;
   statutarPage = 0;
   readonly statutarPageSize = 3;
 
   get isLoggedIn(): boolean {
     return this.authService.currentUserId !== null;
+  }
+
+  /** Whether the current user meets the access level required for the financial-statements feature. */
+  get canViewStatements(): boolean {
+    return meetsAccess(
+      userAccessLevel(this.isLoggedIn, this.authService.currentUserTier),
+      FEATURES.financialStatements,
+    );
   }
 
   get currentStatutari() {
@@ -401,10 +474,33 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
     return list.slice(this.listinaPage * this.listinaPageSize, (this.listinaPage + 1) * this.listinaPageSize);
   }
 
+  /**
+   * Load the filed účetní závěrky. The endpoint returns the count for everyone (the tease)
+   * and the years/links only for registered users, so we fetch for all visitors. The guard
+   * keys on access level too, so a login/logout re-fetches to swap count-only ↔ full data.
+   */
+  private maybeLoadStatements(ico: string) {
+    const key = `${ico}:${this.canViewStatements}`;
+    if (this.statementsLoadedIco === key) return;
+    this.statementsLoadedIco = key;
+    this.statementsLoading = true;
+    this.searchService.getStatements(ico).subscribe({
+      next: (data) => { this.statements = data; this.statementsLoading = false; },
+      error: () => { this.statements = null; this.statementsLoading = false; this.statementsLoadedIco = null; },
+    });
+  }
+
   ngOnInit() {
     const ico = this.route.snapshot.paramMap.get('ico')!;
     this.pageUrl = `https://firmometr.cz/search/${ico}`;
     this.load(ico);
+    // Re-fetch when auth resolves/changes (session restore, login, logout) so the
+    // locked/unlocked view and the main detail (Sbírka listin rows) stay in sync.
+    this.authSub = this.authService.user$.subscribe(() => {
+      if (!this.subject) return;
+      this.maybeLoadStatements(this.subject.ico);
+      this.load(this.subject.ico);
+    });
   }
 
   load(ico: string) {
@@ -417,6 +513,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
       switchMap(data => {
         this.subject = data;
         this.setMetaTags(data);
+        this.maybeLoadStatements(ico);
         analytics.searchPerformed({
           search_type: 'ico',
           user_status: this.authService.currentUserStatus,
@@ -533,6 +630,7 @@ export class SubjectDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.authSub?.unsubscribe();
     this.doc.getElementById('ld-company')?.remove();
   }
 

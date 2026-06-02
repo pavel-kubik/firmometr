@@ -11,6 +11,8 @@ export interface OrListina {
   typListiny: string;
   datumVzniku: string | null;
   datumZalozeni: string | null;
+  /** Link to the document on or.justice.cz, when available. */
+  url?: string | null;
 }
 
 export interface OrStatus {
@@ -69,4 +71,21 @@ export interface SubjectSummary {
 export interface SearchResult {
   total: number;
   items: SubjectSummary[];
+}
+
+export interface StatementYear {
+  /** Period year, or null when unknown. */
+  year: number | null;
+  /** Link to the filed účetní závěrka on or.justice.cz. */
+  url: string | null;
+}
+
+export interface CompanyStatements {
+  ico: string;
+  /** Distinct účetní-závěrka years, most recent first. Empty when `locked`. */
+  statements: StatementYear[];
+  /** Total účetní-závěrka documents found (the tease count, always present). */
+  total: number;
+  /** True for non-registered users: only `total` is exposed, not the years/links. */
+  locked: boolean;
 }
